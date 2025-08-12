@@ -1,14 +1,18 @@
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { 
-    Users, 
-    DollarSign, 
-    ShoppingCart, 
+import {
+    Users,
+    DollarSign,
+    ShoppingCart,
     TrendingUp,
     Activity,
     ArrowUpRight,
-    ArrowDownRight
+    ArrowDownRight,
+    Eye,
+    Download,
+    MoreHorizontal
 } from 'lucide-react';
 
 export default function Dashboard({ auth }) {
@@ -19,7 +23,7 @@ export default function Dashboard({ auth }) {
             description: '+20.1% from last month',
             icon: DollarSign,
             trend: 'up',
-            color: 'text-green-600'
+            color: 'text-chart-1'
         },
         {
             title: 'Subscriptions',
@@ -27,7 +31,7 @@ export default function Dashboard({ auth }) {
             description: '+180.1% from last month',
             icon: Users,
             trend: 'up',
-            color: 'text-blue-600'
+            color: 'text-chart-2'
         },
         {
             title: 'Sales',
@@ -35,7 +39,7 @@ export default function Dashboard({ auth }) {
             description: '+19% from last month',
             icon: ShoppingCart,
             trend: 'up',
-            color: 'text-purple-600'
+            color: 'text-chart-3'
         },
         {
             title: 'Active Now',
@@ -43,7 +47,7 @@ export default function Dashboard({ auth }) {
             description: '+201 since last hour',
             icon: Activity,
             trend: 'down',
-            color: 'text-orange-600'
+            color: 'text-chart-4'
         }
     ];
 
@@ -87,20 +91,20 @@ export default function Dashboard({ auth }) {
                 {/* Stats Grid */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {stats.map((stat, index) => (
-                        <Card key={index}>
+                        <Card key={index} className="border-border/50">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
                                     {stat.title}
                                 </CardTitle>
                                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stat.value}</div>
+                                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
                                 <p className="text-xs text-muted-foreground flex items-center mt-1">
                                     {stat.trend === 'up' ? (
-                                        <ArrowUpRight className="h-3 w-3 mr-1 text-green-600" />
+                                        <ArrowUpRight className="h-3 w-3 mr-1 text-chart-1" />
                                     ) : (
-                                        <ArrowDownRight className="h-3 w-3 mr-1 text-red-600" />
+                                        <ArrowDownRight className="h-3 w-3 mr-1 text-destructive" />
                                     )}
                                     {stat.description}
                                 </p>
@@ -112,26 +116,32 @@ export default function Dashboard({ auth }) {
                 {/* Charts and Activity */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     {/* Chart Card */}
-                    <Card className="col-span-4">
-                        <CardHeader>
-                            <CardTitle>Overview</CardTitle>
-                            <CardDescription>
-                                Monthly revenue and subscription growth
-                            </CardDescription>
+                    <Card className="col-span-4 border-border/50">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Overview</CardTitle>
+                                <CardDescription>
+                                    Monthly revenue and subscription growth
+                                </CardDescription>
+                            </div>
+                            <Button variant="outline" size="sm">
+                                <Download className="h-4 w-4 mr-2" />
+                                Export
+                            </Button>
                         </CardHeader>
                         <CardContent className="pl-2">
-                            <div className="h-[300px] flex items-center justify-center bg-gray-50 rounded-lg">
+                            <div className="h-[300px] flex items-center justify-center bg-muted/20 rounded-lg border border-border/50">
                                 <div className="text-center">
-                                    <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                    <p className="text-gray-500">Chart component would go here</p>
-                                    <p className="text-sm text-gray-400">Using a library like Recharts or Chart.js</p>
+                                    <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                    <p className="text-muted-foreground">Chart component would go here</p>
+                                    <p className="text-sm text-muted-foreground/70">Using a library like Recharts or Chart.js</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Recent Activity */}
-                    <Card className="col-span-3">
+                    <Card className="col-span-3 border-border/50">
                         <CardHeader>
                             <CardTitle>Recent Activity</CardTitle>
                             <CardDescription>
@@ -142,9 +152,9 @@ export default function Dashboard({ auth }) {
                             <div className="space-y-4">
                                 {recentActivity.map((activity) => (
                                     <div key={activity.id} className="flex items-center space-x-4">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                        <div className="w-2 h-2 bg-chart-1 rounded-full"></div>
                                         <div className="flex-1 space-y-1">
-                                            <p className="text-sm font-medium leading-none">
+                                            <p className="text-sm font-medium leading-none text-foreground">
                                                 {activity.user}
                                             </p>
                                             <p className="text-sm text-muted-foreground">
@@ -152,13 +162,14 @@ export default function Dashboard({ auth }) {
                                             </p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-sm font-medium">{activity.amount}</p>
+                                            <p className="text-sm font-medium text-foreground">{activity.amount}</p>
                                             <p className="text-xs text-muted-foreground">{activity.time}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                             <Button variant="outline" className="w-full mt-4">
+                                <Eye className="h-4 w-4 mr-2" />
                                 View all activity
                             </Button>
                         </CardContent>
@@ -167,9 +178,12 @@ export default function Dashboard({ auth }) {
 
                 {/* Quick Actions */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
+                    <Card className="border-border/50">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+                            <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <Button variant="outline" className="w-full justify-start">
@@ -187,71 +201,71 @@ export default function Dashboard({ auth }) {
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">System Status</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm">API Status</span>
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span className="text-sm text-muted-foreground">API Status</span>
+                                    <div className="w-2 h-2 bg-chart-1 rounded-full"></div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm">Database</span>
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span className="text-sm text-muted-foreground">Database</span>
+                                    <div className="w-2 h-2 bg-chart-1 rounded-full"></div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm">Cache</span>
-                                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                    <span className="text-sm text-muted-foreground">Cache</span>
+                                    <div className="w-2 h-2 bg-chart-4 rounded-full"></div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm">Queue</span>
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span className="text-sm text-muted-foreground">Queue</span>
+                                    <div className="w-2 h-2 bg-chart-1 rounded-full"></div>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Top Products</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm">Premium Plan</span>
-                                    <span className="text-sm font-medium">$299</span>
+                                    <span className="text-sm text-muted-foreground">Premium Plan</span>
+                                    <span className="text-sm font-medium text-foreground">$299</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm">Basic Plan</span>
-                                    <span className="text-sm font-medium">$99</span>
+                                    <span className="text-sm text-muted-foreground">Basic Plan</span>
+                                    <span className="text-sm font-medium text-foreground">$99</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm">Enterprise</span>
-                                    <span className="text-sm font-medium">$999</span>
+                                    <span className="text-sm text-muted-foreground">Enterprise</span>
+                                    <span className="text-sm font-medium text-foreground">$999</span>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Recent Users</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
                                 <div className="flex items-center space-x-2">
-                                    <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
-                                    <span className="text-sm">John Doe</span>
+                                    <div className="w-6 h-6 bg-chart-1 rounded-full"></div>
+                                    <span className="text-sm text-foreground">John Doe</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <div className="w-6 h-6 bg-green-500 rounded-full"></div>
-                                    <span className="text-sm">Jane Smith</span>
+                                    <div className="w-6 h-6 bg-chart-2 rounded-full"></div>
+                                    <span className="text-sm text-foreground">Jane Smith</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <div className="w-6 h-6 bg-purple-500 rounded-full"></div>
-                                    <span className="text-sm">Mike Johnson</span>
+                                    <div className="w-6 h-6 bg-chart-3 rounded-full"></div>
+                                    <span className="text-sm text-foreground">Mike Johnson</span>
                                 </div>
                             </div>
                         </CardContent>
