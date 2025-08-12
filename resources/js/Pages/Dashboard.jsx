@@ -26,11 +26,18 @@ import {
     ChevronDown,
     Star,
     Plus,
-    X
+    X,
+    Users,
+    Bed,
+    Clock,
+    CreditCard,
+    CheckCircle,
+    AlertCircle
 } from 'lucide-react';
 
 export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }) {
     const [showAddBooking, setShowAddBooking] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState(null);
     const [formData, setFormData] = useState({
         hotel_name: '',
         location: '',
@@ -119,6 +126,46 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         setShowAddBooking(true);
     };
 
+    const handleBookingClick = (booking) => {
+        // Create a booking object with dummy data for missing fields
+        const bookingDetails = {
+            id: booking.id,
+            hotel_name: booking.hotel_name || 'Hotel Name Not Available',
+            location: booking.location || 'Location Not Available',
+            check_in_date: booking.check_in_date || '2024-01-15',
+            check_out_date: booking.check_out_date || '2024-01-18',
+            guests: booking.guests || 2,
+            rooms: booking.rooms || 1,
+            total_price: booking.total_price || (booking.price_per_night * booking.nights) || 150.00,
+            price_per_night: booking.price_per_night || 50.00,
+            nights: booking.nights || 3,
+            currency: booking.currency || 'USD',
+            status: booking.status || 'active',
+            booking_confirmation: booking.booking_confirmation || 'CONF-123456789',
+            // Dummy data for missing fields
+            hotel_image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
+            hotel_description: "A beautiful hotel with modern amenities and excellent service.",
+            amenities: ['Free WiFi', 'Swimming Pool', 'Spa', 'Restaurant', 'Gym'],
+            room_type: 'Deluxe Room',
+            cancellation_policy: 'Free cancellation until 24 hours before check-in',
+            contact_info: {
+                phone: '+1-555-0123',
+                email: 'reservations@hotel.com'
+            },
+            price_history: [
+                { date: '2024-01-10', price: 180.00 },
+                { date: '2024-01-12', price: 160.00 },
+                { date: '2024-01-14', price: 150.00 }
+            ]
+        };
+
+        setSelectedBooking(bookingDetails);
+    };
+
+    const handleCloseBookingPanel = () => {
+        setSelectedBooking(null);
+    };
+
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Left Sidebar */}
@@ -204,13 +251,13 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         </h1>
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button
+                            <Button
                                     className="bg-blue-600 hover:bg-blue-700 text-white px-8"
                                     onClick={handleAddBookingClick}
-                                >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add Booking
-                                </Button>
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add Booking
+                            </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[600px]">
                                 <DialogHeader>
@@ -249,7 +296,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 value={formData.check_in_date}
                                                 onChange={(e) => handleInputChange('check_in_date', e.target.value)}
                                             />
-                                        </div>
+                                            </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="check-out">Check-out Date</Label>
                                             <Input
@@ -258,8 +305,8 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 value={formData.check_out_date}
                                                 onChange={(e) => handleInputChange('check_out_date', e.target.value)}
                                             />
-                                        </div>
-                                    </div>
+                                                </div>
+                                            </div>
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="guests">Number of Guests</Label>
@@ -280,7 +327,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 value={formData.rooms}
                                                 onChange={(e) => handleInputChange('rooms', e.target.value)}
                                             />
-                                        </div>
+                                            </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="total-price">Total Price</Label>
                                             <Input
@@ -329,7 +376,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             </DialogContent>
                         </Dialog>
                     </div>
-                </div>
+                            </div>
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -344,12 +391,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         <div className="flex space-x-4 overflow-x-auto pb-4">
                             {hotel_bookings && hotel_bookings.length > 0 ? (
                                 hotel_bookings.slice(0, 3).map((booking, index) => (
-                                    <Card key={booking.id} className="min-w-[300px] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedHotel({
-                                        name: booking.hotel_name,
-                                        location: booking.location,
-                                        price: booking.price_per_night,
-                                        image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop"
-                                    })}>
+                                    <Card key={booking.id} className="min-w-[300px] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleBookingClick(booking)}>
                                         <div className="relative">
                                             <img
                                                 src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop"
@@ -413,118 +455,230 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             {hotel.country}
                                         </div>
                                         <p className="text-sm font-bold text-gray-900">${hotel.price} / night</p>
-                                    </CardContent>
-                                </Card>
+                        </CardContent>
+                    </Card>
                             ))}
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Right Detail Panel */}
-            <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
-                {/* User Profile */}
-                <div className="p-6 border-b border-gray-200">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <div className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={auth?.user?.avatar} />
-                                    <AvatarFallback>{auth?.user?.name?.charAt(0) || 'U'}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                    <p className="font-medium text-gray-900">{auth?.user?.name || 'User'}</p>
-                                    <p className="text-sm text-gray-600">Traveler Enthusiast</p>
-                                </div>
-                                <ChevronDown className="h-4 w-4 text-gray-400" />
-                            </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56" align="end">
-                            <DropdownMenuLabel className="font-normal">
-                                <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-medium leading-none">{auth?.user?.name}</p>
-                                    <p className="text-xs leading-none text-muted-foreground">
-                                        {auth?.user?.email}
-                                    </p>
-                                </div>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                <Settings className="mr-2 h-4 w-4" />
-                                <span>Settings</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <LogOut className="mr-2 h-4 w-4" />
-                                <Link href="/logout" method="post" as="button" className="w-full text-left">
-                                    Log out
-                                </Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
 
-                {/* Hotel Details */}
-                <div className="flex-1 overflow-y-auto">
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">{selectedHotel.name}</h2>
+            {/* Right Detail Panel - Booking Details */}
+            {selectedBooking && (
+                <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+                    {/* Header with close button */}
+                    <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Booking Details</h3>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleCloseBookingPanel}
+                            className="h-8 w-8 p-0"
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
 
-                        {/* Hotel Images */}
-                        <div className="grid grid-cols-3 gap-2 mb-4">
-                            <img
-                                src={selectedHotel.images[0]}
-                                alt="Main hotel"
-                                className="col-span-3 w-full h-48 object-cover rounded-lg"
-                            />
-                            <img
-                                src={selectedHotel.images[1]}
-                                alt="Hotel room"
-                                className="w-full h-20 object-cover rounded-lg"
-                            />
-                            <div className="relative">
+                    {/* Booking Content */}
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="p-6">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4">{selectedBooking.hotel_name}</h2>
+
+                            {/* Hotel Images */}
+                            <div className="grid grid-cols-3 gap-2 mb-4">
                                 <img
-                                    src={selectedHotel.images[2]}
-                                    alt="Hotel bathroom"
+                                    src={selectedBooking.hotel_image}
+                                    alt="Main hotel"
+                                    className="col-span-3 w-full h-48 object-cover rounded-lg"
+                                />
+                                <img
+                                    src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=200&h=150&fit=crop"
+                                    alt="Hotel room"
                                     className="w-full h-20 object-cover rounded-lg"
                                 />
-                                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
-                                    <span className="text-white text-sm font-medium">+8</span>
+                                <div className="relative">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=200&h=150&fit=crop"
+                                        alt="Hotel bathroom"
+                                        className="w-full h-20 object-cover rounded-lg"
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                                        <span className="text-white text-sm font-medium">+8</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Tabs */}
-                        <Tabs defaultValue="overview" className="w-full">
-                            <TabsList className="grid w-full grid-cols-4">
-                                <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-                                <TabsTrigger value="facilities" className="text-xs">Facilities</TabsTrigger>
-                                <TabsTrigger value="details" className="text-xs">Details</TabsTrigger>
-                                <TabsTrigger value="reviews" className="text-xs">Reviews</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="overview" className="mt-4">
-                                <p className="text-sm text-gray-600 leading-relaxed">
-                                    {selectedHotel.description}
-                                </p>
-                                <Button variant="link" className="text-blue-600 p-0 h-auto text-sm mt-2">Read more</Button>
-                            </TabsContent>
-                        </Tabs>
+                            {/* Tabs */}
+                            <Tabs defaultValue="overview" className="w-full">
+                                <TabsList className="grid w-full grid-cols-4">
+                                    <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
+                                    <TabsTrigger value="facilities" className="text-xs">Facilities</TabsTrigger>
+                                    <TabsTrigger value="details" className="text-xs">Details</TabsTrigger>
+                                    <TabsTrigger value="price-history" className="text-xs">History</TabsTrigger>
+                                </TabsList>
 
-                        {/* Map Placeholder */}
-                        <div className="mt-6">
-                            <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center relative">
-                                <MapPin className="h-6 w-6 text-blue-600 absolute" />
-                                <div className="absolute inset-0 bg-gray-300 rounded-lg opacity-20"></div>
+                                <TabsContent value="overview" className="mt-4">
+                                    <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                        {selectedBooking.hotel_description}
+                                    </p>
+                                    <Button variant="link" className="text-blue-600 p-0 h-auto text-sm">Read more</Button>
+
+                                    {/* Booking Summary */}
+                                    <div className="mt-6 space-y-3">
+                                        <h4 className="font-semibold text-gray-900">Booking Summary</h4>
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <div>
+                                                <span className="text-gray-600">Check-in:</span>
+                                                <p className="font-medium">{new Date(selectedBooking.check_in_date).toLocaleDateString()}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-600">Check-out:</span>
+                                                <p className="font-medium">{new Date(selectedBooking.check_out_date).toLocaleDateString()}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-600">Guests:</span>
+                                                <p className="font-medium">{selectedBooking.guests}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-600">Rooms:</span>
+                                                <p className="font-medium">{selectedBooking.rooms}</p>
+                                            </div>
+                                        </div>
+                                        <div className="pt-2">
+                                            <span className="text-gray-600 text-sm">Total Price:</span>
+                                            <p className="text-lg font-bold text-gray-900">${selectedBooking.total_price} {selectedBooking.currency}</p>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="facilities" className="mt-4">
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold text-gray-900">Hotel Amenities</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedBooking.amenities.map((amenity, index) => (
+                                                <Badge key={index} variant="outline" className="text-xs">
+                                                    {amenity}
+                                                </Badge>
+                                            ))}
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <h5 className="font-medium text-gray-900">Room Features</h5>
+                                            <div className="space-y-2 text-sm">
+                                                <div className="flex items-center">
+                                                    <Bed className="h-4 w-4 mr-2 text-gray-600" />
+                                                    <span>King-size bed</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <Users className="h-4 w-4 mr-2 text-gray-600" />
+                                                    <span>Sleeps {selectedBooking.guests} guests</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <Clock className="h-4 w-4 mr-2 text-gray-600" />
+                                                    <span>24/7 room service</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="details" className="mt-4">
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold text-gray-900">Booking Details</h4>
+
+                                        <div className="space-y-3">
+                                            <div>
+                                                <span className="text-sm text-gray-600">Confirmation Number:</span>
+                                                <p className="font-mono text-sm font-medium">{selectedBooking.booking_confirmation}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-sm text-gray-600">Room Type:</span>
+                                                <p className="text-sm font-medium">{selectedBooking.room_type}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-sm text-gray-600">Duration:</span>
+                                                <p className="text-sm font-medium">{selectedBooking.nights} nights</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-sm text-gray-600">Price per Night:</span>
+                                                <p className="text-sm font-medium">${selectedBooking.price_per_night}</p>
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        <div className="space-y-3">
+                                            <h5 className="font-medium text-gray-900">Contact Information</h5>
+                                            <div className="space-y-2 text-sm">
+                                                <div>
+                                                    <span className="text-gray-600">Phone:</span>
+                                                    <p className="font-medium">{selectedBooking.contact_info.phone}</p>
+                                                </div>
+                                                <div>
+                                                    <span className="text-gray-600">Email:</span>
+                                                    <p className="font-medium">{selectedBooking.contact_info.email}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        <div className="space-y-3">
+                                            <h5 className="font-medium text-gray-900">Cancellation Policy</h5>
+                                            <p className="text-sm text-gray-600">{selectedBooking.cancellation_policy}</p>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="price-history" className="mt-4">
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold text-gray-900">Price History</h4>
+                                        <div className="space-y-3">
+                                            {selectedBooking.price_history.map((entry, index) => (
+                                                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                                    <div>
+                                                        <p className="text-sm font-medium">{new Date(entry.date).toLocaleDateString()}</p>
+                                                        <p className="text-xs text-gray-600">Price check</p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-sm font-bold">${entry.price}</p>
+                                                        {index > 0 && (
+                                                            <p className={`text-xs ${entry.price < selectedBooking.price_history[index - 1].price ? 'text-green-600' : 'text-red-600'}`}>
+                                                                {entry.price < selectedBooking.price_history[index - 1].price ? '↓' : '↑'} ${Math.abs(entry.price - selectedBooking.price_history[index - 1].price)}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="pt-4">
+                                            <Button variant="outline" className="w-full text-sm">
+                                                View Full Price History
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+                            </Tabs>
+
+                            {/* Map Placeholder */}
+                            <div className="mt-6">
+                                <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center relative">
+                                    <MapPin className="h-6 w-6 text-blue-600 absolute" />
+                                    <div className="absolute inset-0 bg-gray-300 rounded-lg opacity-20"></div>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Booking Button */}
-                        <div className="mt-6">
-                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-semibold">
-                                ${selectedHotel.price} / night
-                            </Button>
+                            {/* Booking Button */}
+                            <div className="mt-6">
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-semibold">
+                                    ${selectedBooking.price_per_night} / night
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

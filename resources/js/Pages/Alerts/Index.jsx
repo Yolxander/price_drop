@@ -285,14 +285,14 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                             alt={hotel.name}
                                             className="w-full h-48 object-cover rounded-t-lg"
                                         />
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
                                             className="absolute top-2 right-2 w-8 h-8 p-0 bg-white/80 hover:bg-white"
                                             onClick={() => toggleFavorite(hotel.id)}
-                                        >
+                                                >
                                             <Heart className={`h-4 w-4 ${favorites.has(hotel.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-                                        </Button>
+                                                </Button>
                                         <div className="absolute top-2 left-2">
                                             <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
                                                 Save ${hotel.savings}
@@ -304,7 +304,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                         <div className="flex items-center text-sm text-gray-600 mb-2">
                                             <MapPin className="h-3 w-3 mr-1" />
                                             {hotel.location}
-                                        </div>
+                                            </div>
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center">
                                                 <span className="text-lg font-bold text-gray-900">${hotel.price}</span>
@@ -379,10 +379,10 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     <div className="flex-1">
                                         <h4 className="font-medium text-gray-900 text-sm">{recentSearches[2].name}</h4>
                                         <p className="text-xs text-gray-600">{recentSearches[2].location}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
                     </div>
                 </div>
             </div>
