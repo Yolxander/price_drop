@@ -1,28 +1,36 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Link } from '@inertiajs/react';
 import {
-    Building2,
-    Plus,
-    Eye,
-    Edit,
-    Pause,
-    Play,
-    RefreshCw,
-    Calendar,
-    MapPin,
-    Users,
-    DollarSign,
-    TrendingDown,
+    Home,
+    Grid3X3,
+    Bell,
+    Heart,
+    Settings,
+    LogOut,
+    Search,
+    Filter,
     MoreHorizontal,
-    Filter
+    MapPin,
+    Bed,
+    Bath,
+    Square,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    LayoutGrid,
+    List
 } from 'lucide-react';
 
 export default function BookingsIndex({ auth, bookings, stats }) {
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [priceFilter, setPriceFilter] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
 
     const formatCurrency = (amount, currency) => {
         return new Intl.NumberFormat('en-US', {
@@ -39,214 +47,345 @@ export default function BookingsIndex({ auth, bookings, stats }) {
         });
     };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'active': return 'text-green-600 bg-green-50';
-            case 'paused': return 'text-yellow-600 bg-yellow-50';
-            case 'completed': return 'text-gray-600 bg-gray-50';
-            default: return 'text-gray-600 bg-gray-50';
+    // Sample property data for demonstration
+    const properties = [
+        {
+            id: 1,
+            name: "Apex Realty",
+            location: "Los Angeles",
+            price: 7548,
+            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
+            beds: 3,
+            baths: 2,
+            sqft: 1500
+        },
+        {
+            id: 2,
+            name: "Trump Tower",
+            location: "San Antonio",
+            price: 7548,
+            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop",
+            beds: 4,
+            baths: 2,
+            sqft: 1600
+        },
+        {
+            id: 3,
+            name: "The Breakers",
+            location: "San Diego",
+            price: 7548,
+            image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=300&fit=crop",
+            beds: 2,
+            baths: 2,
+            sqft: 1200
+        },
+        {
+            id: 4,
+            name: "Hearst Castle",
+            location: "San Jose",
+            price: 7548,
+            image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&h=300&fit=crop",
+            beds: 4,
+            baths: 3,
+            sqft: 1500
+        },
+        {
+            id: 5,
+            name: "The Broadmoor",
+            location: "San Francisco",
+            price: 7548,
+            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
+            beds: 4,
+            baths: 3,
+            sqft: 1500
+        },
+        {
+            id: 6,
+            name: "Fallingwater",
+            location: "Los Angeles",
+            price: 7548,
+            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop",
+            beds: 2,
+            baths: 2,
+            sqft: 1200
+        },
+        {
+            id: 7,
+            name: "Pebble Beach",
+            location: "Indianapolis",
+            price: 7548,
+            image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=300&fit=crop",
+            beds: 4,
+            baths: 2,
+            sqft: 1600
+        },
+        {
+            id: 8,
+            name: "The Willard",
+            location: "Washington, D.C.",
+            price: 7548,
+            image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&h=300&fit=crop",
+            beds: 3,
+            baths: 2,
+            sqft: 1500
         }
-    };
+    ];
 
-    const filteredBookings = bookings.filter(booking => {
-        const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
-        const matchesPrice = priceFilter === 'all' ||
-            (priceFilter === 'low' && booking.total_price < 500) ||
-            (priceFilter === 'medium' && booking.total_price >= 500 && booking.total_price < 1000) ||
-            (priceFilter === 'high' && booking.total_price >= 1000);
-        return matchesStatus && matchesPrice;
-    });
+    const filteredProperties = properties.filter(property =>
+        property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        property.location.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentProperties = filteredProperties.slice(startIndex, endIndex);
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header="Your hotel bookings."
-        >
-            <div className="space-y-6 pt-4 bg-gray-50 min-h-screen">
-                {/* Filters */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card className="bg-white border-gray-200 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-700">Total Trips</CardTitle>
-                            <Filter className="h-4 w-4 text-green-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm text-gray-700 bg-white"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="paused">Paused</option>
-                                <option value="completed">Completed</option>
-                            </select>
-                        </CardContent>
-                    </Card>
+        <div className="flex h-screen bg-gray-50">
+            {/* Left Sidebar */}
+            <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+                {/* Logo */}
+                <div className="p-6 border-b border-gray-200">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <span className="text-white font-bold text-lg">T</span>
+                        </div>
+                        <span className="text-xl font-bold text-blue-600">Tamago</span>
+                    </div>
+                </div>
 
-                    <Card className="bg-white border-gray-200 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-700">Active</CardTitle>
-                            <Filter className="h-4 w-4 text-green-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <select
-                                value={priceFilter}
-                                onChange={(e) => setPriceFilter(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm text-gray-700 bg-white"
-                            >
-                                <option value="all">All Prices</option>
-                                <option value="low">Under $500</option>
-                                <option value="medium">$500 - $1000</option>
-                                <option value="high">Over $1000</option>
-                            </select>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-white border-gray-200 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-700">Total Spent</CardTitle>
-                            <Filter className="h-4 w-4 text-green-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-gray-900">
-                                {formatCurrency(stats.total_spent || 0, 'USD')}
+                {/* Navigation */}
+                <nav className="flex-1 p-4 space-y-2">
+                    <Link href="/dashboard" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Home className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Dashboard</span>
+                        </div>
+                    </Link>
+                    <Link href="/bookings" className="block">
+                        <div className="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg">
+                            <Grid3X3 className="h-5 w-5 text-blue-600" />
+                            <span className="font-medium text-gray-900">All Bookings</span>
+                        </div>
+                    </Link>
+                    <Link href="/price-alerts" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <div className="relative">
+                                <Bell className="h-5 w-5 text-gray-600" />
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                    <span className="text-xs text-white font-medium">2</span>
+                                </div>
                             </div>
-                        </CardContent>
-                    </Card>
+                            <span className="text-gray-700">Notification</span>
+                        </div>
+                    </Link>
+                    <Link href="/favorites" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Heart className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Favorite</span>
+                        </div>
+                    </Link>
+                    <Link href="/settings" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Settings className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Settings</span>
+                        </div>
+                    </Link>
+                </nav>
 
-                    <Card className="bg-white border-gray-200 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-700">Potential Savings</CardTitle>
-                            <Filter className="h-4 w-4 text-green-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-green-600">
-                                {formatCurrency(Math.abs(stats.potential_savings || 0), 'USD')}
-                            </div>
+                {/* Promotional Card */}
+                <div className="p-4">
+                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                        <CardContent className="p-4">
+                            <h3 className="font-bold text-blue-900 mb-2">Get 45% Off.</h3>
+                            <p className="text-sm text-blue-700 mb-3">Special Price for you, hotel discount up to 45%</p>
+                            <div className="w-full h-20 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg"></div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Bookings List */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredBookings.length === 0 ? (
-                        <Card className="bg-white border-gray-200 shadow-sm col-span-full">
-                            <CardContent className="text-center py-12">
-                                <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">No trips found</h3>
-                                <p className="text-gray-600 mb-4">
-                                    {statusFilter !== 'all' || priceFilter !== 'all'
-                                        ? 'Try adjusting your filters'
-                                        : 'You haven\'t added any bookings yet. Paste your booking details or just forward your hotel confirmation email — we\'ll do the rest.'
-                                    }
-                                </p>
-                                {statusFilter === 'all' && priceFilter === 'all' && (
-                                    <Button
-                                        onClick={() => window.location.href = '/bookings/create'}
-                                        className="bg-green-500 hover:bg-green-600 text-white border-0"
-                                    >
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Track Your First Trip
-                                    </Button>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        filteredBookings.map((booking) => (
-                            <Card
-                                key={booking.id}
-                                className="hover:shadow-md transition-all duration-200 cursor-pointer bg-white border-gray-200 shadow-sm relative"
-                                onClick={() => window.location.href = `/bookings/${booking.id}`}
-                            >
-                                <CardContent className="p-4">
-                                    {/* Dropdown Menu - Top Right */}
+                {/* Logout */}
+                <div className="p-4 border-t border-gray-200">
+                    <Link href="/logout" method="post" as="button" className="w-full">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <LogOut className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Log Out</span>
+                        </div>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Header */}
+                <div className="bg-white border-b border-gray-200 p-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex-1 max-w-md">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="Q Search..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <Button variant="outline" className="flex items-center space-x-2">
+                                <Filter className="h-4 w-4" />
+                                <span>Filter</span>
+                            </Button>
+                            <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                                <Button
+                                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('grid')}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <LayoutGrid className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('list')}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <List className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6">
+                    {/* Properties Grid */}
+                    <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1'}`}>
+                        {currentProperties.map((property) => (
+                            <Card key={property.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                                <div className="relative">
+                                    <img
+                                        src={property.image}
+                                        alt={property.name}
+                                        className="w-full h-48 object-cover rounded-t-lg"
+                                    />
                                     <div className="absolute top-2 right-2">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                                                    className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
-                                                    <MoreHorizontal className="h-4 w-4 text-gray-600" />
+                                                    <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="bg-white border-gray-200 shadow-lg">
-                                                <DropdownMenuItem onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    window.location.href = `/bookings/${booking.id}`;
-                                                }} className="text-gray-700 hover:bg-gray-50">
-                                                    <Eye className="h-4 w-4 mr-2" />
-                                                    View Details
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    window.location.href = `/bookings/${booking.id}/edit`;
-                                                }} className="text-gray-700 hover:bg-gray-50">
-                                                    <Edit className="h-4 w-4 mr-2" />
-                                                    Edit Trip
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    window.location.href = `/bookings/${booking.id}/check-price`;
-                                                }} className="text-gray-700 hover:bg-gray-50">
-                                                    <RefreshCw className="h-4 w-4 mr-2" />
-                                                    Check Prices
-                                                </DropdownMenuItem>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem>View Details</DropdownMenuItem>
+                                                <DropdownMenuItem>Edit Property</DropdownMenuItem>
+                                                <DropdownMenuItem>Delete Property</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
-
-                                    {/* Booking Content */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <h3 className="font-medium text-gray-900 line-clamp-1">
-                                                    {booking.hotel_name}
-                                                </h3>
-                                                <p className="text-sm text-gray-600">
-                                                    {booking.location}
-                                                </p>
+                                    <div className="absolute top-2 left-2">
+                                        <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">
+                                            ${property.price}
+                                        </span>
+                                    </div>
+                                </div>
+                                <CardContent className="p-4">
+                                    <h3 className="font-semibold text-gray-900 mb-1">{property.name}</h3>
+                                    <div className="flex items-center text-sm text-gray-600 mb-3">
+                                        <MapPin className="h-3 w-3 mr-1" />
+                                        {property.location}
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm text-gray-600">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="flex items-center">
+                                                <Bed className="h-4 w-4 mr-1" />
+                                                <span>{property.beds}</span>
                                             </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                                                {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                                            </span>
-                                            <div className="text-xs text-gray-500">
-                                                {formatDate(booking.check_in_date)}
+                                            <div className="flex items-center">
+                                                <Bath className="h-4 w-4 mr-1" />
+                                                <span>{property.baths}</span>
                                             </div>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between text-sm">
-                                                <span className="text-gray-600">Total Price:</span>
-                                                <span className="font-medium text-gray-900">
-                                                    {formatCurrency(booking.total_price, booking.currency)}
-                                                </span>
+                                            <div className="flex items-center">
+                                                <Square className="h-4 w-4 mr-1" />
+                                                <span>{property.sqft} sqft</span>
                                             </div>
-                                            <div className="flex items-center justify-between text-sm">
-                                                <span className="text-gray-600">Per Night:</span>
-                                                <span className="font-medium text-gray-900">
-                                                    {formatCurrency(booking.price_per_night, booking.currency)}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between text-xs text-gray-500">
-                                            <span>Guests: {booking.guests}</span>
-                                            <span>{booking.nights} nights</span>
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
-                        ))
-                    )}
+                        ))}
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="flex items-center justify-between mt-8">
+                        <div className="text-sm text-gray-600">
+                            Showing {startIndex + 1} to {Math.min(endIndex, filteredProperties.length)} of {filteredProperties.length} entries
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                                Prev
+                            </Button>
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                const pageNum = i + 1;
+                                return (
+                                    <Button
+                                        key={pageNum}
+                                        variant={currentPage === pageNum ? 'default' : 'outline'}
+                                        size="sm"
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className="w-8 h-8 p-0"
+                                    >
+                                        {pageNum}
+                                    </Button>
+                                );
+                            })}
+                            {totalPages > 5 && (
+                                <>
+                                    <span className="text-gray-500">...</span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(totalPages - 1)}
+                                        className="w-8 h-8 p-0"
+                                    >
+                                        {totalPages - 1}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(totalPages)}
+                                        className="w-8 h-8 p-0"
+                                    >
+                                        {totalPages}
+                                    </Button>
+                                </>
+                            )}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                Next
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </div>
     );
 }

@@ -91,7 +91,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                     <Link href="/bookings" className="block">
                         <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
                             <Grid3X3 className="h-5 w-5 text-gray-600" />
-                            <span className="text-gray-700">Explore City</span>
+                            <span className="text-gray-700">All Bookings</span>
                         </div>
                     </Link>
                     <Link href="/price-alerts" className="block">
