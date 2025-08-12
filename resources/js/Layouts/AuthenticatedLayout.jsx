@@ -8,9 +8,13 @@ import {
     Menu,
     X,
     Home,
-    Package,
+    Building2,
     FileText,
-    Bell
+    Bell,
+    TrendingDown,
+    History,
+    Globe,
+    Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -21,11 +25,12 @@ export default function AuthenticatedLayout({ user, header, children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const navigation = [
-        { name: 'Dashboard', href: '/dashboard', icon: Home },
-        { name: 'Users', href: '/users', icon: Users },
-        { name: 'Products', href: '/products', icon: Package },
+        { name: 'Home', href: '/dashboard', icon: Home },
+        { name: 'Hotel Bookings', href: '/bookings', icon: Building2 },
+        { name: 'Price Alerts', href: '/price-alerts', icon: Bell },
+        { name: 'Price History', href: '/price-history', icon: TrendingDown },
         { name: 'Reports', href: '/reports', icon: BarChart3 },
-        { name: 'Documents', href: '/documents', icon: FileText },
+        { name: 'API Status', href: '/api-status', icon: Activity },
         { name: 'Settings', href: '/settings', icon: Settings },
     ];
 
