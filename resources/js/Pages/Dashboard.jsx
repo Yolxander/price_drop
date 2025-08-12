@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     Home,
     Grid3X3,
@@ -25,11 +25,23 @@ import {
     MapPin,
     ChevronDown,
     Star,
-    Plus
+    Plus,
+    X
 } from 'lucide-react';
 
 export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }) {
     const [showAddBooking, setShowAddBooking] = useState(false);
+    const [formData, setFormData] = useState({
+        hotel_name: '',
+        location: '',
+        check_in_date: '',
+        check_out_date: '',
+        guests: '',
+        rooms: '',
+        total_price: '',
+        currency: '',
+        booking_confirmation: ''
+    });
     const [selectedHotel, setSelectedHotel] = useState({
         name: "Shikara Hotel",
         location: "Jl. Aston No. 72 Yogyakarta",
@@ -70,6 +82,42 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         { name: "Laganu Hotel", country: "Japan", price: 38, image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=150&h=100&fit=crop" },
         { name: "Ibis Hotel", country: "Indonesia", price: 45, image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=150&h=100&fit=crop" }
     ];
+
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleSubmit = () => {
+        console.log('Submitting form data:', formData);
+        router.post('/bookings', formData, {
+            onSuccess: () => {
+                console.log('Booking created successfully');
+                setShowAddBooking(false);
+                setFormData({
+                    hotel_name: '',
+                    location: '',
+                    check_in_date: '',
+                    check_out_date: '',
+                    guests: '',
+                    rooms: '',
+                    total_price: '',
+                    currency: '',
+                    booking_confirmation: ''
+                });
+            },
+            onError: (errors) => {
+                console.error('Error creating booking:', errors);
+            }
+        });
+    };
+
+    const handleAddBookingClick = () => {
+        console.log('Add Booking button clicked');
+        setShowAddBooking(true);
+    };
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -154,9 +202,12 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         <h1 className="text-2xl font-bold text-gray-900">
                             Find hotel to stay 🏨
                         </h1>
-                        <Dialog open={showAddBooking} onOpenChange={setShowAddBooking}>
+                        <Dialog>
                             <DialogTrigger asChild>
-                                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8">
+                                <Button
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                                    onClick={handleAddBookingClick}
+                                >
                                     <Plus className="h-4 w-4 mr-2" />
                                     Add Booking
                                 </Button>
@@ -172,40 +223,78 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="hotel-name">Hotel Name</Label>
-                                            <Input id="hotel-name" placeholder="Enter hotel name" />
+                                            <Input
+                                                id="hotel-name"
+                                                placeholder="Enter hotel name"
+                                                value={formData.hotel_name}
+                                                onChange={(e) => handleInputChange('hotel_name', e.target.value)}
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="location">Location</Label>
-                                            <Input id="location" placeholder="City, Country" />
+                                            <Input
+                                                id="location"
+                                                placeholder="City, Country"
+                                                value={formData.location}
+                                                onChange={(e) => handleInputChange('location', e.target.value)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="check-in">Check-in Date</Label>
-                                            <Input id="check-in" type="date" />
+                                            <Input
+                                                id="check-in"
+                                                type="date"
+                                                value={formData.check_in_date}
+                                                onChange={(e) => handleInputChange('check_in_date', e.target.value)}
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="check-out">Check-out Date</Label>
-                                            <Input id="check-out" type="date" />
+                                            <Input
+                                                id="check-out"
+                                                type="date"
+                                                value={formData.check_out_date}
+                                                onChange={(e) => handleInputChange('check_out_date', e.target.value)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="guests">Number of Guests</Label>
-                                            <Input id="guests" type="number" placeholder="2" />
+                                            <Input
+                                                id="guests"
+                                                type="number"
+                                                placeholder="2"
+                                                value={formData.guests}
+                                                onChange={(e) => handleInputChange('guests', e.target.value)}
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="rooms">Number of Rooms</Label>
-                                            <Input id="rooms" type="number" placeholder="1" />
+                                            <Input
+                                                id="rooms"
+                                                type="number"
+                                                placeholder="1"
+                                                value={formData.rooms}
+                                                onChange={(e) => handleInputChange('rooms', e.target.value)}
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="total-price">Total Price</Label>
-                                            <Input id="total-price" type="number" placeholder="0.00" />
+                                            <Input
+                                                id="total-price"
+                                                type="number"
+                                                placeholder="0.00"
+                                                value={formData.total_price}
+                                                onChange={(e) => handleInputChange('total_price', e.target.value)}
+                                            />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="currency">Currency</Label>
-                                        <Select>
+                                        <Select value={formData.currency} onValueChange={(value) => handleInputChange('currency', value)}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select currency" />
                                             </SelectTrigger>
@@ -224,6 +313,8 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             id="booking-confirmation"
                                             placeholder="Paste your booking confirmation email or details here..."
                                             className="min-h-[100px]"
+                                            value={formData.booking_confirmation}
+                                            onChange={(e) => handleInputChange('booking_confirmation', e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -231,10 +322,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     <Button variant="outline" onClick={() => setShowAddBooking(false)}>
                                         Cancel
                                     </Button>
-                                    <Button onClick={() => {
-                                        // Handle form submission here
-                                        setShowAddBooking(false);
-                                    }}>
+                                    <Button onClick={handleSubmit}>
                                         Add Booking
                                     </Button>
                                 </DialogFooter>
@@ -245,32 +333,54 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                    {/* Lodging Available */}
+                    {/* Recent Bookings */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold text-gray-900">Lodging available</h2>
-                            <Button variant="link" className="text-blue-600 p-0 h-auto">View All</Button>
+                            <h2 className="text-xl font-semibold text-gray-900">Recent bookings</h2>
+                            <Link href="/bookings">
+                                <Button variant="link" className="text-blue-600 p-0 h-auto">View All</Button>
+                            </Link>
                         </div>
                         <div className="flex space-x-4 overflow-x-auto pb-4">
-                            {lodgingHotels.map((hotel, index) => (
-                                <Card key={index} className="min-w-[300px] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedHotel(hotel)}>
-                                    <div className="relative">
-                                        <img
-                                            src={hotel.image}
-                                            alt={hotel.name}
-                                            className="w-full h-48 object-cover rounded-t-lg"
-                                        />
-                                    </div>
-                                    <CardContent className="p-4">
-                                        <h3 className="font-semibold text-gray-900 mb-1">{hotel.name}</h3>
-                                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                                            <MapPin className="h-3 w-3 mr-1" />
-                                            {hotel.location}
+                            {hotel_bookings && hotel_bookings.length > 0 ? (
+                                hotel_bookings.slice(0, 3).map((booking, index) => (
+                                    <Card key={booking.id} className="min-w-[300px] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedHotel({
+                                        name: booking.hotel_name,
+                                        location: booking.location,
+                                        price: booking.price_per_night,
+                                        image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop"
+                                    })}>
+                                        <div className="relative">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop"
+                                                alt={booking.hotel_name}
+                                                className="w-full h-48 object-cover rounded-t-lg"
+                                            />
                                         </div>
-                                        <p className="text-lg font-bold text-gray-900">${hotel.price} / night</p>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                        <CardContent className="p-4">
+                                            <h3 className="font-semibold text-gray-900 mb-1">{booking.hotel_name}</h3>
+                                            <div className="flex items-center text-sm text-gray-600 mb-2">
+                                                <MapPin className="h-3 w-3 mr-1" />
+                                                {booking.location}
+                                            </div>
+                                            <p className="text-lg font-bold text-gray-900">
+                                                ${booking.price_per_night} / night
+                                            </p>
+                                            <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
+                                                <span>{booking.nights} nights</span>
+                                                <span>{booking.guests} guests</span>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            ) : (
+                                <div className="flex items-center justify-center w-full py-8">
+                                    <div className="text-center">
+                                        <p className="text-gray-500 mb-2">No bookings yet</p>
+                                        <p className="text-sm text-gray-400">Add your first booking to get started</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 

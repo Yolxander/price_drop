@@ -47,89 +47,22 @@ export default function BookingsIndex({ auth, bookings, stats }) {
         });
     };
 
-    // Sample property data for demonstration
-    const properties = [
-        {
-            id: 1,
-            name: "Apex Realty",
-            location: "Los Angeles",
-            price: 7548,
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-            beds: 3,
-            baths: 2,
-            sqft: 1500
-        },
-        {
-            id: 2,
-            name: "Trump Tower",
-            location: "San Antonio",
-            price: 7548,
-            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop",
-            beds: 4,
-            baths: 2,
-            sqft: 1600
-        },
-        {
-            id: 3,
-            name: "The Breakers",
-            location: "San Diego",
-            price: 7548,
-            image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=300&fit=crop",
-            beds: 2,
-            baths: 2,
-            sqft: 1200
-        },
-        {
-            id: 4,
-            name: "Hearst Castle",
-            location: "San Jose",
-            price: 7548,
-            image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&h=300&fit=crop",
-            beds: 4,
-            baths: 3,
-            sqft: 1500
-        },
-        {
-            id: 5,
-            name: "The Broadmoor",
-            location: "San Francisco",
-            price: 7548,
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-            beds: 4,
-            baths: 3,
-            sqft: 1500
-        },
-        {
-            id: 6,
-            name: "Fallingwater",
-            location: "Los Angeles",
-            price: 7548,
-            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop",
-            beds: 2,
-            baths: 2,
-            sqft: 1200
-        },
-        {
-            id: 7,
-            name: "Pebble Beach",
-            location: "Indianapolis",
-            price: 7548,
-            image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=300&fit=crop",
-            beds: 4,
-            baths: 2,
-            sqft: 1600
-        },
-        {
-            id: 8,
-            name: "The Willard",
-            location: "Washington, D.C.",
-            price: 7548,
-            image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&h=300&fit=crop",
-            beds: 3,
-            baths: 2,
-            sqft: 1500
-        }
-    ];
+    // Convert bookings data to properties format for display
+    const properties = bookings ? bookings.map(booking => ({
+        id: booking.id,
+        name: booking.hotel_name,
+        location: booking.location,
+        price: booking.total_price,
+        image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
+        beds: booking.rooms || 1,
+        baths: 2, // Default value since we don't have this in booking data
+        sqft: 1500, // Default value since we don't have this in booking data
+        checkIn: booking.check_in_date,
+        checkOut: booking.check_out_date,
+        guests: booking.guests,
+        nights: booking.nights,
+        status: booking.status
+    })) : [];
 
     const filteredProperties = properties.filter(property =>
         property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -295,6 +228,17 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             ${property.price}
                                         </span>
                                     </div>
+                                    {property.status && (
+                                        <div className="absolute top-2 right-12">
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                property.status === 'active' ? 'bg-green-100 text-green-800' :
+                                                property.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                                {property.status}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                                 <CardContent className="p-4">
                                     <h3 className="font-semibold text-gray-900 mb-1">{property.name}</h3>
@@ -306,18 +250,23 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                         <div className="flex items-center space-x-4">
                                             <div className="flex items-center">
                                                 <Bed className="h-4 w-4 mr-1" />
-                                                <span>{property.beds}</span>
+                                                <span>{property.beds} room{property.beds > 1 ? 's' : ''}</span>
                                             </div>
                                             <div className="flex items-center">
-                                                <Bath className="h-4 w-4 mr-1" />
-                                                <span>{property.baths}</span>
+                                                <Calendar className="h-4 w-4 mr-1" />
+                                                <span>{property.nights} night{property.nights > 1 ? 's' : ''}</span>
                                             </div>
                                             <div className="flex items-center">
-                                                <Square className="h-4 w-4 mr-1" />
-                                                <span>{property.sqft} sqft</span>
+                                                <MapPin className="h-4 w-4 mr-1" />
+                                                <span>{property.guests} guest{property.guests > 1 ? 's' : ''}</span>
                                             </div>
                                         </div>
                                     </div>
+                                    {property.checkIn && (
+                                        <div className="text-xs text-gray-500 mt-2">
+                                            Check-in: {new Date(property.checkIn).toLocaleDateString()}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         ))}
@@ -389,3 +338,4 @@ export default function BookingsIndex({ auth, bookings, stats }) {
         </div>
     );
 }
+

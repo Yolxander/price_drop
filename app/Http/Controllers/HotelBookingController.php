@@ -23,77 +23,22 @@ class HotelBookingController extends Controller
      */
     public function index()
     {
-        // For demo purposes, return dummy data instead of user-specific bookings
-        $bookings = collect([
-            [
-                'id' => 1,
-                'hotel_name' => 'Fairmont Royal York',
-                'location' => 'Toronto, ON',
-                'check_in_date' => '2025-09-01',
-                'check_out_date' => '2025-09-05',
-                'guests' => 2,
-                'currency' => 'CAD',
-                'original_price' => 1316.00,
-                'current_price' => 1184.00,
-                'last_checked' => now()->subHours(2)->toISOString(),
-                'status' => 'active',
-                'price_drop_detected' => true,
-                'price_drop_amount' => 132.00,
-                'price_drop_percentage' => 10.0,
-                'booking_reference' => 'FRY-2025-001',
-            ],
-            [
-                'id' => 2,
-                'hotel_name' => 'The Ritz-Carlton',
-                'location' => 'New York, NY',
-                'check_in_date' => '2025-10-15',
-                'check_out_date' => '2025-10-18',
-                'guests' => 2,
-                'currency' => 'USD',
-                'original_price' => 1200.00,
-                'current_price' => 1200.00,
-                'last_checked' => now()->subHours(6)->toISOString(),
-                'status' => 'active',
-                'price_drop_detected' => false,
-                'price_drop_amount' => null,
-                'price_drop_percentage' => 0.0,
-                'booking_reference' => 'RC-NY-2025-002',
-            ],
-            [
-                'id' => 3,
-                'hotel_name' => 'Hotel Arts Barcelona',
-                'location' => 'Barcelona, Spain',
-                'check_in_date' => '2025-11-20',
-                'check_out_date' => '2025-11-25',
-                'guests' => 3,
-                'currency' => 'EUR',
-                'original_price' => 850.00,
-                'current_price' => 765.00,
-                'last_checked' => now()->subHours(1)->toISOString(),
-                'status' => 'active',
-                'price_drop_detected' => true,
-                'price_drop_amount' => 85.00,
-                'price_drop_percentage' => 10.0,
-                'booking_reference' => 'HAB-2025-003',
-            ],
-            [
-                'id' => 4,
-                'hotel_name' => 'Park Hyatt Tokyo',
-                'location' => 'Tokyo, Japan',
-                'check_in_date' => '2025-12-10',
-                'check_out_date' => '2025-12-15',
-                'guests' => 2,
-                'currency' => 'JPY',
-                'original_price' => 150000.00,
-                'current_price' => 135000.00,
-                'last_checked' => now()->subHours(4)->toISOString(),
-                'status' => 'paused',
-                'price_drop_detected' => true,
-                'price_drop_amount' => 15000.00,
-                'price_drop_percentage' => 10.0,
-                'booking_reference' => 'PHT-2025-004',
-            ]
-        ]);
+        // Get actual bookings from database
+        $bookings = HotelBooking::where('user_id', 1) // For demo purposes, use user ID 1
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Add calculated fields to each booking for frontend compatibility
+        $bookings->each(function ($booking) {
+            $checkIn = \Carbon\Carbon::parse($booking->check_in_date);
+            $checkOut = \Carbon\Carbon::parse($booking->check_out_date);
+            $nights = $checkIn->diffInDays($checkOut);
+
+            $booking->total_price = $booking->original_price;
+            $booking->price_per_night = $booking->original_price / $nights;
+            $booking->rooms = 1; // Default to 1 room since we don't store this
+            $booking->nights = $nights;
+        });
 
         return Inertia::render('Bookings/Index', [
             'auth' => [
@@ -108,7 +53,7 @@ class HotelBookingController extends Controller
                 'total_bookings' => $bookings->count(),
                 'active_bookings' => $bookings->where('status', 'active')->count(),
                 'paused_bookings' => $bookings->where('status', 'paused')->count(),
-                'total_savings' => $bookings->sum('price_drop_amount')
+                'total_savings' => 0 // Will be calculated when price drops are implemented
             ]
         ]);
     }
@@ -147,30 +92,42 @@ class HotelBookingController extends Controller
         $validated = $request->validate([
             'hotel_name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'check_in_date' => 'required|date|after:today',
+            'check_in_date' => 'required|date',
             'check_out_date' => 'required|date|after:check_in_date',
             'guests' => 'required|integer|min:1|max:10',
-            'currency' => 'required|string|size:3',
-            'original_price' => 'required|numeric|min:0',
-            'booking_reference' => 'nullable|string|max:255',
+            'rooms' => 'nullable|integer|min:1|max:10',
+            'total_price' => 'required|numeric|min:0',
+            'currency' => 'required|string|max:3',
+            'booking_confirmation' => 'nullable|string',
         ]);
 
-        // Get current price from SerpAPI
-        $currentPriceData = $this->serpApiService->checkHotelPrice(
-            $validated['hotel_name'],
-            $validated['check_in_date'],
-            $validated['check_out_date'],
-            $validated['currency'],
-            $validated['guests']
-        );
+        // Calculate nights
+        $checkIn = \Carbon\Carbon::parse($validated['check_in_date']);
+        $checkOut = \Carbon\Carbon::parse($validated['check_out_date']);
+        $nights = $checkIn->diffInDays($checkOut);
 
-        $currentPrice = $currentPriceData['price'] ?? $currentPriceData['total_price'] ?? $validated['original_price'];
+        // Create the booking
+        $booking = HotelBooking::create([
+            'user_id' => 1, // For demo purposes, use user ID 1
+            'hotel_name' => $validated['hotel_name'],
+            'location' => $validated['location'],
+            'check_in_date' => $validated['check_in_date'],
+            'check_out_date' => $validated['check_out_date'],
+            'guests' => $validated['guests'],
+            'original_price' => $validated['total_price'], // Use total_price as original_price
+            'current_price' => $validated['total_price'], // Initially same as original_price
+            'currency' => strtoupper($validated['currency']),
+            'status' => 'active',
+            'booking_reference' => $validated['booking_confirmation'] ?? null,
+        ]);
 
-        // For demo purposes, just redirect with success message
-        // In production, you would create the actual booking
-        return redirect()->route('bookings.index')->with('success', 'Hotel booking added successfully!');
+        // Add calculated fields to the booking for frontend compatibility
+        $booking->total_price = $validated['total_price'];
+        $booking->price_per_night = $validated['total_price'] / $nights;
+        $booking->rooms = $validated['rooms'] ?? 1;
+        $booking->nights = $nights;
 
-        return redirect()->route('bookings.index')->with('success', 'Hotel booking added successfully!');
+        return redirect()->back()->with('success', 'Hotel booking added successfully!');
     }
 
     /**
