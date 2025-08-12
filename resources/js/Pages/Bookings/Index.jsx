@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Building2,
@@ -16,7 +17,8 @@ import {
     MapPin,
     Users,
     DollarSign,
-    TrendingDown
+    TrendingDown,
+    MoreHorizontal
 } from 'lucide-react';
 
 export default function BookingsIndex({ auth, bookings, stats }) {
@@ -140,9 +142,9 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                 </Card>
 
                 {/* Bookings List */}
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredBookings.length === 0 ? (
-                        <Card>
+                        <Card className="border-border/50 col-span-full">
                             <CardContent className="text-center py-12">
                                 <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                                 <h3 className="text-lg font-medium text-foreground mb-2">No trips found</h3>
@@ -162,111 +164,107 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                         </Card>
                     ) : (
                         filteredBookings.map((booking) => (
-                            <Card key={booking.id} className="hover:shadow-md transition-shadow">
-                                <CardContent className="p-6">
-                                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                                        <div className="flex-1">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center space-x-2 mb-2">
-                                                        <Building2 className="h-5 w-5 text-blue-600" />
-                                                        <h3 className="text-lg font-semibold text-foreground">
-                                                            {booking.hotel_name}
-                                                        </h3>
-                                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
-                                                            {booking.status}
-                                                        </span>
-                                                        {booking.price_drop_detected && (
-                                                            <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full font-medium">
-                                                                🔥 Price Drop!
-                                                            </span>
-                                                        )}
-                                                    </div>
+                            <Card
+                                key={booking.id}
+                                className="hover:shadow-sm transition-all duration-200 cursor-pointer border-border/50 relative"
+                                onClick={() => window.location.href = `/bookings/${booking.id}`}
+                            >
+                                <CardContent className="p-4">
+                                    {/* Dropdown Menu - Top Right */}
+                                    <div className="absolute top-2 right-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.location.href = `/bookings/${booking.id}`;
+                                                }}>
+                                                    <Eye className="h-4 w-4 mr-2" />
+                                                    View Details
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.location.href = `/bookings/${booking.id}/edit`;
+                                                }}>
+                                                    <Edit className="h-4 w-4 mr-2" />
+                                                    Edit Trip
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.location.href = `/bookings/${booking.id}/check-price`;
+                                                }}>
+                                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                                    Check Prices
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                                                        <div className="flex items-center space-x-1">
-                                                            <MapPin className="h-4 w-4" />
-                                                            <span>{booking.location}</span>
-                                                        </div>
-                                                        <div className="flex items-center space-x-1">
-                                                            <Calendar className="h-4 w-4" />
-                                                            <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
-                                                        </div>
-                                                        <div className="flex items-center space-x-1">
-                                                            <Users className="h-4 w-4" />
-                                                            <span>{booking.guests} guests</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                    {/* Card Content */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center space-x-2 mb-2">
+                                            <Building2 className="h-5 w-5 text-blue-600" />
+                                            <h3 className="text-lg font-semibold text-foreground flex-1">
+                                                {booking.hotel_name}
+                                            </h3>
+                                        </div>
+
+                                        <div className="flex items-center space-x-2 mb-3">
+                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
+                                                {booking.status}
+                                            </span>
+                                            {booking.price_drop_detected && (
+                                                <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full font-medium">
+                                                    🔥 Price Drop!
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2 text-sm text-muted-foreground">
+                                            <div className="flex items-center space-x-1">
+                                                <MapPin className="h-4 w-4" />
+                                                <span>{booking.location}</span>
                                             </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                                <div className="space-y-2">
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-muted-foreground">Booked Price:</span>
-                                                        <span className="font-medium">
-                                                            {formatCurrency(booking.original_price, booking.currency)}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-muted-foreground">Current Price:</span>
-                                                        <span className="font-medium">
-                                                            {formatCurrency(booking.current_price, booking.currency)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    {booking.price_drop_detected ? (
-                                                        <div className="flex justify-between text-sm">
-                                                            <span className="text-muted-foreground">Potential Savings:</span>
-                                                            <span className="font-medium text-red-600">
-                                                                {formatCurrency(booking.price_drop_amount, booking.currency)} ({booking.price_drop_percentage}%)
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex justify-between text-sm">
-                                                            <span className="text-muted-foreground">Price Change:</span>
-                                                            <span className="font-medium text-gray-600">No change</span>
-                                                        </div>
-                                                    )}
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-muted-foreground">Last Checked:</span>
-                                                        <span className="font-medium">
-                                                            {booking.last_checked ? new Date(booking.last_checked).toLocaleDateString() : 'Never'}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                            <div className="flex items-center space-x-1">
+                                                <Calendar className="h-4 w-4" />
+                                                <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
+                                            </div>
+                                            <div className="flex items-center space-x-1">
+                                                <Users className="h-4 w-4" />
+                                                <span>{booking.guests} guests</span>
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => window.location.href = `/bookings/${booking.id}`}
-                                                className="h-8 w-8 p-0"
-                                                title="See Trip"
-                                            >
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => window.location.href = `/bookings/${booking.id}/edit`}
-                                                className="h-8 w-8 p-0"
-                                                title="Update Trip"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => window.location.href = `/bookings/${booking.id}/check-price`}
-                                                className="h-8 w-8 p-0"
-                                                title="Check Prices Now"
-                                            >
-                                                <RefreshCw className="h-4 w-4" />
-                                            </Button>
+                                        <div className="space-y-2 pt-2 border-t border-border/50">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Booked:</span>
+                                                <span className="font-medium">
+                                                    {formatCurrency(booking.original_price, booking.currency)}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Current:</span>
+                                                <span className="font-medium">
+                                                    {formatCurrency(booking.current_price, booking.currency)}
+                                                </span>
+                                            </div>
+                                            {booking.price_drop_detected && (
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-muted-foreground">Save:</span>
+                                                    <span className="font-medium text-red-600">
+                                                        {formatCurrency(booking.price_drop_amount, booking.currency)}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </CardContent>

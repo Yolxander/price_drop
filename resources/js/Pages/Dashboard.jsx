@@ -118,7 +118,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 {/* Stats Grid */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {dashboardStats.map((stat, index) => (
-                        <Card key={index} className="border-border/50">
+                        <Card key={index} className="border-border/50 hover:shadow-sm transition-all duration-200">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium text-muted-foreground">
                                     {stat.title}
@@ -143,7 +143,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 {/* Hotel Bookings and Recent Activity */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     {/* Hotel Bookings */}
-                    <Card className="col-span-4 border-border/50">
+                    <Card className="col-span-4 border-border/50 hover:shadow-sm transition-all duration-200">
                                         <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle className="flex items-center space-x-2">
@@ -178,12 +178,12 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 </div>
                             ) : (
                                 <div className="space-y-2">
-                                    {hotel_bookings.slice(0, 4).map((booking) => (
-                                        <div
-                                            key={booking.id}
-                                            className="flex items-center justify-between p-3 border border-border/50 rounded-lg hover:bg-muted/20 transition-colors cursor-pointer"
-                                            onClick={() => window.location.href = `/hotel-bookings/${booking.id}`}
-                                        >
+                                                        {hotel_bookings.slice(0, 4).map((booking) => (
+                        <div
+                            key={booking.id}
+                            className="flex items-center justify-between p-3 border border-border/50 rounded-lg hover:bg-muted/20 transition-colors cursor-pointer"
+                            onClick={() => window.location.href = `/bookings/${booking.id}`}
+                        >
                                             <div className="flex items-center space-x-3">
                                                 <Building2 className="h-4 w-4 text-blue-600" />
                                                 <div>
@@ -226,7 +226,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                     </Card>
 
                     {/* Recent Price Checks */}
-                    <Card className="col-span-3 border-border/50">
+                    <Card className="col-span-3 border-border/50 hover:shadow-sm transition-all duration-200">
                         <CardHeader>
                             <CardTitle className="flex items-center space-x-2">
                                 <TrendingDown className="h-5 w-5 text-green-600" />

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Building2,
@@ -11,7 +12,8 @@ import {
     DollarSign,
     TrendingDown,
     RefreshCw,
-    Edit
+    Edit,
+    MoreHorizontal
 } from 'lucide-react';
 
 export default function BookingsShow({ auth, booking }) {
@@ -57,13 +59,28 @@ export default function BookingsShow({ auth, booking }) {
                                     {booking.location} • {booking.booking_reference}
                                 </CardDescription>
                             </div>
-                            <div className="flex gap-1">
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit Trip">
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Check Again Now">
-                                    <RefreshCw className="h-4 w-4" />
-                                </Button>
+                            <div className="flex items-center gap-2">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0"
+                                        >
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem>
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            Edit Trip
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            <RefreshCw className="h-4 w-4 mr-2" />
+                                            Check Prices Now
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </div>
                     </CardHeader>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     Bell,
@@ -10,7 +11,8 @@ import {
     Clock,
     TrendingDown,
     Building2,
-    DollarSign
+    DollarSign,
+    MoreHorizontal
 } from 'lucide-react';
 
 export default function AlertsIndex({ auth, alerts, filters, stats }) {
@@ -148,9 +150,9 @@ export default function AlertsIndex({ auth, alerts, filters, stats }) {
                 </Card>
 
                 {/* Alerts List */}
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredAlerts.length === 0 ? (
-                        <Card>
+                        <Card className="border-border/50 col-span-full">
                             <CardContent className="text-center py-12">
                                 <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                                 <h3 className="text-lg font-medium text-foreground mb-2">No price drops right now</h3>
@@ -164,100 +166,97 @@ export default function AlertsIndex({ auth, alerts, filters, stats }) {
                         </Card>
                     ) : (
                         filteredAlerts.map((alert) => (
-                            <Card key={alert.id} className="hover:shadow-md transition-shadow">
-                                <CardContent className="p-6">
-                                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                                        <div className="flex-1">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center space-x-2 mb-2">
-                                                        <Building2 className="h-5 w-5 text-blue-600" />
-                                                        <h3 className="text-lg font-semibold text-foreground">
-                                                            {alert.hotel_name}
-                                                        </h3>
-                                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(alert.status)}`}>
-                                                            {alert.status}
-                                                        </span>
-                                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getSeverityColor(alert.severity)}`}>
-                                                            {alert.severity}
-                                                        </span>
-                                                    </div>
+                            <Card
+                                key={alert.id}
+                                className="hover:shadow-sm transition-all duration-200 cursor-pointer border-border/50 relative"
+                                onClick={() => window.location.href = `/bookings/${alert.booking_id}`}
+                            >
+                                <CardContent className="p-4">
+                                    {/* Dropdown Menu - Top Right */}
+                                    <div className="absolute top-2 right-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                {alert.status === 'new' && (
+                                                    <>
+                                                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                                                            <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                                                            Mark as Rebooked
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                                                            <XCircle className="h-4 w-4 mr-2 text-gray-600" />
+                                                            Dismiss Alert
+                                                        </DropdownMenuItem>
+                                                    </>
+                                                )}
+                                                <DropdownMenuItem onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.location.href = `/bookings/${alert.booking_id}`;
+                                                }}>
+                                                    <Building2 className="h-4 w-4 mr-2" />
+                                                    View Booking
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-                                                        <div className="flex items-center space-x-1">
-                                                            <span>Provider:</span>
-                                                            <span className="font-medium">{alert.provider}</span>
-                                                        </div>
-                                                        <div className="flex items-center space-x-1">
-                                                            <span>Rule:</span>
-                                                            <span className="font-medium">{alert.rule_threshold}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                    {/* Card Content */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center space-x-2 mb-2">
+                                            <Building2 className="h-5 w-5 text-blue-600" />
+                                            <h3 className="text-lg font-semibold text-foreground flex-1">
+                                                {alert.hotel_name}
+                                            </h3>
+                                        </div>
+
+                                        <div className="flex items-center space-x-2 mb-3">
+                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(alert.status)}`}>
+                                                {alert.status}
+                                            </span>
+                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getSeverityColor(alert.severity)}`}>
+                                                {alert.severity}
+                                            </span>
+                                        </div>
+
+                                        <div className="space-y-2 text-sm text-muted-foreground">
+                                            <div className="flex items-center space-x-1">
+                                                <span>Provider:</span>
+                                                <span className="font-medium">{alert.provider}</span>
                                             </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-muted-foreground">Old Price:</span>
-                                                        <span className="font-medium">
-                                                            {formatCurrency(alert.old_price, 'USD')}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-muted-foreground">New Price:</span>
-                                                        <span className="font-medium">
-                                                            {formatCurrency(alert.new_price, 'USD')}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-muted-foreground">Price Drop:</span>
-                                                        <span className="font-medium text-red-600">
-                                                            {formatCurrency(Math.abs(alert.delta_amount), 'USD')} ({alert.delta_percent}%)
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-muted-foreground">Triggered:</span>
-                                                        <span className="font-medium">
-                                                            {formatTimeAgo(alert.triggered_at)}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                            <div className="flex items-center space-x-1">
+                                                <span>Rule:</span>
+                                                <span className="font-medium">{alert.rule_threshold}</span>
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-1">
-                                            {alert.status === 'new' && (
-                                                <>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
-                                                        title="I Rebooked"
-                                                    >
-                                                        <CheckCircle className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700"
-                                                        title="Not Worth It"
-                                                    >
-                                                        <XCircle className="h-4 w-4" />
-                                                    </Button>
-                                                </>
-                                            )}
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => window.location.href = `/bookings/${alert.booking_id}`}
-                                                className="h-8 w-8 p-0"
-                                                title="View Booking"
-                                            >
-                                                <Building2 className="h-4 w-4" />
-                                            </Button>
+                                        <div className="space-y-2 pt-2 border-t border-border/50">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Was:</span>
+                                                <span className="font-medium">
+                                                    {formatCurrency(alert.old_price, 'USD')}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Now:</span>
+                                                <span className="font-medium">
+                                                    {formatCurrency(alert.new_price, 'USD')}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Save:</span>
+                                                <span className="font-medium text-red-600">
+                                                    {formatCurrency(Math.abs(alert.delta_amount), 'USD')}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardContent>
