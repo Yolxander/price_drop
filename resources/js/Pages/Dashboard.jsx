@@ -8,6 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Link } from '@inertiajs/react';
 import {
     Home,
@@ -25,6 +29,7 @@ import {
 } from 'lucide-react';
 
 export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }) {
+    const [showAddBooking, setShowAddBooking] = useState(false);
     const [selectedHotel, setSelectedHotel] = useState({
         name: "Shikara Hotel",
         location: "Jl. Aston No. 72 Yogyakarta",
@@ -143,40 +148,98 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Header */}
+                                {/* Header */}
                 <div className="bg-white border-b border-gray-200 p-6">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-6">
-                        Find hotel to stay 🏨
-                    </h1>
-
-                    {/* Search Section */}
-                    <div className="flex space-x-4">
-                        <div className="flex-1">
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input
-                                    placeholder="Date"
-                                    value="Jul 12 - Jul 14"
-                                    className="pl-10 pr-10"
-                                />
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            </div>
-                        </div>
-                        <div className="flex-1">
-                            <div className="relative">
-                                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <Input
-                                    placeholder="Where to"
-                                    value="Yogyakarta, Ind..."
-                                    className="pl-10 pr-10"
-                                />
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            </div>
-                        </div>
-                        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8">
-                            <Search className="h-4 w-4 mr-2" />
-                            Search
-                        </Button>
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-2xl font-bold text-gray-900">
+                            Find hotel to stay 🏨
+                        </h1>
+                        <Dialog open={showAddBooking} onOpenChange={setShowAddBooking}>
+                            <DialogTrigger asChild>
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8">
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Booking
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[600px]">
+                                <DialogHeader>
+                                    <DialogTitle>Add New Booking</DialogTitle>
+                                    <DialogDescription>
+                                        Enter your hotel booking details to start tracking price drops and save money.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="hotel-name">Hotel Name</Label>
+                                            <Input id="hotel-name" placeholder="Enter hotel name" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="location">Location</Label>
+                                            <Input id="location" placeholder="City, Country" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="check-in">Check-in Date</Label>
+                                            <Input id="check-in" type="date" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="check-out">Check-out Date</Label>
+                                            <Input id="check-out" type="date" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="guests">Number of Guests</Label>
+                                            <Input id="guests" type="number" placeholder="2" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="rooms">Number of Rooms</Label>
+                                            <Input id="rooms" type="number" placeholder="1" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="total-price">Total Price</Label>
+                                            <Input id="total-price" type="number" placeholder="0.00" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="currency">Currency</Label>
+                                        <Select>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select currency" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="usd">USD ($)</SelectItem>
+                                                <SelectItem value="eur">EUR (€)</SelectItem>
+                                                <SelectItem value="gbp">GBP (£)</SelectItem>
+                                                <SelectItem value="jpy">JPY (¥)</SelectItem>
+                                                <SelectItem value="idr">IDR (Rp)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="booking-confirmation">Booking Confirmation</Label>
+                                        <Textarea
+                                            id="booking-confirmation"
+                                            placeholder="Paste your booking confirmation email or details here..."
+                                            className="min-h-[100px]"
+                                        />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setShowAddBooking(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={() => {
+                                        // Handle form submission here
+                                        setShowAddBooking(false);
+                                    }}>
+                                        Add Booking
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
 
