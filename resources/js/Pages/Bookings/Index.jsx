@@ -57,9 +57,9 @@ export default function BookingsIndex({ auth, bookings, stats }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Hotel Bookings"
+            header="Your upcoming stays, all in one place."
         >
-            <div className="space-y-6">
+            <div className="space-y-6 pt-4">
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
@@ -106,15 +106,10 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                 <Card>
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                            <div>
-                                <CardTitle>Manage Bookings</CardTitle>
-                                <CardDescription>
-                                    Track and manage your hotel price monitoring
-                                </CardDescription>
-                            </div>
+                            <div className="flex-1" />
                             <Button onClick={() => window.location.href = '/bookings/create'}>
                                 <Plus className="h-4 w-4 mr-2" />
-                                Add Booking
+                                Track a New Trip
                             </Button>
                         </div>
                     </CardHeader>
@@ -150,17 +145,17 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                         <Card>
                             <CardContent className="text-center py-12">
                                 <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-foreground mb-2">No bookings found</h3>
+                                <h3 className="text-lg font-medium text-foreground mb-2">No trips found</h3>
                                 <p className="text-muted-foreground mb-4">
                                     {searchTerm || statusFilter !== 'all'
                                         ? 'Try adjusting your search or filters'
-                                        : 'Start tracking your hotel prices by adding your first booking'
+                                        : 'You haven\'t added any bookings yet. Paste your booking details or just forward your hotel confirmation email — we\'ll do the rest.'
                                     }
                                 </p>
                                 {!searchTerm && statusFilter === 'all' && (
                                     <Button onClick={() => window.location.href = '/bookings/create'}>
                                         <Plus className="h-4 w-4 mr-2" />
-                                        Add Your First Booking
+                                        Track Your First Trip
                                     </Button>
                                 )}
                             </CardContent>
@@ -244,30 +239,33 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col sm:flex-row gap-2">
+                                        <div className="flex gap-1">
                                             <Button
-                                                variant="outline"
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => window.location.href = `/bookings/${booking.id}`}
+                                                className="h-8 w-8 p-0"
+                                                title="See Trip"
                                             >
-                                                <Eye className="h-4 w-4 mr-2" />
-                                                View
+                                                <Eye className="h-4 w-4" />
                                             </Button>
                                             <Button
-                                                variant="outline"
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => window.location.href = `/bookings/${booking.id}/edit`}
+                                                className="h-8 w-8 p-0"
+                                                title="Update Trip"
                                             >
-                                                <Edit className="h-4 w-4 mr-2" />
-                                                Edit
+                                                <Edit className="h-4 w-4" />
                                             </Button>
                                             <Button
-                                                variant="outline"
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => window.location.href = `/bookings/${booking.id}/check-price`}
+                                                className="h-8 w-8 p-0"
+                                                title="Check Prices Now"
                                             >
-                                                <RefreshCw className="h-4 w-4 mr-2" />
-                                                Check
+                                                <RefreshCw className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>

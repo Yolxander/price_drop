@@ -64,9 +64,9 @@ export default function AlertsIndex({ auth, alerts, filters, stats }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Price Alerts"
+            header="We found better deals on your trips."
         >
-            <div className="space-y-6">
+            <div className="space-y-6 pt-4">
                 {/* Stats Cards */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
@@ -153,11 +153,11 @@ export default function AlertsIndex({ auth, alerts, filters, stats }) {
                         <Card>
                             <CardContent className="text-center py-12">
                                 <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-foreground mb-2">No alerts found</h3>
+                                <h3 className="text-lg font-medium text-foreground mb-2">No price drops right now</h3>
                                 <p className="text-muted-foreground">
                                     {statusFilter !== 'all' || severityFilter !== 'all'
                                         ? 'Try adjusting your filters'
-                                        : 'No price alerts have been triggered yet'
+                                        : 'No price drops right now — we\'ll let you know as soon as we spot one.'
                                     }
                                 </p>
                             </CardContent>
@@ -228,34 +228,35 @@ export default function AlertsIndex({ auth, alerts, filters, stats }) {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col sm:flex-row gap-2">
+                                        <div className="flex gap-1">
                                             {alert.status === 'new' && (
                                                 <>
                                                     <Button
-                                                        variant="outline"
+                                                        variant="ghost"
                                                         size="sm"
-                                                        className="text-green-600 hover:text-green-700"
+                                                        className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+                                                        title="I Rebooked"
                                                     >
-                                                        <CheckCircle className="h-4 w-4 mr-2" />
-                                                        Mark Actioned
+                                                        <CheckCircle className="h-4 w-4" />
                                                     </Button>
                                                     <Button
-                                                        variant="outline"
+                                                        variant="ghost"
                                                         size="sm"
-                                                        className="text-gray-600 hover:text-gray-700"
+                                                        className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700"
+                                                        title="Not Worth It"
                                                     >
-                                                        <XCircle className="h-4 w-4 mr-2" />
-                                                        Dismiss
+                                                        <XCircle className="h-4 w-4" />
                                                     </Button>
                                                 </>
                                             )}
                                             <Button
-                                                variant="outline"
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => window.location.href = `/bookings/${alert.booking_id}`}
+                                                className="h-8 w-8 p-0"
+                                                title="View Booking"
                                             >
-                                                <Building2 className="h-4 w-4 mr-2" />
-                                                View Booking
+                                                <Building2 className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>

@@ -14,7 +14,9 @@ import {
     TrendingDown,
     History,
     Globe,
-    Activity
+    Activity,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,15 +25,15 @@ import { Separator } from '@/components/ui/separator';
 
 export default function AuthenticatedLayout({ user, header, children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     const navigation = [
-        { name: 'Home', href: '/dashboard', icon: Home },
-        { name: 'Hotel Bookings', href: '/bookings', icon: Building2 },
-        { name: 'Price Alerts', href: '/price-alerts', icon: Bell },
-        { name: 'Price History', href: '/price-history', icon: TrendingDown },
-        { name: 'Reports', href: '/reports', icon: BarChart3 },
-        { name: 'API Status', href: '/api-status', icon: Activity },
-        { name: 'Settings', href: '/settings', icon: Settings },
+        { name: 'My Trips', href: '/dashboard', icon: Home },
+        { name: 'All Bookings', href: '/bookings', icon: Building2 },
+        { name: 'Price Drops', href: '/price-alerts', icon: Bell },
+        { name: 'Past Prices', href: '/price-history', icon: TrendingDown },
+        { name: 'Savings & Trends', href: '/reports', icon: BarChart3 },
+        { name: 'Preferences', href: '/settings', icon: Settings },
     ];
 
     return (
@@ -67,10 +69,18 @@ export default function AuthenticatedLayout({ user, header, children }) {
             </div>
 
             {/* Desktop sidebar */}
-            <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+            <div className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-48'}`}>
                 <div className="flex flex-col flex-grow bg-sidebar border-r border-sidebar-border">
-                    <div className="flex h-16 items-center px-4">
-                        <h1 className="text-xl font-semibold text-sidebar-foreground">Dashboard</h1>
+                    <div className="flex h-16 items-center justify-between px-4">
+                        {!sidebarCollapsed && <h1 className="text-xl font-semibold text-sidebar-foreground">Dashboard</h1>}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                            className="h-8 w-8"
+                        >
+                            {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                        </Button>
                     </div>
                     <Separator />
                     <nav className="flex-1 space-y-1 px-2 py-4">
@@ -79,9 +89,10 @@ export default function AuthenticatedLayout({ user, header, children }) {
                                 key={item.name}
                                 href={item.href}
                                 className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                title={sidebarCollapsed ? item.name : undefined}
                             >
-                                <item.icon className="mr-3 h-5 w-5" />
-                                {item.name}
+                                <item.icon className={`h-5 w-5 ${sidebarCollapsed ? 'mx-auto' : 'mr-3'}`} />
+                                {!sidebarCollapsed && item.name}
                             </Link>
                         ))}
                     </nav>
@@ -89,7 +100,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
             </div>
 
             {/* Main content */}
-            <div className="lg:pl-64">
+            <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-48'}`}>
                 {/* Top navigation */}
                 <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-border bg-background px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
                     <Button
@@ -100,6 +111,13 @@ export default function AuthenticatedLayout({ user, header, children }) {
                     >
                         <Menu className="h-6 w-6" />
                     </Button>
+
+                    {/* Page Header */}
+                    {header && (
+                        <div className="flex-1">
+                            <h1 className="text-2xl font-semibold text-foreground">{header}</h1>
+                        </div>
+                    )}
 
                     <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
                         <div className="flex flex-1" />
@@ -144,11 +162,6 @@ export default function AuthenticatedLayout({ user, header, children }) {
                 {/* Page content */}
                 <main className="py-6">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        {header && (
-                            <div className="mb-8">
-                                <h1 className="text-2xl font-semibold text-foreground">{header}</h1>
-                            </div>
-                        )}
                         {children}
                     </div>
                 </main>

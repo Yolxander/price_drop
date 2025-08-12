@@ -33,9 +33,9 @@ export default function BookingsShow({ auth, booking }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Booking Details"
+            header={`Booked for ${formatCurrency(booking.original_price, booking.currency)} — Best Price Now ${formatCurrency(booking.current_price, booking.currency)} (Save ${formatCurrency(booking.price_drop_amount, booking.currency)})`}
         >
-            <div className="space-y-6">
+            <div className="space-y-6 pt-4">
                 {/* Back Button */}
                 <div className="flex items-center space-x-2">
                     <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
@@ -57,14 +57,12 @@ export default function BookingsShow({ auth, booking }) {
                                     {booking.location} • {booking.booking_reference}
                                 </CardDescription>
                             </div>
-                            <div className="flex space-x-2">
-                                <Button variant="outline" size="sm">
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit
+                            <div className="flex gap-1">
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit Trip">
+                                    <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="sm">
-                                    <RefreshCw className="h-4 w-4 mr-2" />
-                                    Check Price
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Check Again Now">
+                                    <RefreshCw className="h-4 w-4" />
                                 </Button>
                             </div>
                         </div>
@@ -141,9 +139,9 @@ export default function BookingsShow({ auth, booking }) {
                 {/* Price History Chart Placeholder */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Price History</CardTitle>
+                        <CardTitle>Price Story</CardTitle>
                         <CardDescription>
-                            Price trends over the last 30 days
+                            How prices changed for this trip
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -160,9 +158,9 @@ export default function BookingsShow({ auth, booking }) {
                 {/* Provider Comparison */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Provider Comparison</CardTitle>
+                        <CardTitle>Where We Found It</CardTitle>
                         <CardDescription>
-                            Latest prices from different providers
+                            Best prices from different sources
                         </CardDescription>
                     </CardHeader>
                     <CardContent>

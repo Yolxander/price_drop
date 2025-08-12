@@ -112,9 +112,9 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Hotel Price Tracker"
+            header="Let's find you a better deal."
         >
-            <div className="space-y-6">
+            <div className="space-y-6 pt-4">
                 {/* Stats Grid */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {dashboardStats.map((stat, index) => (
@@ -144,38 +144,38 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                     {/* Hotel Bookings */}
                     <Card className="col-span-4 border-border/50">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <div>
-                                <CardTitle className="flex items-center space-x-2">
-                                    <Building2 className="h-5 w-5 text-blue-600" />
-                                    <span>Hotel Bookings</span>
-                                </CardTitle>
-                                <CardDescription>
-                                    {hotel_bookings.length} active bookings
-                                </CardDescription>
-                            </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => window.location.href = '/hotel-bookings/create'}
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add
-                            </Button>
-                        </CardHeader>
+                                        <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="flex items-center space-x-2">
+                            <Building2 className="h-5 w-5 text-blue-600" />
+                            <span>Trips You're Watching</span>
+                        </CardTitle>
+                        <CardDescription>
+                            {hotel_bookings.length} trips being tracked
+                        </CardDescription>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.location.href = '/bookings/create'}
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Track a New Trip
+                    </Button>
+                </CardHeader>
                         <CardContent>
                             {hotel_bookings.length === 0 ? (
-                                <div className="text-center py-6">
-                                    <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                                    <p className="text-sm text-muted-foreground mb-3">No bookings yet</p>
-                                    <Button
-                                        size="sm"
-                                        onClick={() => window.location.href = '/hotel-bookings/create'}
-                                    >
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add Booking
-                                    </Button>
-                                </div>
+                                                <div className="text-center py-6">
+                    <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">No trips yet? Forward a hotel confirmation email to <a href="mailto:trips@yourapp.com" className="text-blue-600 hover:underline">trips@yourapp.com</a> and we'll start tracking it for you — no forms, no fuss.</p>
+                    <Button
+                        size="sm"
+                        onClick={() => window.location.href = '/bookings/create'}
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Track a New Trip
+                    </Button>
+                </div>
                             ) : (
                                 <div className="space-y-2">
                                     {hotel_bookings.slice(0, 4).map((booking) => (
@@ -208,18 +208,18 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         </div>
                                     ))}
 
-                                    {hotel_bookings.length > 4 && (
-                                        <div className="text-center pt-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => window.location.href = '/hotel-bookings'}
-                                                className="text-blue-600 hover:text-blue-700"
-                                            >
-                                                View all {hotel_bookings.length} bookings
-                                            </Button>
-                                        </div>
-                                    )}
+                                                        {hotel_bookings.length > 4 && (
+                        <div className="text-center pt-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.location.href = '/bookings'}
+                                className="text-blue-600 hover:text-blue-700"
+                            >
+                                See Everything
+                            </Button>
+                        </div>
+                    )}
                                 </div>
                             )}
                         </CardContent>
@@ -230,10 +230,10 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         <CardHeader>
                             <CardTitle className="flex items-center space-x-2">
                                 <TrendingDown className="h-5 w-5 text-green-600" />
-                                <span>Recent Price Checks</span>
+                                <span>Price Drops This Week</span>
                             </CardTitle>
                             <CardDescription>
-                                Latest price monitoring activity
+                                Recent savings opportunities we found
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

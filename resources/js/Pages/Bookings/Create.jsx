@@ -65,9 +65,9 @@ export default function Create({ auth }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Add Hotel Booking"
+            header="Track a New Trip"
         >
-            <div className="max-w-2xl mx-auto space-y-6">
+            <div className="max-w-2xl mx-auto space-y-6 pt-4">
                 <div className="flex items-center space-x-2">
                     <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
                         <ArrowLeft className="h-4 w-4 mr-2" />
@@ -79,10 +79,10 @@ export default function Create({ auth }) {
                     <CardHeader>
                         <CardTitle className="flex items-center space-x-2">
                             <Building2 className="h-5 w-5" />
-                            <span>Add New Hotel Booking</span>
+                            <span>Trip Details</span>
                         </CardTitle>
                         <CardDescription>
-                            Enter your hotel booking details to start tracking price changes
+                            Tell us about your upcoming stay
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -266,7 +266,7 @@ export default function Create({ auth }) {
                                     disabled={isSubmitting}
                                     className="bg-blue-600 hover:bg-blue-700"
                                 >
-                                    {isSubmitting ? 'Adding Booking...' : 'Add Booking'}
+                                    {isSubmitting ? 'Adding Trip...' : 'Track This Trip'}
                                 </Button>
                             </div>
                         </form>
