@@ -102,7 +102,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     <span className="text-xs text-white font-medium">2</span>
                                 </div>
                             </div>
-                            <span className="text-gray-700">Notification</span>
+                            <span className="text-gray-700">Price Drops</span>
                         </div>
                     </Link>
                     <Link href="/favorites" className="block">
