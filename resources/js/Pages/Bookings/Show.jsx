@@ -1,22 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    Building2,
-    ArrowLeft,
-    Calendar,
-    MapPin,
-    Users,
-    DollarSign,
-    TrendingDown,
-    RefreshCw,
-    Edit,
-    MoreHorizontal
-} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail } from 'lucide-react';
 
-export default function BookingsShow({ auth, booking }) {
+export default function Show({ auth, booking }) {
+    const [loading, setLoading] = useState(false);
+    const [enrichmentStatus, setEnrichmentStatus] = useState(null);
+
+    const triggerEnrichment = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`/bookings/${booking.id}/enrich`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+            const data = await response.json();
+            setEnrichmentStatus(data);
+
+            if (data.success) {
+                // Reload the page to show updated data
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Enrichment failed:', error);
+            setEnrichmentStatus({ success: false, message: 'Enrichment failed' });
+        }
+        setLoading(false);
+    };
+
     const formatCurrency = (amount, currency) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -26,6 +45,7 @@ export default function BookingsShow({ auth, booking }) {
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
+            weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -35,192 +55,434 @@ export default function BookingsShow({ auth, booking }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={`Booked for ${formatCurrency(booking.original_price, booking.currency)} — Best Price Now ${formatCurrency(booking.current_price, booking.currency)} (Save ${formatCurrency(booking.price_drop_amount, booking.currency)})`}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Booking Details</h2>}
         >
-            <div className="space-y-6 pt-4 bg-gray-50 min-h-screen">
-                {/* Back Button */}
-                <div className="flex items-center space-x-2">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.history.back()}
-                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                    >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Bookings
-                    </Button>
-                </div>
+            <Head title={`Booking - ${booking.hotel_name}`} />
 
-                {/* Booking Header */}
-                <Card className="bg-white border-gray-200 shadow-sm">
-                    <CardHeader>
+            <div className="py-12">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {/* Header */}
+                    <div className="mb-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle className="flex items-center space-x-2 text-gray-900">
-                                    <Building2 className="h-6 w-6 text-green-500" />
-                                    <span>{booking.hotel_name}</span>
-                                </CardTitle>
-                                <CardDescription className="text-gray-600">
-                                    {booking.location} • {booking.booking_reference}
-                                </CardDescription>
+                                <h1 className="text-3xl font-bold text-gray-900">{booking.hotel_name}</h1>
+                                <p className="text-gray-600 mt-1">{booking.location}</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 w-8 p-0 hover:bg-gray-100"
-                                        >
-                                            <MoreHorizontal className="h-4 w-4 text-gray-600" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="bg-white border-gray-200 shadow-lg">
-                                        <DropdownMenuItem className="text-gray-700 hover:bg-gray-50">
-                                            <Edit className="h-4 w-4 mr-2" />
-                                            Edit Trip
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-gray-700 hover:bg-gray-50">
-                                            <RefreshCw className="h-4 w-4 mr-2" />
-                                            Check Prices Now
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                            <div className="flex items-center gap-4">
+                                <Link href={route('bookings.index')}>
+                                    <Button variant="outline">Back to Bookings</Button>
+                                </Link>
+                                {!booking.enrichment_successful && (
+                                    <Button
+                                        onClick={triggerEnrichment}
+                                        disabled={loading}
+                                        variant="default"
+                                    >
+                                        {loading ? 'Enriching...' : 'Enrich Data'}
+                                    </Button>
+                                )}
                             </div>
                         </div>
-                    </CardHeader>
-                </Card>
+                    </div>
 
-                {/* Booking Details */}
-                <div className="grid gap-6 md:grid-cols-2">
-                    {/* Hotel Information */}
-                    <Card className="bg-white border-gray-200 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-gray-900">Hotel Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center space-x-2">
-                                <Building2 className="h-4 w-4 text-green-500" />
-                                <span className="font-medium text-gray-900">{booking.hotel_name}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <MapPin className="h-4 w-4 text-gray-500" />
-                                <span className="text-gray-700">{booking.location}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-gray-500" />
-                                <span className="text-gray-700">
-                                    {formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}
-                                </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Users className="h-4 w-4 text-gray-500" />
-                                <span className="text-gray-700">{booking.guests} guests</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Pricing Information */}
-                    <Card className="bg-white border-gray-200 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-gray-900">Pricing Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-700">Original Price:</span>
-                                <span className="font-medium text-gray-900 line-through">
-                                    {formatCurrency(booking.original_price, booking.currency)}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-700">Current Price:</span>
-                                <span className="font-medium text-gray-900">
-                                    {formatCurrency(booking.current_price, booking.currency)}
-                                </span>
-                            </div>
-                            {booking.price_drop_detected && (
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-700">Potential Savings:</span>
-                                    <span className="font-medium text-green-600">
-                                        {formatCurrency(booking.price_drop_amount, booking.currency)}
-                                    </span>
+                    {/* Enrichment Status */}
+                    {enrichmentStatus && (
+                        <Card className={`mb-6 ${enrichmentStatus.success ? 'border-green-200' : 'border-red-200'}`}>
+                            <CardContent className="p-4">
+                                <div className={`flex items-center gap-2 ${enrichmentStatus.success ? 'text-green-700' : 'text-red-700'}`}>
+                                    <Badge variant={enrichmentStatus.success ? "default" : "destructive"}>
+                                        {enrichmentStatus.success ? 'Success' : 'Error'}
+                                    </Badge>
+                                    <span>{enrichmentStatus.message}</span>
                                 </div>
-                            )}
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-700">Price per Night:</span>
-                                <span className="font-medium text-gray-900">
-                                    {formatCurrency(booking.price_per_night, booking.currency)}
-                                </span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
-                {/* Price History Chart */}
-                <Card className="bg-white border-gray-200 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-gray-900">Price History</CardTitle>
-                        <CardDescription className="text-gray-600">
-                            Track how prices have changed over time
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                            <div className="text-center">
-                                <TrendingDown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                <p className="text-gray-600">Price history chart will be displayed here</p>
-                            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Main Content */}
+                        <div className="lg:col-span-2">
+                            <Tabs defaultValue="overview" className="w-full">
+                                <TabsList className="grid w-full grid-cols-4">
+                                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                                    <TabsTrigger value="facilities">Facilities</TabsTrigger>
+                                    <TabsTrigger value="details">Details</TabsTrigger>
+                                    <TabsTrigger value="history">History</TabsTrigger>
+                                </TabsList>
+
+                                <TabsContent value="overview" className="mt-6">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Hotel Overview</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
+                                            {booking.enriched_data?.overview ? (
+                                                <>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <Star className="h-5 w-5 text-yellow-500 fill-current" />
+                                                            <span className="font-semibold">
+                                                                {booking.enriched_data.overview.star_rating} / 5.0
+                                                            </span>
+                                                        </div>
+                                                        <Badge variant="outline">
+                                                            {booking.enriched_data.overview.canonical_name}
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-start gap-3">
+                                                            <MapPin className="h-5 w-5 text-gray-500 mt-0.5" />
+                                                            <div>
+                                                                <p className="font-medium">{booking.enriched_data.overview.address}</p>
+                                                                <p className="text-sm text-gray-600">{booking.enriched_data.overview.location}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        {booking.enriched_data.overview.hotel_website && (
+                                                            <div className="flex items-center gap-3">
+                                                                <Globe className="h-5 w-5 text-gray-500" />
+                                                                <a
+                                                                    href={booking.enriched_data.overview.hotel_website}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:underline"
+                                                                >
+                                                                    Visit Hotel Website
+                                                                </a>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="text-center py-8">
+                                                    <p className="text-gray-500">No enriched data available</p>
+                                                    <Button
+                                                        onClick={triggerEnrichment}
+                                                        disabled={loading}
+                                                        className="mt-4"
+                                                    >
+                                                        {loading ? 'Enriching...' : 'Enrich Data'}
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+
+                                <TabsContent value="facilities" className="mt-6">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Facilities & Amenities</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {booking.enriched_data?.facilities ? (
+                                                <div className="space-y-6">
+                                                    <div>
+                                                        <h3 className="font-semibold mb-3">Amenities</h3>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {booking.enriched_data.facilities.amenities?.map((amenity, index) => (
+                                                                <div key={index} className="flex items-center gap-2">
+                                                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                                    <span className="text-sm">{amenity}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <Separator />
+
+                                                    <div>
+                                                        <h3 className="font-semibold mb-3">Facilities</h3>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {booking.enriched_data.facilities.facilities?.map((facility, index) => (
+                                                                <div key={index} className="flex items-center gap-2">
+                                                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                                    <span className="text-sm">{facility}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <Separator />
+
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge variant={booking.enriched_data.facilities.breakfast_included ? "default" : "secondary"}>
+                                                            {booking.enriched_data.facilities.breakfast_included ? 'Breakfast Included' : 'Breakfast Not Included'}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-8">
+                                                    <p className="text-gray-500">No facilities data available</p>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+
+                                <TabsContent value="details" className="mt-6">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Booking Details</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-6">
+                                                <div className="grid grid-cols-2 gap-6">
+                                                    <div>
+                                                        <h3 className="font-semibold mb-3">Room Information</h3>
+                                                        <div className="space-y-2">
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Room Type:</span>
+                                                                <p className="font-medium">
+                                                                    {booking.enriched_data?.details?.room_type || 'Standard Room'}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Room Code:</span>
+                                                                <p className="font-medium">
+                                                                    {booking.enriched_data?.details?.room_code || 'N/A'}
+                                                                </p>
+                                                            </div>
+                                                            {booking.enriched_data?.details?.room_description && (
+                                                                <div>
+                                                                    <span className="text-sm text-gray-600">Description:</span>
+                                                                    <p className="text-sm">{booking.enriched_data.details.room_description}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <h3 className="font-semibold mb-3">Pricing Details</h3>
+                                                        <div className="space-y-2">
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Base Rate:</span>
+                                                                <p className="font-medium">
+                                                                    {booking.enriched_data?.details?.base_rate
+                                                                        ? formatCurrency(booking.enriched_data.details.base_rate, booking.currency)
+                                                                        : formatCurrency(booking.original_price, booking.currency)
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Taxes & Fees:</span>
+                                                                <p className="font-medium">
+                                                                    {booking.enriched_data?.details?.taxes_fees
+                                                                        ? formatCurrency(booking.enriched_data.details.taxes_fees, booking.currency)
+                                                                        : 'N/A'
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Total Price:</span>
+                                                                <p className="font-medium">
+                                                                    {formatCurrency(booking.original_price, booking.currency)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <Separator />
+
+                                                <div>
+                                                    <h3 className="font-semibold mb-3">Cancellation Policy</h3>
+                                                    <p className="text-sm">
+                                                        {booking.enriched_data?.details?.cancellation_policy || 'Standard cancellation policy applies'}
+                                                    </p>
+                                                </div>
+
+                                                {booking.enriched_data?.details?.booking_link && (
+                                                    <>
+                                                        <Separator />
+                                                        <div>
+                                                            <h3 className="font-semibold mb-3">Booking Links</h3>
+                                                            <a
+                                                                href={booking.enriched_data.details.booking_link}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-600 hover:underline"
+                                                            >
+                                                                View Booking Details
+                                                            </a>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+
+                                <TabsContent value="history" className="mt-6">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Price History & Tracking</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-6">
+                                                <div className="grid grid-cols-2 gap-6">
+                                                    <div>
+                                                        <h3 className="font-semibold mb-3">Price Information</h3>
+                                                        <div className="space-y-2">
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Original Price:</span>
+                                                                <p className="font-medium">
+                                                                    {formatCurrency(booking.original_price, booking.currency)}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Current Price:</span>
+                                                                <p className="font-medium">
+                                                                    {formatCurrency(booking.current_price, booking.currency)}
+                                                                </p>
+                                                            </div>
+                                                            {booking.price_drop_detected && (
+                                                                <div>
+                                                                    <span className="text-sm text-gray-600">Price Drop:</span>
+                                                                    <p className="font-medium text-green-600">
+                                                                        -{formatCurrency(booking.price_drop_amount, booking.currency)} ({booking.price_drop_percentage}%)
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <h3 className="font-semibold mb-3">Tracking Status</h3>
+                                                        <div className="space-y-2">
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Status:</span>
+                                                                <Badge variant={booking.status === 'active' ? 'default' : 'secondary'}>
+                                                                    {booking.status}
+                                                                </Badge>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Last Checked:</span>
+                                                                <p className="font-medium">
+                                                                    {booking.last_checked ? formatDate(booking.last_checked) : 'Never'}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-sm text-gray-600">Enrichment:</span>
+                                                                <Badge variant={booking.enrichment_successful ? 'default' : 'destructive'}>
+                                                                    {booking.enrichment_successful ? 'Successful' : 'Failed'}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <Separator />
+
+                                                <div>
+                                                    <h3 className="font-semibold mb-3">Stay Details</h3>
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <Calendar className="h-4 w-4 text-gray-500" />
+                                                            <div>
+                                                                <p className="text-sm text-gray-600">Check-in</p>
+                                                                <p className="font-medium">{formatDate(booking.check_in_date)}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Calendar className="h-4 w-4 text-gray-500" />
+                                                            <div>
+                                                                <p className="text-sm text-gray-600">Check-out</p>
+                                                                <p className="font-medium">{formatDate(booking.check_out_date)}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Users className="h-4 w-4 text-gray-500" />
+                                                            <div>
+                                                                <p className="text-sm text-gray-600">Guests</p>
+                                                                <p className="font-medium">{booking.guests}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+                            </Tabs>
                         </div>
-                    </CardContent>
-                </Card>
 
-                {/* Recent Price Checks */}
-                <Card className="bg-white border-gray-200 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-gray-900">Recent Price Checks</CardTitle>
-                        <CardDescription className="text-gray-600">
-                            Latest price monitoring activity
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {/* Dummy price check data */}
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                                <div className="flex items-center space-x-3">
-                                    <RefreshCw className="h-5 w-5 text-blue-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">Google Hotels</p>
-                                        <p className="text-xs text-gray-500">2 hours ago</p>
+                        {/* Sidebar */}
+                        <div className="space-y-6">
+                            {/* Price Summary */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Price Summary</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between">
+                                            <span>Original Price:</span>
+                                            <span className="font-medium">{formatCurrency(booking.original_price, booking.currency)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Current Price:</span>
+                                            <span className="font-medium">{formatCurrency(booking.current_price, booking.currency)}</span>
+                                        </div>
+                                        {booking.price_drop_detected && (
+                                            <div className="flex justify-between text-green-600">
+                                                <span>Savings:</span>
+                                                <span className="font-medium">
+                                                    -{formatCurrency(booking.price_drop_amount, booking.currency)}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <Separator />
+                                        <div className="flex justify-between">
+                                            <span>Per Night:</span>
+                                            <span className="font-medium">{formatCurrency(booking.price_per_night, booking.currency)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Total Nights:</span>
+                                            <span className="font-medium">{booking.nights}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm font-medium text-gray-900">
-                                        {formatCurrency(booking.current_price, booking.currency)}
-                                    </p>
-                                    {booking.price_drop_detected && (
-                                        <p className="text-xs text-green-600">
-                                            Save {formatCurrency(booking.price_drop_amount, booking.currency)}
+                                </CardContent>
+                            </Card>
+
+                            {/* Quick Actions */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Quick Actions</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <Button className="w-full" variant="outline">
+                                        Check Current Price
+                                    </Button>
+                                    <Button className="w-full" variant="outline">
+                                        View Price History
+                                    </Button>
+                                    <Button className="w-full" variant="outline">
+                                        Edit Booking
+                                    </Button>
+                                    <Button className="w-full" variant="outline">
+                                        Set Price Alert
+                                    </Button>
+                                </CardContent>
+                            </Card>
+
+                            {/* Booking Reference */}
+                            {booking.booking_reference && (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Booking Reference</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="font-mono text-sm bg-gray-100 p-2 rounded">
+                                            {booking.booking_reference}
                                         </p>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                                <div className="flex items-center space-x-3">
-                                    <RefreshCw className="h-5 w-5 text-blue-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">Booking.com</p>
-                                        <p className="text-xs text-gray-500">4 hours ago</p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm font-medium text-gray-900">
-                                        {formatCurrency(booking.original_price, booking.currency)}
-                                    </p>
-                                </div>
-                            </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             </div>
         </AuthenticatedLayout>
     );

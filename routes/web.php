@@ -8,6 +8,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SerpApiController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,6 +32,7 @@ Route::post('/bookings/check-all-prices', [HotelBookingController::class, 'check
 Route::post('/bookings/{booking}/check-price', [HotelBookingController::class, 'checkPrice'])->name('bookings.check-price');
 Route::patch('/bookings/{booking}/toggle-status', [HotelBookingController::class, 'toggleStatus'])->name('bookings.toggle-status');
 Route::get('/bookings/{booking}/price-history', [HotelBookingController::class, 'priceHistory'])->name('bookings.price-history');
+Route::post('/bookings/{booking}/enrich', [HotelBookingController::class, 'enrichBooking'])->name('bookings.enrich');
 
 // Price Alerts
 Route::get('/price-alerts', [AlertController::class, 'index'])->name('alerts.index');
@@ -46,3 +48,26 @@ Route::get('/api-status', [StatusController::class, 'index'])->name('status.inde
 
 // Settings
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+
+// SerpAPI Routes
+Route::prefix('api/serp')->group(function () {
+    Route::get('/test-connection', [SerpApiController::class, 'testConnection'])->name('serp.test-connection');
+    Route::get('/usage', [SerpApiController::class, 'getApiUsage'])->name('serp.usage');
+    Route::get('/exchange-rates', [SerpApiController::class, 'getExchangeRates'])->name('serp.exchange-rates');
+    Route::post('/search-flights', [SerpApiController::class, 'searchFlights'])->name('serp.search-flights');
+    Route::post('/web-search', [SerpApiController::class, 'webSearch'])->name('serp.web-search');
+    Route::post('/convert-currency', [SerpApiController::class, 'convertCurrency'])->name('serp.convert-currency');
+});
+
+// SerpAPI Demo Page
+Route::get('/serp-demo', function () {
+    return Inertia::render('SerpApiDemo', [
+        'auth' => [
+            'user' => [
+                'name' => 'John Doe',
+                'email' => 'john@example.com',
+                'avatar' => null,
+            ],
+        ],
+    ]);
+})->name('serp.demo');

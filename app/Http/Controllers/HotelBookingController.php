@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\HotelBooking;
 use App\Jobs\CheckHotelPrices;
 use App\Services\SerpApiService;
+use Illuminate\Support\Facades\Log;
 
 
 class HotelBookingController extends Controller
@@ -121,6 +122,79 @@ class HotelBookingController extends Controller
             'booking_reference' => $validated['booking_confirmation'] ?? null,
         ]);
 
+                // Log user input data
+        Log::info('User booking data received', [
+            'booking_id' => $booking->id,
+            'user_input' => [
+                'hotel_name' => $validated['hotel_name'],
+                'location' => $validated['location'],
+                'check_in_date' => $validated['check_in_date'],
+                'check_out_date' => $validated['check_out_date'],
+                'guests' => $validated['guests'],
+                'currency' => strtoupper($validated['currency']),
+                'total_price' => $validated['total_price']
+            ]
+        ]);
+
+        // Enrich booking with SerpAPI data
+        try {
+            Log::info('Starting SerpAPI enrichment', [
+                'booking_id' => $booking->id,
+                'hotel_name' => $validated['hotel_name'],
+                'location' => $validated['location']
+            ]);
+
+            $enrichedData = $this->serpApiService->enrichHotelData(
+                $validated['hotel_name'],
+                $validated['location'],
+                $validated['check_in_date'],
+                $validated['check_out_date'],
+                strtoupper($validated['currency'])
+            );
+
+            Log::info('SerpAPI enrichment response received', [
+                'booking_id' => $booking->id,
+                'enriched_data' => $enrichedData,
+                'data_received' => !empty($enrichedData)
+            ]);
+
+            if ($enrichedData) {
+                $booking->update($enrichedData);
+                Log::info('Hotel booking enriched successfully', [
+                    'booking_id' => $booking->id,
+                    'hotel_name' => $validated['hotel_name'],
+                    'enriched_fields' => array_keys($enrichedData),
+                    'canonical_hotel_name' => $enrichedData['canonical_hotel_name'] ?? 'N/A',
+                    'star_rating' => $enrichedData['star_rating'] ?? 'N/A',
+                    'amenities_count' => count($enrichedData['amenities'] ?? []),
+                    'facilities_count' => count($enrichedData['facilities'] ?? [])
+                ]);
+            } else {
+                Log::warning('No enriched data returned from SerpAPI', [
+                    'booking_id' => $booking->id,
+                    'hotel_name' => $validated['hotel_name']
+                ]);
+                
+                $booking->update([
+                    'enrichment_successful' => false,
+                    'enrichment_error' => 'No data returned from SerpAPI'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to enrich hotel booking', [
+                'booking_id' => $booking->id,
+                'hotel_name' => $validated['hotel_name'],
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Mark enrichment as failed but don't fail the booking creation
+            $booking->update([
+                'enrichment_successful' => false,
+                'enrichment_error' => $e->getMessage()
+            ]);
+        }
+
         // Add calculated fields to the booking for frontend compatibility
         $booking->total_price = $validated['total_price'];
         $booking->price_per_night = $validated['total_price'] / $nights;
@@ -135,23 +209,35 @@ class HotelBookingController extends Controller
      */
     public function show(HotelBooking $booking)
     {
-        // For demo purposes, return dummy booking data
-        $booking = [
+        // Get enriched data for the booking
+        $enrichedData = $booking->getEnrichedData();
+
+        // Calculate additional fields
+        $checkIn = \Carbon\Carbon::parse($booking->check_in_date);
+        $checkOut = \Carbon\Carbon::parse($booking->check_out_date);
+        $nights = $checkIn->diffInDays($checkOut);
+
+        $bookingData = [
             'id' => $booking->id,
-            'hotel_name' => 'Fairmont Royal York',
-            'location' => 'Toronto, ON',
-            'check_in_date' => '2025-09-01',
-            'check_out_date' => '2025-09-05',
-            'guests' => 2,
-            'currency' => 'CAD',
-            'original_price' => 1316.00,
-            'current_price' => 1184.00,
-            'last_checked' => now()->subHours(2)->toISOString(),
-            'status' => 'active',
-            'price_drop_detected' => true,
-            'price_drop_amount' => 132.00,
-            'price_drop_percentage' => 10.0,
-            'booking_reference' => 'FRY-2025-001',
+            'hotel_name' => $booking->hotel_name,
+            'location' => $booking->location,
+            'check_in_date' => $booking->check_in_date->format('Y-m-d'),
+            'check_out_date' => $booking->check_out_date->format('Y-m-d'),
+            'guests' => $booking->guests,
+            'currency' => $booking->currency,
+            'original_price' => $booking->original_price,
+            'current_price' => $booking->current_price,
+            'last_checked' => $booking->last_checked?->toISOString(),
+            'status' => $booking->status,
+            'price_drop_detected' => $booking->price_drop_detected,
+            'price_drop_amount' => $booking->price_drop_amount,
+            'price_drop_percentage' => $booking->price_drop_amount ? round(($booking->price_drop_amount / $booking->original_price) * 100, 1) : 0,
+            'booking_reference' => $booking->booking_reference,
+            'nights' => $nights,
+            'price_per_night' => $booking->original_price / $nights,
+            'enriched_data' => $enrichedData,
+            'enrichment_successful' => $booking->enrichment_successful,
+            'enriched_at' => $booking->enriched_at?->toISOString(),
         ];
 
         return Inertia::render('Bookings/Show', [
@@ -162,7 +248,7 @@ class HotelBookingController extends Controller
                     'avatar' => null,
                 ],
             ],
-            'booking' => $booking
+            'booking' => $bookingData
         ]);
     }
 
@@ -255,11 +341,11 @@ class HotelBookingController extends Controller
     /**
      * Get price history for a booking (dummy data)
      */
-        public function priceHistory(HotelBooking $booking)
+    public function priceHistory(HotelBooking $booking)
     {
         // Generate dummy price history
         $priceHistory = [];
-        $basePrice = 1316.00; // Fairmont Royal York price
+        $basePrice = $booking->original_price;
 
         for ($i = 30; $i >= 0; $i--) {
             $date = now()->subDays($i);
@@ -269,10 +355,58 @@ class HotelBookingController extends Controller
             $priceHistory[] = [
                 'date' => $date->format('Y-m-d'),
                 'price' => round($price, 2),
-                'currency' => 'CAD'
+                'currency' => $booking->currency
             ];
         }
 
         return response()->json($priceHistory);
+    }
+
+    /**
+     * Manually trigger enrichment for a booking
+     */
+    public function enrichBooking(HotelBooking $booking)
+    {
+        try {
+            $enrichedData = $this->serpApiService->enrichHotelData(
+                $booking->hotel_name,
+                $booking->location,
+                $booking->check_in_date->format('Y-m-d'),
+                $booking->check_out_date->format('Y-m-d'),
+                $booking->currency
+            );
+
+            if ($enrichedData) {
+                $booking->update($enrichedData);
+
+                Log::info('Hotel booking enriched manually', [
+                    'booking_id' => $booking->id,
+                    'hotel_name' => $booking->hotel_name
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Booking enriched successfully',
+                    'enriched_data' => $booking->getEnrichedData()
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No enrichment data available'
+            ], 400);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to enrich hotel booking manually', [
+                'booking_id' => $booking->id,
+                'hotel_name' => $booking->hotel_name,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Enrichment failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
