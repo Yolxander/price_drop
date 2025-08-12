@@ -66,15 +66,6 @@ class HistoryController extends Controller
             ]
         ];
 
-        $filters = [
-            'providers' => ['Google Hotels', 'Booking.com', 'Expedia', 'Hotels.com'],
-            'cities' => ['Toronto', 'New York', 'Barcelona', 'Tokyo'],
-            'date_range' => [
-                'start' => Carbon::now()->subDays(30)->format('Y-m-d'),
-                'end' => Carbon::now()->format('Y-m-d')
-            ]
-        ];
-
         $chartData = [
             'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
             'datasets' => [
@@ -96,7 +87,6 @@ class HistoryController extends Controller
                 ],
             ],
             'priceChecks' => $priceChecks,
-            'filters' => $filters,
             'chartData' => $chartData,
             'stats' => [
                 'total_checks' => count($priceChecks),

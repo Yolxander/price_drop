@@ -37,25 +37,30 @@ export default function BookingsShow({ auth, booking }) {
             user={auth.user}
             header={`Booked for ${formatCurrency(booking.original_price, booking.currency)} — Best Price Now ${formatCurrency(booking.current_price, booking.currency)} (Save ${formatCurrency(booking.price_drop_amount, booking.currency)})`}
         >
-            <div className="space-y-6 pt-4">
+            <div className="space-y-6 pt-4 bg-gray-50 min-h-screen">
                 {/* Back Button */}
                 <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.history.back()}
+                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    >
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back to Bookings
                     </Button>
                 </div>
 
                 {/* Booking Header */}
-                <Card>
+                <Card className="bg-white border-gray-200 shadow-sm">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle className="flex items-center space-x-2">
-                                    <Building2 className="h-6 w-6 text-blue-600" />
+                                <CardTitle className="flex items-center space-x-2 text-gray-900">
+                                    <Building2 className="h-6 w-6 text-green-500" />
                                     <span>{booking.hotel_name}</span>
                                 </CardTitle>
-                                <CardDescription>
+                                <CardDescription className="text-gray-600">
                                     {booking.location} • {booking.booking_reference}
                                 </CardDescription>
                             </div>
@@ -65,17 +70,17 @@ export default function BookingsShow({ auth, booking }) {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-8 w-8 p-0"
+                                            className="h-8 w-8 p-0 hover:bg-gray-100"
                                         >
-                                            <MoreHorizontal className="h-4 w-4" />
+                                            <MoreHorizontal className="h-4 w-4 text-gray-600" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem>
+                                    <DropdownMenuContent align="end" className="bg-white border-gray-200 shadow-lg">
+                                        <DropdownMenuItem className="text-gray-700 hover:bg-gray-50">
                                             <Edit className="h-4 w-4 mr-2" />
                                             Edit Trip
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem className="text-gray-700 hover:bg-gray-50">
                                             <RefreshCw className="h-4 w-4 mr-2" />
                                             Check Prices Now
                                         </DropdownMenuItem>
@@ -89,127 +94,128 @@ export default function BookingsShow({ auth, booking }) {
                 {/* Booking Details */}
                 <div className="grid gap-6 md:grid-cols-2">
                     {/* Hotel Information */}
-                    <Card>
+                    <Card className="bg-white border-gray-200 shadow-sm">
                         <CardHeader>
-                            <CardTitle>Hotel Information</CardTitle>
+                            <CardTitle className="text-gray-900">Hotel Information</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center space-x-2">
-                                <Building2 className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium">{booking.hotel_name}</span>
+                                <Building2 className="h-4 w-4 text-green-500" />
+                                <span className="font-medium text-gray-900">{booking.hotel_name}</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <MapPin className="h-4 w-4 text-gray-600" />
-                                <span>{booking.location}</span>
+                                <MapPin className="h-4 w-4 text-gray-500" />
+                                <span className="text-gray-700">{booking.location}</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-gray-600" />
-                                <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
+                                <Calendar className="h-4 w-4 text-gray-500" />
+                                <span className="text-gray-700">
+                                    {formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}
+                                </span>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Users className="h-4 w-4 text-gray-600" />
-                                <span>{booking.guests} guests</span>
+                                <Users className="h-4 w-4 text-gray-500" />
+                                <span className="text-gray-700">{booking.guests} guests</span>
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Pricing Information */}
-                    <Card>
+                    <Card className="bg-white border-gray-200 shadow-sm">
                         <CardHeader>
-                            <CardTitle>Pricing Information</CardTitle>
+                            <CardTitle className="text-gray-900">Pricing Information</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Original Price:</span>
-                                <span className="font-medium">
+                            <div className="flex items-center justify-between">
+                                <span className="text-gray-700">Original Price:</span>
+                                <span className="font-medium text-gray-900 line-through">
                                     {formatCurrency(booking.original_price, booking.currency)}
                                 </span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Current Price:</span>
-                                <span className="font-medium">
+                            <div className="flex items-center justify-between">
+                                <span className="text-gray-700">Current Price:</span>
+                                <span className="font-medium text-gray-900">
                                     {formatCurrency(booking.current_price, booking.currency)}
                                 </span>
                             </div>
                             {booking.price_drop_detected && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Potential Savings:</span>
-                                    <span className="font-medium text-red-600">
-                                        {formatCurrency(booking.price_drop_amount, booking.currency)} ({booking.price_drop_percentage}%)
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-700">Potential Savings:</span>
+                                    <span className="font-medium text-green-600">
+                                        {formatCurrency(booking.price_drop_amount, booking.currency)}
                                     </span>
                                 </div>
                             )}
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Status:</span>
-                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                    booking.status === 'active' ? 'text-green-600 bg-green-100' :
-                                    booking.status === 'paused' ? 'text-yellow-600 bg-yellow-100' :
-                                    'text-gray-600 bg-gray-100'
-                                }`}>
-                                    {booking.status}
+                            <div className="flex items-center justify-between">
+                                <span className="text-gray-700">Price per Night:</span>
+                                <span className="font-medium text-gray-900">
+                                    {formatCurrency(booking.price_per_night, booking.currency)}
                                 </span>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Price History Chart Placeholder */}
-                <Card>
+                {/* Price History Chart */}
+                <Card className="bg-white border-gray-200 shadow-sm">
                     <CardHeader>
-                        <CardTitle>Price Story</CardTitle>
-                        <CardDescription>
-                            How prices changed for this trip
+                        <CardTitle className="text-gray-900">Price History</CardTitle>
+                        <CardDescription className="text-gray-600">
+                            Track how prices have changed over time
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-64 flex items-center justify-center bg-muted/20 rounded-lg border border-border/50">
+                        <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
                             <div className="text-center">
-                                <TrendingDown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                <p className="text-muted-foreground">Price history chart would go here</p>
-                                <p className="text-sm text-muted-foreground/70">Using a library like Recharts or Chart.js</p>
+                                <TrendingDown className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <p className="text-gray-600">Price history chart will be displayed here</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Provider Comparison */}
-                <Card>
+                {/* Recent Price Checks */}
+                <Card className="bg-white border-gray-200 shadow-sm">
                     <CardHeader>
-                        <CardTitle>Where We Found It</CardTitle>
-                        <CardDescription>
-                            Best prices from different sources
+                        <CardTitle className="text-gray-900">Recent Price Checks</CardTitle>
+                        <CardDescription className="text-gray-600">
+                            Latest price monitoring activity
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 border border-border/50 rounded-lg">
+                            {/* Dummy price check data */}
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                    <span className="font-medium">Google Hotels</span>
+                                    <RefreshCw className="h-5 w-5 text-blue-500" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">Google Hotels</p>
+                                        <p className="text-xs text-gray-500">2 hours ago</p>
+                                    </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="font-medium">{formatCurrency(booking.current_price, booking.currency)}</div>
-                                    <div className="text-sm text-muted-foreground">2 hours ago</div>
+                                    <p className="text-sm font-medium text-gray-900">
+                                        {formatCurrency(booking.current_price, booking.currency)}
+                                    </p>
+                                    {booking.price_drop_detected && (
+                                        <p className="text-xs text-green-600">
+                                            Save {formatCurrency(booking.price_drop_amount, booking.currency)}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between p-3 border border-border/50 rounded-lg">
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                    <span className="font-medium">Booking.com</span>
+                                    <RefreshCw className="h-5 w-5 text-blue-500" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">Booking.com</p>
+                                        <p className="text-xs text-gray-500">4 hours ago</p>
+                                    </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="font-medium">{formatCurrency(booking.current_price + 50, booking.currency)}</div>
-                                    <div className="text-sm text-muted-foreground">4 hours ago</div>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between p-3 border border-border/50 rounded-lg">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                                    <span className="font-medium">Expedia</span>
-                                </div>
-                                <div className="text-right">
-                                    <div className="font-medium">{formatCurrency(booking.current_price + 75, booking.currency)}</div>
-                                    <div className="text-sm text-muted-foreground">6 hours ago</div>
+                                    <p className="text-sm font-medium text-gray-900">
+                                        {formatCurrency(booking.original_price, booking.currency)}
+                                    </p>
                                 </div>
                             </div>
                         </div>

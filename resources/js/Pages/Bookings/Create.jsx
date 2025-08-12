@@ -67,21 +67,26 @@ export default function Create({ auth }) {
             user={auth.user}
             header="Track a New Trip"
         >
-            <div className="max-w-2xl mx-auto space-y-6 pt-4">
+            <div className="max-w-2xl mx-auto space-y-6 pt-4 bg-gray-50 min-h-screen">
                 <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.history.back()}
+                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    >
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back to Dashboard
                     </Button>
                 </div>
 
-                <Card>
+                <Card className="bg-white border-gray-200 shadow-sm">
                     <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                            <Building2 className="h-5 w-5" />
+                        <CardTitle className="flex items-center space-x-2 text-gray-900">
+                            <Building2 className="h-5 w-5 text-green-500" />
                             <span>Trip Details</span>
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-gray-600">
                             Tell us about your upcoming stay
                         </CardDescription>
                     </CardHeader>
@@ -89,11 +94,11 @@ export default function Create({ auth }) {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Hotel Information */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium">Hotel Information</h3>
+                                <h3 className="text-lg font-medium text-gray-900">Hotel Information</h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
                                             Hotel Name *
                                         </label>
                                         <input
@@ -101,14 +106,14 @@ export default function Create({ auth }) {
                                             name="hotel_name"
                                             value={formData.hotel_name}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="e.g., Fairmont Royal York"
                                             required
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                            placeholder="e.g., Fairmont Royal York"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
                                             Location *
                                         </label>
                                         <input
@@ -116,9 +121,9 @@ export default function Create({ auth }) {
                                             name="location"
                                             value={formData.location}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="e.g., Toronto, ON"
                                             required
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                            placeholder="e.g., Toronto, ON"
                                         />
                                     </div>
                                 </div>
@@ -126,14 +131,11 @@ export default function Create({ auth }) {
 
                             {/* Dates */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium flex items-center space-x-2">
-                                    <Calendar className="h-5 w-5" />
-                                    <span>Stay Dates</span>
-                                </h3>
+                                <h3 className="text-lg font-medium text-gray-900">Dates</h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
                                             Check-in Date *
                                         </label>
                                         <input
@@ -141,13 +143,13 @@ export default function Create({ auth }) {
                                             name="check_in_date"
                                             value={formData.check_in_date}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
                                             Check-out Date *
                                         </label>
                                         <input
@@ -155,118 +157,108 @@ export default function Create({ auth }) {
                                             name="check_out_date"
                                             value={formData.check_out_date}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             required
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Guests and Currency */}
+                            {/* Guests and Price */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium flex items-center space-x-2">
-                                    <Users className="h-5 w-5" />
-                                    <span>Guests & Currency</span>
-                                </h3>
+                                <h3 className="text-lg font-medium text-gray-900">Guests and Price</h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">
-                                            Number of Guests *
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
+                                            Number of Guests
                                         </label>
-                                        <select
+                                        <input
+                                            type="number"
                                             name="guests"
                                             value={formData.guests}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            required
-                                        >
-                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                                                <option key={num} value={num}>
-                                                    {num} {num === 1 ? 'Guest' : 'Guests'}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            min="1"
+                                            max="10"
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                        />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">
-                                            Currency *
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
+                                            Currency
                                         </label>
                                         <select
                                             name="currency"
                                             value={formData.currency}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            required
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
                                         >
                                             {currencies.map(currency => (
                                                 <option key={currency.code} value={currency.code}>
-                                                    {currency.symbol} {currency.name} ({currency.code})
+                                                    {currency.symbol} {currency.name}
                                                 </option>
                                             ))}
                                         </select>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Pricing */}
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-medium flex items-center space-x-2">
-                                    <DollarSign className="h-5 w-5" />
-                                    <span>Pricing Information</span>
-                                </h3>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">
-                                            Original Price *
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
+                                            Total Price *
                                         </label>
                                         <input
                                             type="number"
                                             name="original_price"
                                             value={formData.original_price}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="0.00"
+                                            required
                                             step="0.01"
                                             min="0"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2">
-                                            Booking Reference
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="booking_reference"
-                                            value={formData.booking_reference}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            placeholder="e.g., FRY-2025-001"
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                            placeholder="0.00"
                                         />
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Booking Reference */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium text-gray-900">Booking Reference (Optional)</h3>
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-700">
+                                        Booking Reference
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="booking_reference"
+                                        value={formData.booking_reference}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                        placeholder="e.g., ABC123456"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        This helps us verify your booking details
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* Submit Button */}
-                            <div className="flex justify-end space-x-4">
+                            <div className="flex justify-end space-x-4 pt-4">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => window.history.back()}
-                                    disabled={isSubmitting}
+                                    className="border-gray-200 text-gray-700 hover:bg-gray-50"
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="bg-blue-600 hover:bg-blue-700"
+                                    className="bg-green-500 hover:bg-green-600 text-white border-0"
                                 >
-                                    {isSubmitting ? 'Adding Trip...' : 'Track This Trip'}
+                                    {isSubmitting ? 'Creating...' : 'Create Booking'}
                                 </Button>
                             </div>
                         </form>

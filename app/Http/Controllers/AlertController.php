@@ -16,50 +16,56 @@ class AlertController extends Controller
                 'id' => 1,
                 'booking_id' => 1,
                 'hotel_name' => 'Fairmont Royal York',
+                'location' => 'Toronto, ON',
                 'triggered_at' => Carbon::now()->subHours(2)->toISOString(),
+                'created_at' => Carbon::now()->subHours(2)->toISOString(),
                 'provider' => 'Google Hotels',
-                'old_price' => 1316.00,
-                'new_price' => 1184.00,
+                'current_price' => 1184.00,
+                'booked_price' => 1316.00,
                 'delta_amount' => -132.00,
                 'delta_percent' => -10.0,
                 'rule_threshold' => '>$50 drop',
                 'status' => 'new',
-                'severity' => 'high'
+                'severity' => 'high',
+                'currency' => 'USD',
+                'check_in_date' => Carbon::now()->addDays(30)->toISOString()
             ],
             [
                 'id' => 2,
                 'booking_id' => 3,
                 'hotel_name' => 'Hotel Arts Barcelona',
+                'location' => 'Barcelona, Spain',
                 'triggered_at' => Carbon::now()->subHours(1)->toISOString(),
+                'created_at' => Carbon::now()->subHours(1)->toISOString(),
                 'provider' => 'Booking.com',
-                'old_price' => 850.00,
-                'new_price' => 765.00,
+                'current_price' => 765.00,
+                'booked_price' => 850.00,
                 'delta_amount' => -85.00,
                 'delta_percent' => -10.0,
                 'rule_threshold' => '>5% drop',
                 'status' => 'actioned',
-                'severity' => 'medium'
+                'severity' => 'medium',
+                'currency' => 'USD',
+                'check_in_date' => Carbon::now()->addDays(45)->toISOString()
             ],
             [
                 'id' => 3,
                 'booking_id' => 4,
                 'hotel_name' => 'Park Hyatt Tokyo',
+                'location' => 'Tokyo, Japan',
                 'triggered_at' => Carbon::now()->subHours(4)->toISOString(),
+                'created_at' => Carbon::now()->subHours(4)->toISOString(),
                 'provider' => 'Expedia',
-                'old_price' => 150000.00,
-                'new_price' => 135000.00,
+                'current_price' => 135000.00,
+                'booked_price' => 150000.00,
                 'delta_amount' => -15000.00,
                 'delta_percent' => -10.0,
                 'rule_threshold' => '>$1000 drop',
                 'status' => 'dismissed',
-                'severity' => 'high'
+                'severity' => 'high',
+                'currency' => 'JPY',
+                'check_in_date' => Carbon::now()->addDays(60)->toISOString()
             ]
-        ];
-
-        $filters = [
-            'status' => ['new', 'actioned', 'dismissed'],
-            'severity' => ['low', 'medium', 'high'],
-            'providers' => ['Google Hotels', 'Booking.com', 'Expedia', 'Hotels.com']
         ];
 
         return Inertia::render('Alerts/Index', [
@@ -71,7 +77,6 @@ class AlertController extends Controller
                 ],
             ],
             'alerts' => $alerts,
-            'filters' => $filters,
             'stats' => [
                 'total_alerts' => count($alerts),
                 'new_alerts' => count(array_filter($alerts, fn($alert) => $alert['status'] === 'new')),
