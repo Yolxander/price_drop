@@ -23,6 +23,8 @@ import {
     Calendar,
     MapPin,
     ChevronDown,
+    ChevronLeft,
+    ChevronRight,
     Star,
     Plus,
     X,
@@ -37,6 +39,8 @@ import {
 export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }) {
     const [showAddBooking, setShowAddBooking] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
+    const [showImageGallery, setShowImageGallery] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [formData, setFormData] = useState({
         hotel_name: '',
         location: '',
@@ -167,6 +171,32 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
     const handleCloseBookingPanel = () => {
         setSelectedBooking(null);
+    };
+
+    const handleImageClick = (index) => {
+        setSelectedImageIndex(index);
+    };
+
+    const handleOpenGallery = () => {
+        setShowImageGallery(true);
+    };
+
+    const handleCloseGallery = () => {
+        setShowImageGallery(false);
+    };
+
+    const handlePreviousImage = () => {
+        if (selectedBooking?.enriched_data?.overview?.screenshots) {
+            const totalImages = selectedBooking.enriched_data.overview.screenshots.length;
+            setSelectedImageIndex((prev) => (prev === 0 ? totalImages - 1 : prev - 1));
+        }
+    };
+
+    const handleNextImage = () => {
+        if (selectedBooking?.enriched_data?.overview?.screenshots) {
+            const totalImages = selectedBooking.enriched_data.overview.screenshots.length;
+            setSelectedImageIndex((prev) => (prev === totalImages - 1 ? 0 : prev + 1));
+        }
     };
 
     return (
@@ -498,20 +528,24 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             {selectedBooking.enriched_data?.overview?.screenshots && selectedBooking.enriched_data.overview.screenshots.length > 0 ? (
                                 <div className="grid grid-cols-3 gap-2 mb-4">
                                     <img
-                                        src={selectedBooking.enriched_data.overview.screenshots[0]}
+                                        src={selectedBooking.enriched_data.overview.screenshots[selectedImageIndex]}
                                         alt="Main hotel"
-                                        className="col-span-3 w-full h-48 object-cover rounded-lg"
+                                        className="col-span-3 w-full h-48 object-cover rounded-lg cursor-pointer"
+                                        onClick={handleOpenGallery}
                                         onError={(e) => {
                                             console.error('Failed to load image:', e.target.src);
                                             e.target.style.display = 'none';
                                         }}
                                     />
-                                    {selectedBooking.enriched_data.overview.screenshots.slice(1, 3).map((image, index) => (
+                                    {selectedBooking.enriched_data.overview.screenshots.slice(0, 3).map((image, index) => (
                                         <img
                                             key={index}
                                             src={image}
-                                            alt={`Hotel ${index + 2}`}
-                                            className="w-full h-20 object-cover rounded-lg"
+                                            alt={`Hotel ${index + 1}`}
+                                            className={`w-full h-20 object-cover rounded-lg cursor-pointer transition-opacity ${
+                                                index === selectedImageIndex ? 'opacity-100 ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'
+                                            }`}
+                                            onClick={() => handleImageClick(index)}
                                             onError={(e) => {
                                                 console.error('Failed to load image:', e.target.src);
                                                 e.target.style.display = 'none';
@@ -519,7 +553,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         />
                                     ))}
                                     {selectedBooking.enriched_data.overview.screenshots.length > 3 && (
-                                        <div className="relative">
+                                        <div className="relative cursor-pointer" onClick={handleOpenGallery}>
                                             <img
                                                 src={selectedBooking.enriched_data.overview.screenshots[3]}
                                                 alt="Hotel"
@@ -740,6 +774,86 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Image Gallery Modal */}
+            {showImageGallery && selectedBooking?.enriched_data?.overview?.screenshots && (
+                <Dialog open={showImageGallery} onOpenChange={setShowImageGallery}>
+                    <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+                        <div className="relative">
+                            {/* Close button */}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleCloseGallery}
+                                className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+
+                            {/* Main image */}
+                            <div className="relative">
+                                <img
+                                    src={selectedBooking.enriched_data.overview.screenshots[selectedImageIndex]}
+                                    alt={`Hotel image ${selectedImageIndex + 1}`}
+                                    className="w-full h-[70vh] object-cover"
+                                    onError={(e) => {
+                                        console.error('Failed to load image:', e.target.src);
+                                        e.target.style.display = 'none';
+                                    }}
+                                />
+
+                                {/* Navigation arrows */}
+                                {selectedBooking.enriched_data.overview.screenshots.length > 1 && (
+                                    <>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={handlePreviousImage}
+                                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={handleNextImage}
+                                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </>
+                                )}
+
+                                {/* Image counter */}
+                                <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                                    {selectedImageIndex + 1} / {selectedBooking.enriched_data.overview.screenshots.length}
+                                </div>
+                            </div>
+
+                            {/* Thumbnail strip */}
+                            <div className="p-4 bg-gray-100">
+                                <div className="flex gap-2 overflow-x-auto">
+                                    {selectedBooking.enriched_data.overview.screenshots.map((image, index) => (
+                                        <img
+                                            key={index}
+                                            src={image}
+                                            alt={`Thumbnail ${index + 1}`}
+                                            className={`h-16 w-24 object-cover rounded cursor-pointer transition-opacity ${
+                                                index === selectedImageIndex ? 'opacity-100 ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'
+                                            }`}
+                                            onClick={() => setSelectedImageIndex(index)}
+                                            onError={(e) => {
+                                                console.error('Failed to load thumbnail:', e.target.src);
+                                                e.target.style.display = 'none';
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             )}
         </div>
     );
