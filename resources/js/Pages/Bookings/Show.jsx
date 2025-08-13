@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail } from 'lucide-react';
+import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail, Home, Grid3X3, Bell, Heart, Settings, LogOut } from 'lucide-react';
 
 export default function Show({ auth, booking }) {
     const [loading, setLoading] = useState(false);
@@ -53,37 +52,109 @@ export default function Show({ auth, booking }) {
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Booking Details</h2>}
-        >
-            <Head title={`Booking - ${booking.hotel_name}`} />
+        <div className="flex h-screen bg-gray-50">
+            {/* Left Sidebar */}
+            <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+                {/* Logo */}
+                <div className="p-6 border-b border-gray-200">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <span className="text-white font-bold text-lg">T</span>
+                        </div>
+                        <span className="text-xl font-bold text-blue-600">Tamago</span>
+                    </div>
+                </div>
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="mb-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900">{booking.hotel_name}</h1>
-                                <p className="text-gray-600 mt-1">{booking.location}</p>
+                {/* Navigation */}
+                <nav className="flex-1 p-4 space-y-2">
+                    <Link href="/dashboard" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Home className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Dashboard</span>
+                        </div>
+                    </Link>
+                    <Link href="/bookings" className="block">
+                        <div className="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg">
+                            <Grid3X3 className="h-5 w-5 text-blue-600" />
+                            <span className="font-medium text-gray-900">All Bookings</span>
+                        </div>
+                    </Link>
+                    <Link href="/price-alerts" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <div className="relative">
+                                <Bell className="h-5 w-5 text-gray-600" />
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                    <span className="text-xs text-white font-medium">2</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <Link href="/bookings">
-                                    <Button variant="outline">Back to Bookings</Button>
-                                </Link>
-                                {!booking.enrichment_successful && (
-                                        <Button
-                                        onClick={triggerEnrichment}
-                                        disabled={loading}
-                                        variant="default"
-                                    >
-                                        {loading ? 'Enriching...' : 'Enrich Data'}
-                                        </Button>
-                                )}
-                            </div>
+                            <span className="text-gray-700">Price Drops</span>
+                        </div>
+                    </Link>
+                    <Link href="/favorites" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Heart className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Favorite</span>
+                        </div>
+                    </Link>
+                    <Link href="/settings" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Settings className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Settings</span>
+                        </div>
+                    </Link>
+                </nav>
+
+                {/* Promotional Card */}
+                <div className="p-4">
+                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                        <CardContent className="p-4">
+                            <h3 className="font-bold text-blue-900 mb-2">Get 45% Off.</h3>
+                            <p className="text-sm text-blue-700 mb-3">Special Price for you, hotel discount up to 45%</p>
+                            <div className="w-full h-20 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg"></div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Logout */}
+                <div className="p-4 border-t border-gray-200">
+                    <Link href="/logout" method="post" as="button" className="w-full">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <LogOut className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Log Out</span>
+                        </div>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Header */}
+                <div className="bg-white border-b border-gray-200 p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">{booking.hotel_name}</h1>
+                            <p className="text-gray-600 mt-1">{booking.location}</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Link href="/bookings">
+                                <Button variant="outline">Back to Bookings</Button>
+                            </Link>
+                            {!booking.enrichment_successful && (
+                                <Button
+                                    onClick={triggerEnrichment}
+                                    disabled={loading}
+                                    variant="default"
+                                >
+                                    {loading ? 'Enriching...' : 'Enrich Data'}
+                                </Button>
+                            )}
                         </div>
                     </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6">
+                    <Head title={`Booking - ${booking.hotel_name}`} />
 
                     {/* Enrichment Status */}
                     {enrichmentStatus && (
@@ -110,7 +181,7 @@ export default function Show({ auth, booking }) {
                                     <TabsTrigger value="history">History</TabsTrigger>
                                 </TabsList>
 
-                                                                <TabsContent value="overview" className="mt-6">
+                                <TabsContent value="overview" className="mt-6">
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Hotel Overview</CardTitle>
@@ -195,7 +266,7 @@ export default function Show({ auth, booking }) {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Facilities & Amenities</CardTitle>
-                    </CardHeader>
+                                        </CardHeader>
                                         <CardContent>
                                             {booking.enriched_data?.facilities ? (
                                                 <div className="space-y-6">
@@ -239,14 +310,14 @@ export default function Show({ auth, booking }) {
                                                 </div>
                                             )}
                                         </CardContent>
-                </Card>
+                                    </Card>
                                 </TabsContent>
 
                                 <TabsContent value="details" className="mt-6">
                                     <Card>
-                        <CardHeader>
+                                        <CardHeader>
                                             <CardTitle>Booking Details</CardTitle>
-                        </CardHeader>
+                                        </CardHeader>
                                         <CardContent>
                                             <div className="space-y-6">
                                                 <div className="grid grid-cols-2 gap-6">
@@ -303,7 +374,7 @@ export default function Show({ auth, booking }) {
                                                             </div>
                                                         </div>
                                                     </div>
-                            </div>
+                                                </div>
 
                                                 <Separator />
 
@@ -312,7 +383,7 @@ export default function Show({ auth, booking }) {
                                                     <p className="text-sm">
                                                         {booking.enriched_data?.details?.cancellation_policy || 'Standard cancellation policy applies'}
                                                     </p>
-                            </div>
+                                                </div>
 
                                                 {booking.enriched_data?.details?.booking_link && (
                                                     <>
@@ -327,19 +398,19 @@ export default function Show({ auth, booking }) {
                                                             >
                                                                 View Booking Details
                                                             </a>
-                            </div>
+                                                        </div>
                                                     </>
                                                 )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 </TabsContent>
 
                                 <TabsContent value="history" className="mt-6">
                                     <Card>
-                        <CardHeader>
+                                        <CardHeader>
                                             <CardTitle>Price History & Tracking</CardTitle>
-                        </CardHeader>
+                                        </CardHeader>
                                         <CardContent>
                                             <div className="space-y-6">
                                                 <div className="grid grid-cols-2 gap-6">
@@ -349,23 +420,23 @@ export default function Show({ auth, booking }) {
                                                             <div>
                                                                 <span className="text-sm text-gray-600">Original Price:</span>
                                                                 <p className="font-medium">
-                                    {formatCurrency(booking.original_price, booking.currency)}
+                                                                    {formatCurrency(booking.original_price, booking.currency)}
                                                                 </p>
-                            </div>
+                                                            </div>
                                                             <div>
                                                                 <span className="text-sm text-gray-600">Current Price:</span>
                                                                 <p className="font-medium">
-                                    {formatCurrency(booking.current_price, booking.currency)}
+                                                                    {formatCurrency(booking.current_price, booking.currency)}
                                                                 </p>
-                            </div>
-                            {booking.price_drop_detected && (
+                                                            </div>
+                                                            {booking.price_drop_detected && (
                                                                 <div>
                                                                     <span className="text-sm text-gray-600">Price Drop:</span>
                                                                     <p className="font-medium text-green-600">
                                                                         -{formatCurrency(booking.price_drop_amount, booking.currency)} ({booking.price_drop_percentage}%)
                                                                     </p>
-                                </div>
-                            )}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
 
@@ -422,21 +493,21 @@ export default function Show({ auth, booking }) {
                                                         </div>
                                                     </div>
                                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 </TabsContent>
                             </Tabs>
-                </div>
+                        </div>
 
                         {/* Sidebar */}
                         <div className="space-y-6">
                             {/* Price Summary */}
                             <Card>
-                    <CardHeader>
+                                <CardHeader>
                                     <CardTitle>Price Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                                </CardHeader>
+                                <CardContent>
                                     <div className="space-y-3">
                                         <div className="flex justify-between">
                                             <span>Original Price:</span>
@@ -462,10 +533,10 @@ export default function Show({ auth, booking }) {
                                         <div className="flex justify-between">
                                             <span>Total Nights:</span>
                                             <span className="font-medium">{booking.nights}</span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
 
                             {/* Quick Actions */}
                             <Card>
@@ -491,20 +562,20 @@ export default function Show({ auth, booking }) {
                             {/* Booking Reference */}
                             {booking.booking_reference && (
                                 <Card>
-                    <CardHeader>
+                                    <CardHeader>
                                         <CardTitle>Booking Reference</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                                    </CardHeader>
+                                    <CardContent>
                                         <p className="font-mono text-sm bg-gray-100 p-2 rounded">
                                             {booking.booking_reference}
                                         </p>
                                     </CardContent>
                                 </Card>
-                                    )}
-                                </div>
-                            </div>
+                            )}
                         </div>
+                    </div>
+                </div>
             </div>
-        </AuthenticatedLayout>
+        </div>
     );
 }
