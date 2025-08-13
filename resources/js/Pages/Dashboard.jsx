@@ -147,6 +147,13 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
             currency: booking.currency || 'USD',
             status: booking.status || 'active',
             booking_confirmation: booking.booking_confirmation || 'CONF-123456789',
+            // Price information from actual booking data
+            original_price: booking.original_price || booking.total_price || 150.00,
+            current_price: booking.current_price || booking.total_price || 150.00,
+            price_drop_detected: booking.price_drop_detected || false,
+            price_drop_amount: booking.price_drop_amount || 0,
+            price_drop_percentage: booking.price_drop_percentage || 0,
+            last_checked: booking.last_checked || null,
             // Use enriched data if available
             hotel_image: booking.enriched_data?.overview?.screenshots?.[0] || null,
             hotel_description: booking.enriched_data?.overview?.description || "A beautiful hotel with modern amenities and excellent service.",
@@ -768,20 +775,20 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     <div>
                                                         <span className="text-sm text-gray-600">Original Price:</span>
                                                         <p className="text-sm font-medium">
-                                                            ${selectedBooking.original_price}
+                                                            ${(Number(selectedBooking.original_price) || 0).toFixed(2)}
                                                         </p>
                                                     </div>
                                                     <div>
                                                         <span className="text-sm text-gray-600">Current Price:</span>
                                                         <p className="text-sm font-medium">
-                                                            ${selectedBooking.current_price}
+                                                            ${(Number(selectedBooking.current_price) || 0).toFixed(2)}
                                                         </p>
                                                     </div>
                                                     {selectedBooking.price_drop_detected && (
                                                         <div>
                                                             <span className="text-sm text-gray-600">Price Drop:</span>
                                                             <p className="text-sm font-medium text-green-600">
-                                                                -${selectedBooking.price_drop_amount} ({selectedBooking.price_drop_percentage}%)
+                                                                -${(Number(selectedBooking.price_drop_amount) || 0).toFixed(2)} ({(Number(selectedBooking.price_drop_percentage) || 0).toFixed(1)}%)
                                                             </p>
                                                         </div>
                                                     )}
