@@ -125,6 +125,9 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     const handleBookingClick = (booking) => {
+        console.log('Booking clicked:', booking);
+        console.log('Enriched data:', booking.enriched_data);
+
         // Use the actual booking data with enriched information
         const bookingDetails = {
             id: booking.id,
@@ -498,6 +501,10 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         src={selectedBooking.enriched_data.overview.screenshots[0]}
                                         alt="Main hotel"
                                         className="col-span-3 w-full h-48 object-cover rounded-lg"
+                                        onError={(e) => {
+                                            console.error('Failed to load image:', e.target.src);
+                                            e.target.style.display = 'none';
+                                        }}
                                     />
                                     {selectedBooking.enriched_data.overview.screenshots.slice(1, 3).map((image, index) => (
                                         <img
@@ -505,6 +512,10 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             src={image}
                                             alt={`Hotel ${index + 2}`}
                                             className="w-full h-20 object-cover rounded-lg"
+                                            onError={(e) => {
+                                                console.error('Failed to load image:', e.target.src);
+                                                e.target.style.display = 'none';
+                                            }}
                                         />
                                     ))}
                                     {selectedBooking.enriched_data.overview.screenshots.length > 3 && (
@@ -513,6 +524,10 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 src={selectedBooking.enriched_data.overview.screenshots[3]}
                                                 alt="Hotel"
                                                 className="w-full h-20 object-cover rounded-lg"
+                                                onError={(e) => {
+                                                    console.error('Failed to load image:', e.target.src);
+                                                    e.target.style.display = 'none';
+                                                }}
                                             />
                                             <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
                                                 <span className="text-white text-sm font-medium">+{selectedBooking.enriched_data.overview.screenshots.length - 4}</span>
@@ -522,7 +537,9 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                 </div>
                             ) : (
                                 <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-lg mb-4">
-                                    <span className="text-gray-500 text-sm">No images available</span>
+                                    <span className="text-gray-500 text-sm">
+                                        {selectedBooking.enriched_data ? 'No images available' : 'Loading images...'}
+                                    </span>
                                 </div>
                             )}
 
@@ -537,7 +554,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
                                 <TabsContent value="overview" className="mt-4">
                                     <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                                        {selectedBooking.hotel_description}
+                                        {selectedBooking.enriched_data?.details?.room_description || selectedBooking.hotel_description || "A beautiful hotel with modern amenities and excellent service."}
                                     </p>
                                     <Button variant="link" className="text-blue-600 p-0 h-auto text-sm">Read more</Button>
 
@@ -573,11 +590,20 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     <div className="space-y-4">
                                         <h4 className="font-semibold text-gray-900">Hotel Amenities</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {selectedBooking.amenities.map((amenity, index) => (
-                                                <Badge key={index} variant="outline" className="text-xs">
-                                                    {amenity}
+                                            {selectedBooking.enriched_data?.facilities?.amenities && selectedBooking.enriched_data.facilities.amenities.length > 0 ? (
+                                                selectedBooking.enriched_data.facilities.amenities.slice(0, 20).map((amenity, index) => (
+                                                    <Badge key={index} variant="outline" className="text-xs">
+                                                        {amenity}
+                                                    </Badge>
+                                                ))
+                                            ) : (
+                                                <p className="text-gray-500 text-sm">No amenities information available</p>
+                                            )}
+                                            {selectedBooking.enriched_data?.facilities?.amenities && selectedBooking.enriched_data.facilities.amenities.length > 20 && (
+                                                <Badge variant="outline" className="text-xs">
+                                                    +{selectedBooking.enriched_data.facilities.amenities.length - 20} more
                                                 </Badge>
-                                            ))}
+                                            )}
                                         </div>
 
                                         <div className="space-y-3">
@@ -602,17 +628,33 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
                                 <TabsContent value="details" className="mt-4">
                                     <div className="space-y-4">
-                                        <h4 className="font-semibold text-gray-900">Booking Details</h4>
+                                        <h4 className="font-semibold text-gray-900">Hotel Details</h4>
 
                                         <div className="space-y-3">
-                                            <div>
-                                                <span className="text-sm text-gray-600">Confirmation Number:</span>
-                                                <p className="font-mono text-sm font-medium">{selectedBooking.booking_confirmation}</p>
-                                            </div>
-                                            <div>
-                                                <span className="text-sm text-gray-600">Room Type:</span>
-                                                <p className="text-sm font-medium">{selectedBooking.room_type}</p>
-                                            </div>
+                                            {selectedBooking.enriched_data?.overview?.canonical_name && (
+                                                <div>
+                                                    <span className="text-sm text-gray-600">Hotel Name:</span>
+                                                    <p className="text-sm font-medium">{selectedBooking.enriched_data.overview.canonical_name}</p>
+                                                </div>
+                                            )}
+                                            {selectedBooking.enriched_data?.overview?.star_rating && (
+                                                <div>
+                                                    <span className="text-sm text-gray-600">Star Rating:</span>
+                                                    <p className="text-sm font-medium">{selectedBooking.enriched_data.overview.star_rating} ★</p>
+                                                </div>
+                                            )}
+                                            {selectedBooking.enriched_data?.overview?.address && (
+                                                <div>
+                                                    <span className="text-sm text-gray-600">Address:</span>
+                                                    <p className="text-sm font-medium">{selectedBooking.enriched_data.overview.address}</p>
+                                                </div>
+                                            )}
+                                            {selectedBooking.enriched_data?.details?.room_type && (
+                                                <div>
+                                                    <span className="text-sm text-gray-600">Room Type:</span>
+                                                    <p className="text-sm font-medium">{selectedBooking.enriched_data.details.room_type}</p>
+                                                </div>
+                                            )}
                                             <div>
                                                 <span className="text-sm text-gray-600">Duration:</span>
                                                 <p className="text-sm font-medium">{selectedBooking.nights} nights</p>
@@ -625,26 +667,28 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
                                         <Separator />
 
-                                        <div className="space-y-3">
-                                            <h5 className="font-medium text-gray-900">Contact Information</h5>
-                                            <div className="space-y-2 text-sm">
-                                                <div>
-                                                    <span className="text-gray-600">Phone:</span>
-                                                    <p className="font-medium">{selectedBooking.contact_info.phone}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-gray-600">Email:</span>
-                                                    <p className="font-medium">{selectedBooking.contact_info.email}</p>
-                                                </div>
+                                        {selectedBooking.enriched_data?.details?.booking_link && (
+                                            <div className="space-y-3">
+                                                <h5 className="font-medium text-gray-900">Booking Link</h5>
+                                                <a
+                                                    href={selectedBooking.enriched_data.details.booking_link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline text-sm"
+                                                >
+                                                    View on Hotel Website
+                                                </a>
                                             </div>
-                                        </div>
+                                        )}
 
                                         <Separator />
 
-                                        <div className="space-y-3">
-                                            <h5 className="font-medium text-gray-900">Cancellation Policy</h5>
-                                            <p className="text-sm text-gray-600">{selectedBooking.cancellation_policy}</p>
-                                        </div>
+                                        {selectedBooking.enriched_data?.details?.cancellation_policy && (
+                                            <div className="space-y-3">
+                                                <h5 className="font-medium text-gray-900">Cancellation Policy</h5>
+                                                <p className="text-sm text-gray-600">{selectedBooking.enriched_data.details.cancellation_policy}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </TabsContent>
 
