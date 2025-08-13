@@ -86,7 +86,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
         // Get the first screenshot from enriched data, or use placeholder
         const screenshots = booking.enriched_data?.overview?.screenshots || [];
         const image = screenshots.length > 0 ? screenshots[0] : null;
-        
+
         return {
             id: booking.id,
             name: booking.hotel_name,
@@ -232,168 +232,177 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
-                    {/* Properties Grid */}
-                    <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1'}`}>
-                        {currentProperties.map((property) => (
-                            <Card key={property.id} className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200">
-                                <div className="relative">
-                                    {property.image ? (
-                                        <img
-                                            src={property.image}
-                                            alt={property.name}
-                                            className="w-full h-48 object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                                            <span className="text-gray-500 text-sm">No image available</span>
-                                        </div>
-                                    )}
-                                    <div className="absolute top-3 right-3">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="secondary"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48">
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/bookings/${property.id}`}>
-                                                        View Details
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/bookings/${property.id}/edit`}>
-                                                        Edit Booking
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="text-red-600 focus:text-red-600"
-                                                    onClick={() => handleDeleteClick(property)}
-                                                >
-                                                    Delete Booking
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                    <div className="absolute top-3 left-3">
-                                        <Badge variant="default" className="bg-primary text-primary-foreground font-medium">
-                                            ${property.price}
-                                        </Badge>
-                                    </div>
-                                    {property.status && (
-                                        <div className="absolute top-3 left-20">
-                                            <Badge variant={getStatusBadgeVariant(property.status)}>
-                                                {property.status}
-                                            </Badge>
-                                        </div>
-                                    )}
-                                </div>
-                                <CardContent className="p-6">
-                                    <div className="space-y-3">
-                                        <div>
-                                            <h3 className="font-semibold text-foreground text-lg leading-tight mb-1">
-                                                {property.name}
-                                            </h3>
-                                            <div className="flex items-center text-sm text-muted-foreground">
-                                                <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
-                                                <span className="truncate">{property.location}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-3 gap-3 text-sm">
-                                            <div className="flex items-center text-muted-foreground">
-                                                <Bed className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                <span>{property.beds} room{property.beds > 1 ? 's' : ''}</span>
-                                            </div>
-                                            <div className="flex items-center text-muted-foreground">
-                                                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                <span>{property.nights} night{property.nights > 1 ? 's' : ''}</span>
-                                            </div>
-                                            <div className="flex items-center text-muted-foreground">
-                                                <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                <span>{property.guests} guest{property.guests > 1 ? 's' : ''}</span>
-                                            </div>
-                                        </div>
-
-                                        {property.checkIn && (
-                                            <div className="pt-2 border-t border-border">
-                                                <div className="text-xs text-muted-foreground">
-                                                    Check-in: {formatDate(property.checkIn)}
+                {/* Content Area with Flex Layout */}
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    {/* Properties Grid - Scrollable Content */}
+                    <div className="flex-1 overflow-y-auto p-6">
+                        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}>
+                            {currentProperties.map((property) => (
+                                <Link key={property.id} href={`/bookings/${property.id}`} className="block">
+                                    <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02]">
+                                        <div className="relative">
+                                            {property.image ? (
+                                                <img
+                                                    src={property.image}
+                                                    alt={property.name}
+                                                    className="w-full h-48 object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                                                    <span className="text-gray-500 text-sm">No image available</span>
                                                 </div>
+                                            )}
+                                            <div className="absolute top-3 right-3">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="secondary"
+                                                            size="sm"
+                                                            className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-48">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={`/bookings/${property.id}`}>
+                                                                View Details
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={`/bookings/${property.id}/edit`}>
+                                                                Edit Booking
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="text-red-600 focus:text-red-600"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                handleDeleteClick(property);
+                                                            }}
+                                                        >
+                                                            Delete Booking
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                            <div className="absolute top-3 left-3">
+                                                <Badge variant="default" className="bg-primary text-primary-foreground font-medium">
+                                                    ${property.price}
+                                                </Badge>
+                                            </div>
+                                            {property.status && (
+                                                <div className="absolute top-3 left-20">
+                                                    <Badge variant={getStatusBadgeVariant(property.status)}>
+                                                        {property.status}
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <CardContent className="p-6">
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 group-hover:text-blue-600 transition-colors">
+                                                        {property.name}
+                                                    </h3>
+                                                    <div className="flex items-center text-sm text-muted-foreground">
+                                                        <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                                                        <span className="truncate">{property.location}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-3 gap-3 text-sm">
+                                                    <div className="flex items-center text-muted-foreground">
+                                                        <Bed className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                        <span>{property.beds} room{property.beds > 1 ? 's' : ''}</span>
+                                                    </div>
+                                                    <div className="flex items-center text-muted-foreground">
+                                                        <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                        <span>{property.nights} night{property.nights > 1 ? 's' : ''}</span>
+                                                    </div>
+                                                    <div className="flex items-center text-muted-foreground">
+                                                        <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                        <span>{property.guests} guest{property.guests > 1 ? 's' : ''}</span>
+                                                    </div>
+                                                </div>
+
+                                                {property.checkIn && (
+                                                    <div className="pt-2 border-t border-border">
+                                                        <div className="text-xs text-muted-foreground">
+                                                            Check-in: {formatDate(property.checkIn)}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Pagination */}
-                    <div className="flex items-center justify-between mt-8">
-                        <div className="text-sm text-gray-600">
-                            Showing {startIndex + 1} to {Math.min(endIndex, filteredProperties.length)} of {filteredProperties.length} entries
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                disabled={currentPage === 1}
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                                Prev
-                            </Button>
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                const pageNum = i + 1;
-                                return (
-                                    <Button
-                                        key={pageNum}
-                                        variant={currentPage === pageNum ? 'default' : 'outline'}
-                                        size="sm"
-                                        onClick={() => setCurrentPage(pageNum)}
-                                        className="w-8 h-8 p-0"
-                                    >
-                                        {pageNum}
-                                    </Button>
-                                );
-                            })}
-                            {totalPages > 5 && (
-                                <>
-                                    <span className="text-gray-500">...</span>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setCurrentPage(totalPages - 1)}
-                                        className="w-8 h-8 p-0"
-                                    >
-                                        {totalPages - 1}
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setCurrentPage(totalPages)}
-                                        className="w-8 h-8 p-0"
-                                    >
-                                        {totalPages}
-                                    </Button>
-                                </>
-                            )}
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                disabled={currentPage === totalPages}
-                            >
-                                Next
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
+                    {/* Pagination - Fixed at Bottom */}
+                    <div className="bg-white border-t border-gray-200 p-6">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                                Showing {startIndex + 1} to {Math.min(endIndex, filteredProperties.length)} of {filteredProperties.length} entries
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                    Prev
+                                </Button>
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                    const pageNum = i + 1;
+                                    return (
+                                        <Button
+                                            key={pageNum}
+                                            variant={currentPage === pageNum ? 'default' : 'outline'}
+                                            size="sm"
+                                            onClick={() => setCurrentPage(pageNum)}
+                                            className="w-8 h-8 p-0"
+                                        >
+                                            {pageNum}
+                                        </Button>
+                                    );
+                                })}
+                                {totalPages > 5 && (
+                                    <>
+                                        <span className="text-gray-500">...</span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(totalPages - 1)}
+                                            className="w-8 h-8 p-0"
+                                        >
+                                            {totalPages - 1}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            className="w-8 h-8 p-0"
+                                        >
+                                            {totalPages}
+                                        </Button>
+                                    </>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Next
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>

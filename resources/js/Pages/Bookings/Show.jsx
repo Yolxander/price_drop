@@ -69,7 +69,7 @@ export default function Show({ auth, booking }) {
                                 <p className="text-gray-600 mt-1">{booking.location}</p>
                             </div>
                             <div className="flex items-center gap-4">
-                                <Link href={route('bookings.index')}>
+                                <Link href="/bookings">
                                     <Button variant="outline">Back to Bookings</Button>
                                 </Link>
                                 {!booking.enrichment_successful && (
