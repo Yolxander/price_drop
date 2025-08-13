@@ -26,6 +26,9 @@ class DashboardController extends Controller
             $booking->price_per_night = $booking->original_price / $nights;
             $booking->rooms = 1; // Default to 1 room since we don't store this
             $booking->nights = $nights;
+
+            // Add enriched data for frontend
+            $booking->enriched_data = $booking->getEnrichedData();
         });
 
         // Calculate dashboard stats

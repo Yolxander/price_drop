@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Link } from '@inertiajs/react';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Link, router } from '@inertiajs/react';
 import {
     Home,
     Grid3X3,
@@ -23,13 +25,16 @@ import {
     ChevronLeft,
     ChevronRight,
     LayoutGrid,
-    List
+    List,
+    Calendar
 } from 'lucide-react';
 
 export default function BookingsIndex({ auth, bookings, stats }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
     const [currentPage, setCurrentPage] = useState(1);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [bookingToDelete, setBookingToDelete] = useState(null);
     const itemsPerPage = 8;
 
     const formatCurrency = (amount, currency) => {
@@ -47,22 +52,57 @@ export default function BookingsIndex({ auth, bookings, stats }) {
         });
     };
 
+    const handleDeleteClick = (booking) => {
+        setBookingToDelete(booking);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = () => {
+        if (bookingToDelete) {
+            router.delete(`/bookings/${bookingToDelete.id}`, {
+                onSuccess: () => {
+                    setDeleteDialogOpen(false);
+                    setBookingToDelete(null);
+                },
+            });
+        }
+    };
+
+    const getStatusBadgeVariant = (status) => {
+        switch (status) {
+            case 'active':
+                return 'default';
+            case 'completed':
+                return 'secondary';
+            case 'paused':
+                return 'outline';
+            default:
+                return 'outline';
+        }
+    };
+
     // Convert bookings data to properties format for display
-    const properties = bookings ? bookings.map(booking => ({
-        id: booking.id,
-        name: booking.hotel_name,
-        location: booking.location,
-        price: booking.total_price,
-        image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-        beds: booking.rooms || 1,
-        baths: 2, // Default value since we don't have this in booking data
-        sqft: 1500, // Default value since we don't have this in booking data
-        checkIn: booking.check_in_date,
-        checkOut: booking.check_out_date,
-        guests: booking.guests,
-        nights: booking.nights,
-        status: booking.status
-    })) : [];
+    const properties = bookings ? bookings.map(booking => {
+        // Get the first screenshot from enriched data, or use placeholder
+        const screenshots = booking.enriched_data?.overview?.screenshots || [];
+        const image = screenshots.length > 0 ? screenshots[0] : null;
+        
+        return {
+            id: booking.id,
+            name: booking.hotel_name,
+            location: booking.location,
+            price: booking.total_price,
+            image: image,
+            beds: booking.rooms || 1,
+            baths: 2, // Default value since we don't have this in booking data
+            sqft: 1500, // Default value since we don't have this in booking data
+            checkIn: booking.check_in_date,
+            checkOut: booking.check_out_date,
+            guests: booking.guests,
+            nights: booking.nights,
+            status: booking.status
+        };
+    }) : [];
 
     const filteredProperties = properties.filter(property =>
         property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -197,76 +237,99 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                     {/* Properties Grid */}
                     <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1'}`}>
                         {currentProperties.map((property) => (
-                            <Card key={property.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                            <Card key={property.id} className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200">
                                 <div className="relative">
-                                    <img
-                                        src={property.image}
-                                        alt={property.name}
-                                        className="w-full h-48 object-cover rounded-t-lg"
-                                    />
-                                    <div className="absolute top-2 right-2">
+                                    {property.image ? (
+                                        <img
+                                            src={property.image}
+                                            alt={property.name}
+                                            className="w-full h-48 object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                                            <span className="text-gray-500 text-sm">No image available</span>
+                                        </div>
+                                    )}
+                                    <div className="absolute top-3 right-3">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button
-                                                    variant="ghost"
+                                                    variant="secondary"
                                                     size="sm"
-                                                    className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
+                                                    className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                                                <DropdownMenuItem>Edit Property</DropdownMenuItem>
-                                                <DropdownMenuItem>Delete Property</DropdownMenuItem>
+                                            <DropdownMenuContent align="end" className="w-48">
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={`/bookings/${property.id}`}>
+                                                        View Details
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={`/bookings/${property.id}/edit`}>
+                                                        Edit Booking
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className="text-red-600 focus:text-red-600"
+                                                    onClick={() => handleDeleteClick(property)}
+                                                >
+                                                    Delete Booking
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
-                                    <div className="absolute top-2 left-2">
-                                        <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">
+                                    <div className="absolute top-3 left-3">
+                                        <Badge variant="default" className="bg-primary text-primary-foreground font-medium">
                                             ${property.price}
-                                        </span>
+                                        </Badge>
                                     </div>
                                     {property.status && (
-                                        <div className="absolute top-2 right-12">
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                property.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                property.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                                                'bg-yellow-100 text-yellow-800'
-                                            }`}>
+                                        <div className="absolute top-3 left-20">
+                                            <Badge variant={getStatusBadgeVariant(property.status)}>
                                                 {property.status}
-                                            </span>
+                                            </Badge>
                                         </div>
                                     )}
                                 </div>
-                                <CardContent className="p-4">
-                                    <h3 className="font-semibold text-gray-900 mb-1">{property.name}</h3>
-                                    <div className="flex items-center text-sm text-gray-600 mb-3">
-                                        <MapPin className="h-3 w-3 mr-1" />
-                                        {property.location}
-                                    </div>
-                                    <div className="flex items-center justify-between text-sm text-gray-600">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="flex items-center">
-                                                <Bed className="h-4 w-4 mr-1" />
+                                <CardContent className="p-6">
+                                    <div className="space-y-3">
+                                        <div>
+                                            <h3 className="font-semibold text-foreground text-lg leading-tight mb-1">
+                                                {property.name}
+                                            </h3>
+                                            <div className="flex items-center text-sm text-muted-foreground">
+                                                <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                                                <span className="truncate">{property.location}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-3 text-sm">
+                                            <div className="flex items-center text-muted-foreground">
+                                                <Bed className="h-4 w-4 mr-2 flex-shrink-0" />
                                                 <span>{property.beds} room{property.beds > 1 ? 's' : ''}</span>
                                             </div>
-                                            <div className="flex items-center">
-                                                <Calendar className="h-4 w-4 mr-1" />
+                                            <div className="flex items-center text-muted-foreground">
+                                                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
                                                 <span>{property.nights} night{property.nights > 1 ? 's' : ''}</span>
                                             </div>
-                                            <div className="flex items-center">
-                                                <MapPin className="h-4 w-4 mr-1" />
+                                            <div className="flex items-center text-muted-foreground">
+                                                <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
                                                 <span>{property.guests} guest{property.guests > 1 ? 's' : ''}</span>
                                             </div>
                                         </div>
+
+                                        {property.checkIn && (
+                                            <div className="pt-2 border-t border-border">
+                                                <div className="text-xs text-muted-foreground">
+                                                    Check-in: {formatDate(property.checkIn)}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    {property.checkIn && (
-                                        <div className="text-xs text-gray-500 mt-2">
-                                            Check-in: {new Date(property.checkIn).toLocaleDateString()}
-                                        </div>
-                                    )}
                                 </CardContent>
                             </Card>
                         ))}
@@ -335,6 +398,32 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Booking</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete "{bookingToDelete?.name}"? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteConfirm}
+                        >
+                            Delete Booking
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

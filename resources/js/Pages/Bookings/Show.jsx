@@ -73,13 +73,13 @@ export default function Show({ auth, booking }) {
                                     <Button variant="outline">Back to Bookings</Button>
                                 </Link>
                                 {!booking.enrichment_successful && (
-                                    <Button
+                                        <Button
                                         onClick={triggerEnrichment}
                                         disabled={loading}
                                         variant="default"
                                     >
                                         {loading ? 'Enriching...' : 'Enrich Data'}
-                                    </Button>
+                                        </Button>
                                 )}
                             </div>
                         </div>
@@ -110,7 +110,7 @@ export default function Show({ auth, booking }) {
                                     <TabsTrigger value="history">History</TabsTrigger>
                                 </TabsList>
 
-                                <TabsContent value="overview" className="mt-6">
+                                                                <TabsContent value="overview" className="mt-6">
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Hotel Overview</CardTitle>
@@ -129,6 +129,27 @@ export default function Show({ auth, booking }) {
                                                             {booking.enriched_data.overview.canonical_name}
                                                         </Badge>
                                                     </div>
+
+                                                    {/* Hotel Images */}
+                                                    {booking.enriched_data.overview.screenshots && booking.enriched_data.overview.screenshots.length > 0 && (
+                                                        <div>
+                                                            <h3 className="font-semibold mb-3">Hotel Images</h3>
+                                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                                {booking.enriched_data.overview.screenshots.map((image, index) => (
+                                                                    <div key={index} className="aspect-video rounded-lg overflow-hidden">
+                                                                        <img
+                                                                            src={image}
+                                                                            alt={`Hotel ${index + 1}`}
+                                                                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                                                            onError={(e) => {
+                                                                                e.target.style.display = 'none';
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
 
                                                     <div className="space-y-3">
                                                         <div className="flex items-start gap-3">
@@ -174,7 +195,7 @@ export default function Show({ auth, booking }) {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>Facilities & Amenities</CardTitle>
-                                        </CardHeader>
+                    </CardHeader>
                                         <CardContent>
                                             {booking.enriched_data?.facilities ? (
                                                 <div className="space-y-6">
@@ -218,14 +239,14 @@ export default function Show({ auth, booking }) {
                                                 </div>
                                             )}
                                         </CardContent>
-                                    </Card>
+                </Card>
                                 </TabsContent>
 
                                 <TabsContent value="details" className="mt-6">
                                     <Card>
-                                        <CardHeader>
+                        <CardHeader>
                                             <CardTitle>Booking Details</CardTitle>
-                                        </CardHeader>
+                        </CardHeader>
                                         <CardContent>
                                             <div className="space-y-6">
                                                 <div className="grid grid-cols-2 gap-6">
@@ -282,7 +303,7 @@ export default function Show({ auth, booking }) {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                            </div>
 
                                                 <Separator />
 
@@ -291,7 +312,7 @@ export default function Show({ auth, booking }) {
                                                     <p className="text-sm">
                                                         {booking.enriched_data?.details?.cancellation_policy || 'Standard cancellation policy applies'}
                                                     </p>
-                                                </div>
+                            </div>
 
                                                 {booking.enriched_data?.details?.booking_link && (
                                                     <>
@@ -306,19 +327,19 @@ export default function Show({ auth, booking }) {
                                                             >
                                                                 View Booking Details
                                                             </a>
-                                                        </div>
+                            </div>
                                                     </>
                                                 )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                            </div>
+                        </CardContent>
+                    </Card>
                                 </TabsContent>
 
                                 <TabsContent value="history" className="mt-6">
                                     <Card>
-                                        <CardHeader>
+                        <CardHeader>
                                             <CardTitle>Price History & Tracking</CardTitle>
-                                        </CardHeader>
+                        </CardHeader>
                                         <CardContent>
                                             <div className="space-y-6">
                                                 <div className="grid grid-cols-2 gap-6">
@@ -328,23 +349,23 @@ export default function Show({ auth, booking }) {
                                                             <div>
                                                                 <span className="text-sm text-gray-600">Original Price:</span>
                                                                 <p className="font-medium">
-                                                                    {formatCurrency(booking.original_price, booking.currency)}
+                                    {formatCurrency(booking.original_price, booking.currency)}
                                                                 </p>
-                                                            </div>
+                            </div>
                                                             <div>
                                                                 <span className="text-sm text-gray-600">Current Price:</span>
                                                                 <p className="font-medium">
-                                                                    {formatCurrency(booking.current_price, booking.currency)}
+                                    {formatCurrency(booking.current_price, booking.currency)}
                                                                 </p>
-                                                            </div>
-                                                            {booking.price_drop_detected && (
+                            </div>
+                            {booking.price_drop_detected && (
                                                                 <div>
                                                                     <span className="text-sm text-gray-600">Price Drop:</span>
                                                                     <p className="font-medium text-green-600">
                                                                         -{formatCurrency(booking.price_drop_amount, booking.currency)} ({booking.price_drop_percentage}%)
                                                                     </p>
-                                                                </div>
-                                                            )}
+                                </div>
+                            )}
                                                         </div>
                                                     </div>
 
@@ -401,21 +422,21 @@ export default function Show({ auth, booking }) {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                            </div>
+                        </CardContent>
+                    </Card>
                                 </TabsContent>
                             </Tabs>
-                        </div>
+                </div>
 
                         {/* Sidebar */}
                         <div className="space-y-6">
                             {/* Price Summary */}
                             <Card>
-                                <CardHeader>
+                    <CardHeader>
                                     <CardTitle>Price Summary</CardTitle>
-                                </CardHeader>
-                                <CardContent>
+                    </CardHeader>
+                    <CardContent>
                                     <div className="space-y-3">
                                         <div className="flex justify-between">
                                             <span>Original Price:</span>
@@ -441,10 +462,10 @@ export default function Show({ auth, booking }) {
                                         <div className="flex justify-between">
                                             <span>Total Nights:</span>
                                             <span className="font-medium">{booking.nights}</span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                             {/* Quick Actions */}
                             <Card>
@@ -470,19 +491,19 @@ export default function Show({ auth, booking }) {
                             {/* Booking Reference */}
                             {booking.booking_reference && (
                                 <Card>
-                                    <CardHeader>
+                    <CardHeader>
                                         <CardTitle>Booking Reference</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
+                    </CardHeader>
+                    <CardContent>
                                         <p className="font-mono text-sm bg-gray-100 p-2 rounded">
                                             {booking.booking_reference}
                                         </p>
                                     </CardContent>
                                 </Card>
-                            )}
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
             </div>
         </AuthenticatedLayout>
     );

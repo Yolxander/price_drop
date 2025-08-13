@@ -11,6 +11,8 @@ export default function Create({ auth }) {
         check_in_date: '',
         check_out_date: '',
         guests: 2,
+        rooms: 1,
+        room_type: '',
         currency: 'USD',
         original_price: '',
         booking_reference: ''
@@ -27,24 +29,59 @@ export default function Create({ auth }) {
     };
 
     const handleSubmit = async (e) => {
+        // Prevent any default form submission
         e.preventDefault();
+        e.stopPropagation();
+        e.nativeEvent.preventDefault();
+        e.nativeEvent.stopPropagation();
+
         setIsSubmitting(true);
 
+        // Ensure we have the correct data structure
+        const submitData = {
+            hotel_name: formData.hotel_name || '',
+            location: formData.location || '',
+            check_in_date: formData.check_in_date || '',
+            check_out_date: formData.check_out_date || '',
+            guests: parseInt(formData.guests) || 1,
+            rooms: parseInt(formData.rooms) || 1,
+            room_type: formData.room_type || '',
+            original_price: parseFloat(formData.original_price) || 0,
+            currency: formData.currency || 'USD',
+            booking_reference: formData.booking_reference || ''
+        };
+
+        console.log('=== FORM SUBMISSION DEBUG ===');
+        console.log('Original form data:', formData);
+        console.log('Transformed submit data:', submitData);
+        console.log('JSON stringified data:', JSON.stringify(submitData));
+        console.log('Form element:', e.target);
+        console.log('=== END DEBUG ===');
+
         try {
-            const response = await fetch('/hotel-bookings', {
+            const response = await fetch('/bookings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(submitData)
             });
 
             if (response.ok) {
-                window.location.href = '/dashboard';
+                // Redirect to bookings page instead of dashboard
+                window.location.href = '/bookings';
             } else {
                 const data = await response.json();
-                console.error('Error:', data);
+                console.error('Error creating booking:', data);
+
+                // Show error message to user
+                if (data.errors) {
+                    const errorMessages = Object.values(data.errors).flat();
+                    alert('Error creating booking: ' + errorMessages.join(', '));
+                } else {
+                    alert('Error creating booking. Please try again.');
+                }
             }
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -91,7 +128,7 @@ export default function Create({ auth }) {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                             {/* Hotel Information */}
                             <div className="space-y-4">
                                 <h3 className="text-lg font-medium text-gray-900">Hotel Information</h3>
@@ -168,7 +205,7 @@ export default function Create({ auth }) {
                             <div className="space-y-4">
                                 <h3 className="text-lg font-medium text-gray-900">Guests and Price</h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium mb-2 text-gray-700">
                                             Number of Guests
@@ -181,6 +218,37 @@ export default function Create({ auth }) {
                                             min="1"
                                             max="10"
                                             className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
+                                            Number of Rooms
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="rooms"
+                                            value={formData.rooms}
+                                            onChange={handleInputChange}
+                                            min="1"
+                                            max="5"
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2 text-gray-700">
+                                            Room Type
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="room_type"
+                                            value={formData.room_type}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                            placeholder="e.g., Deluxe King Room"
                                         />
                                     </div>
 
@@ -201,23 +269,23 @@ export default function Create({ auth }) {
                                             ))}
                                         </select>
                                     </div>
+                                </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                                            Total Price *
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="original_price"
-                                            value={formData.original_price}
-                                            onChange={handleInputChange}
-                                            required
-                                            step="0.01"
-                                            min="0"
-                                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
-                                            placeholder="0.00"
-                                        />
-                                    </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-700">
+                                        Total Price *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="original_price"
+                                        value={formData.original_price}
+                                        onChange={handleInputChange}
+                                        required
+                                        step="0.01"
+                                        min="0"
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white"
+                                        placeholder="0.00"
+                                    />
                                 </div>
                             </div>
 

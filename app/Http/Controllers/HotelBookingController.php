@@ -39,6 +39,9 @@ class HotelBookingController extends Controller
             $booking->price_per_night = $booking->original_price / $nights;
             $booking->rooms = 1; // Default to 1 room since we don't store this
             $booking->nights = $nights;
+
+            // Add enriched data for frontend
+            $booking->enriched_data = $booking->getEnrichedData();
         });
 
         return Inertia::render('Bookings/Index', [
@@ -97,9 +100,9 @@ class HotelBookingController extends Controller
             'check_out_date' => 'required|date|after:check_in_date',
             'guests' => 'required|integer|min:1|max:10',
             'rooms' => 'nullable|integer|min:1|max:10',
-            'total_price' => 'required|numeric|min:0',
+            'room_type' => 'nullable|string|max:255',
+            'original_price' => 'required|numeric|min:0',
             'currency' => 'required|string|max:3',
-            'booking_confirmation' => 'nullable|string',
         ]);
 
         // Calculate nights
@@ -115,11 +118,11 @@ class HotelBookingController extends Controller
             'check_in_date' => $validated['check_in_date'],
             'check_out_date' => $validated['check_out_date'],
             'guests' => $validated['guests'],
-            'original_price' => $validated['total_price'], // Use total_price as original_price
-            'current_price' => $validated['total_price'], // Initially same as original_price
+            'room_type' => $validated['room_type'] ?? null,
+            'original_price' => $validated['original_price'],
+            'current_price' => $validated['original_price'], // Initially same as original_price
             'currency' => strtoupper($validated['currency']),
             'status' => 'active',
-            'booking_reference' => $validated['booking_confirmation'] ?? null,
         ]);
 
                 // Log user input data
@@ -131,8 +134,10 @@ class HotelBookingController extends Controller
                 'check_in_date' => $validated['check_in_date'],
                 'check_out_date' => $validated['check_out_date'],
                 'guests' => $validated['guests'],
+                'rooms' => $validated['rooms'] ?? 1,
+                'room_type' => $validated['room_type'] ?? 'N/A',
                 'currency' => strtoupper($validated['currency']),
-                'total_price' => $validated['total_price']
+                'original_price' => $validated['original_price']
             ]
         ]);
 
@@ -174,7 +179,7 @@ class HotelBookingController extends Controller
                     'booking_id' => $booking->id,
                     'hotel_name' => $validated['hotel_name']
                 ]);
-                
+
                 $booking->update([
                     'enrichment_successful' => false,
                     'enrichment_error' => 'No data returned from SerpAPI'
@@ -187,7 +192,7 @@ class HotelBookingController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             // Mark enrichment as failed but don't fail the booking creation
             $booking->update([
                 'enrichment_successful' => false,
@@ -196,8 +201,8 @@ class HotelBookingController extends Controller
         }
 
         // Add calculated fields to the booking for frontend compatibility
-        $booking->total_price = $validated['total_price'];
-        $booking->price_per_night = $validated['total_price'] / $nights;
+        $booking->total_price = $validated['original_price'];
+        $booking->price_per_night = $validated['original_price'] / $nights;
         $booking->rooms = $validated['rooms'] ?? 1;
         $booking->nights = $nights;
 
@@ -302,8 +307,18 @@ class HotelBookingController extends Controller
      */
     public function destroy(HotelBooking $booking)
     {
-        // For demo purposes, just redirect with success message
-        return redirect()->route('bookings.index')->with('success', 'Hotel booking deleted successfully!');
+        try {
+            $booking->delete();
+
+            return redirect()->route('bookings.index')->with('success', 'Hotel booking deleted successfully!');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete hotel booking', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->route('bookings.index')->with('error', 'Failed to delete booking. Please try again.');
+        }
     }
 
     /**

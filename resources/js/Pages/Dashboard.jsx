@@ -11,7 +11,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Link, router } from '@inertiajs/react';
 import {
     Home,
@@ -45,9 +44,8 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         check_out_date: '',
         guests: '',
         rooms: '',
-        total_price: '',
-        currency: '',
-        booking_confirmation: ''
+        original_price: '',
+        currency: ''
     });
     const [selectedHotel, setSelectedHotel] = useState({
         name: "Shikara Hotel",
@@ -110,9 +108,9 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                     check_out_date: '',
                     guests: '',
                     rooms: '',
-                    total_price: '',
-                    currency: '',
-                    booking_confirmation: ''
+                    room_type: '',
+                    original_price: '',
+                    currency: ''
                 });
             },
             onError: (errors) => {
@@ -127,7 +125,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     const handleBookingClick = (booking) => {
-        // Create a booking object with dummy data for missing fields
+        // Use the actual booking data with enriched information
         const bookingDetails = {
             id: booking.id,
             hotel_name: booking.hotel_name || 'Hotel Name Not Available',
@@ -142,12 +140,12 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
             currency: booking.currency || 'USD',
             status: booking.status || 'active',
             booking_confirmation: booking.booking_confirmation || 'CONF-123456789',
-            // Dummy data for missing fields
-            hotel_image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-            hotel_description: "A beautiful hotel with modern amenities and excellent service.",
-            amenities: ['Free WiFi', 'Swimming Pool', 'Spa', 'Restaurant', 'Gym'],
-            room_type: 'Deluxe Room',
-            cancellation_policy: 'Free cancellation until 24 hours before check-in',
+            // Use enriched data if available
+            hotel_image: booking.enriched_data?.overview?.screenshots?.[0] || null,
+            hotel_description: booking.enriched_data?.overview?.description || "A beautiful hotel with modern amenities and excellent service.",
+            amenities: booking.enriched_data?.facilities?.amenities || ['Free WiFi', 'Swimming Pool', 'Spa', 'Restaurant', 'Gym'],
+            room_type: booking.enriched_data?.details?.room_type || 'Deluxe Room',
+            cancellation_policy: booking.enriched_data?.details?.cancellation_policy || 'Free cancellation until 24 hours before check-in',
             contact_info: {
                 phone: '+1-555-0123',
                 email: 'reservations@hotel.com'
@@ -156,7 +154,9 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 { date: '2024-01-10', price: 180.00 },
                 { date: '2024-01-12', price: 160.00 },
                 { date: '2024-01-14', price: 150.00 }
-            ]
+            ],
+            // Include enriched data for access to screenshots
+            enriched_data: booking.enriched_data
         };
 
         setSelectedBooking(bookingDetails);
@@ -307,7 +307,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             />
                                                 </div>
                                             </div>
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="guests">Number of Guests</Label>
                                             <Input
@@ -327,15 +327,25 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 value={formData.rooms}
                                                 onChange={(e) => handleInputChange('rooms', e.target.value)}
                                             />
-                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="room-type">Room Type</Label>
+                                            <Input
+                                                id="room-type"
+                                                type="text"
+                                                placeholder="e.g., Deluxe King Room"
+                                                value={formData.room_type}
+                                                onChange={(e) => handleInputChange('room_type', e.target.value)}
+                                            />
+                                        </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="total-price">Total Price</Label>
                                             <Input
                                                 id="total-price"
                                                 type="number"
                                                 placeholder="0.00"
-                                                value={formData.total_price}
-                                                onChange={(e) => handleInputChange('total_price', e.target.value)}
+                                                value={formData.original_price}
+                                                onChange={(e) => handleInputChange('original_price', e.target.value)}
                                             />
                                         </div>
                                     </div>
@@ -354,16 +364,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="booking-confirmation">Booking Confirmation</Label>
-                                        <Textarea
-                                            id="booking-confirmation"
-                                            placeholder="Paste your booking confirmation email or details here..."
-                                            className="min-h-[100px]"
-                                            value={formData.booking_confirmation}
-                                            onChange={(e) => handleInputChange('booking_confirmation', e.target.value)}
-                                        />
-                                    </div>
+
                                 </div>
                                 <DialogFooter>
                                     <Button variant="outline" onClick={() => setShowAddBooking(false)}>
@@ -393,11 +394,17 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                 hotel_bookings.slice(0, 3).map((booking, index) => (
                                     <Card key={booking.id} className="min-w-[300px] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleBookingClick(booking)}>
                                         <div className="relative">
-                                            <img
-                                                src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop"
-                                                alt={booking.hotel_name}
-                                                className="w-full h-48 object-cover rounded-t-lg"
-                                            />
+                                            {booking.enriched_data?.overview?.screenshots && booking.enriched_data.overview.screenshots.length > 0 ? (
+                                                <img
+                                                    src={booking.enriched_data.overview.screenshots[0]}
+                                                    alt={booking.hotel_name}
+                                                    className="w-full h-48 object-cover rounded-t-lg"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-t-lg">
+                                                    <span className="text-gray-500 text-sm">No image available</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <CardContent className="p-4">
                                             <h3 className="font-semibold text-gray-900 mb-1">{booking.hotel_name}</h3>
@@ -485,28 +492,39 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             <h2 className="text-2xl font-bold text-gray-900 mb-4">{selectedBooking.hotel_name}</h2>
 
                             {/* Hotel Images */}
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                                <img
-                                    src={selectedBooking.hotel_image}
-                                    alt="Main hotel"
-                                    className="col-span-3 w-full h-48 object-cover rounded-lg"
-                                />
-                                <img
-                                    src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=200&h=150&fit=crop"
-                                    alt="Hotel room"
-                                    className="w-full h-20 object-cover rounded-lg"
-                                />
-                                <div className="relative">
+                            {selectedBooking.enriched_data?.overview?.screenshots && selectedBooking.enriched_data.overview.screenshots.length > 0 ? (
+                                <div className="grid grid-cols-3 gap-2 mb-4">
                                     <img
-                                        src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=200&h=150&fit=crop"
-                                        alt="Hotel bathroom"
-                                        className="w-full h-20 object-cover rounded-lg"
+                                        src={selectedBooking.enriched_data.overview.screenshots[0]}
+                                        alt="Main hotel"
+                                        className="col-span-3 w-full h-48 object-cover rounded-lg"
                                     />
-                                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
-                                        <span className="text-white text-sm font-medium">+8</span>
-                                    </div>
+                                    {selectedBooking.enriched_data.overview.screenshots.slice(1, 3).map((image, index) => (
+                                        <img
+                                            key={index}
+                                            src={image}
+                                            alt={`Hotel ${index + 2}`}
+                                            className="w-full h-20 object-cover rounded-lg"
+                                        />
+                                    ))}
+                                    {selectedBooking.enriched_data.overview.screenshots.length > 3 && (
+                                        <div className="relative">
+                                            <img
+                                                src={selectedBooking.enriched_data.overview.screenshots[3]}
+                                                alt="Hotel"
+                                                className="w-full h-20 object-cover rounded-lg"
+                                            />
+                                            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm font-medium">+{selectedBooking.enriched_data.overview.screenshots.length - 4}</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-lg mb-4">
+                                    <span className="text-gray-500 text-sm">No images available</span>
+                                </div>
+                            )}
 
                             {/* Tabs */}
                             <Tabs defaultValue="overview" className="w-full">

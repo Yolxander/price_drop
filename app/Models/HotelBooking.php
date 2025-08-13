@@ -89,6 +89,7 @@ class HotelBooking extends Model
                     'lng' => $this->longitude
                 ] : null,
                 'hotel_website' => $this->hotel_website,
+                'screenshots' => $this->screenshots ?? [],
             ],
             'facilities' => [
                 'amenities' => $this->amenities ?? [],

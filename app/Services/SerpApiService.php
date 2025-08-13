@@ -17,18 +17,20 @@ class SerpApiService
         $this->apiKey = env('SERPAPI_KEY', 'f170885b8c2f91c3792905fbf001c7446c9bbeaaa532a84a6d37b97897d7641a');
     }
 
-    /**
+        /**
      * Check hotel prices using SerpAPI's Google Hotels API
      */
     public function checkHotelPrice($hotelName, $checkIn, $checkOut, $currency, $adults, $children = 0)
     {
         try {
-            // For demo purposes, return dummy data
-            // In production, this would make an actual API call
-            return $this->getDummyHotelPrice($hotelName, $checkIn, $checkOut, $currency, $adults);
+            Log::info('SerpApiService: Checking hotel price', [
+                'hotel_name' => $hotelName,
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
+                'currency' => $currency,
+                'adults' => $adults
+            ]);
 
-            // Real API call would look like this:
-            /*
             $response = Http::get($this->baseUrl, [
                 'engine' => 'google_hotels',
                 'q' => $hotelName,
@@ -41,22 +43,37 @@ class SerpApiService
                 'api_key' => $this->apiKey
             ]);
 
+            Log::info('SerpApiService: Price check response received', [
+                'hotel_name' => $hotelName,
+                'status_code' => $response->status(),
+                'response_size' => strlen($response->body())
+            ]);
+
             if ($response->successful()) {
                 $data = $response->json();
-                return $this->parseHotelResponse($data);
+                $result = $this->parseHotelResponse($data);
+
+                Log::info('SerpApiService: Price check completed', [
+                    'hotel_name' => $hotelName,
+                    'price_found' => !empty($result),
+                    'price' => $result['price'] ?? 'N/A'
+                ]);
+
+                return $result;
             }
 
             Log::error('SerpAPI request failed', [
                 'hotel' => $hotelName,
+                'status_code' => $response->status(),
                 'response' => $response->body()
             ]);
 
             return null;
-            */
         } catch (\Exception $e) {
             Log::error('Error checking hotel price', [
                 'hotel' => $hotelName,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return null;
         }
@@ -470,22 +487,7 @@ class SerpApiService
                 'api_key' => substr($this->apiKey, 0, 10) . '...' // Log partial key for security
             ]);
 
-            // For demo purposes, return enriched dummy data
-            $enrichedData = $this->getEnrichedHotelData($hotelName, $location, $checkIn, $checkOut, $currency);
-            
-            Log::info('SerpApiService: Enriched data generated', [
-                'hotel_name' => $hotelName,
-                'data_keys' => array_keys($enrichedData),
-                'canonical_name' => $enrichedData['canonical_hotel_name'] ?? 'N/A',
-                'star_rating' => $enrichedData['star_rating'] ?? 'N/A',
-                'amenities_count' => count($enrichedData['amenities'] ?? []),
-                'facilities_count' => count($enrichedData['facilities'] ?? [])
-            ]);
-
-            return $enrichedData;
-            
-            // Real API call would look like this:
-            /*
+            // Make real SerpAPI call for hotel search
             $response = Http::get($this->baseUrl, [
                 'engine' => 'google_hotels',
                 'q' => $hotelName . ' ' . $location,
@@ -496,19 +498,53 @@ class SerpApiService
                 'api_key' => $this->apiKey
             ]);
 
+            Log::info('SerpApiService: API response received', [
+                'hotel_name' => $hotelName,
+                'status_code' => $response->status(),
+                'response_size' => strlen($response->body()),
+                'response_body' => substr($response->body(), 0, 500) // Log first 500 chars for debugging
+            ]);
+
             if ($response->successful()) {
                 $data = $response->json();
-                return $this->parseEnrichedHotelResponse($data, $hotelName, $location);
+
+                        Log::info('SerpApiService: Parsed JSON response', [
+            'hotel_name' => $hotelName,
+            'response_keys' => array_keys($data),
+            'has_properties' => isset($data['properties']),
+            'properties_count' => isset($data['properties']) ? count($data['properties']) : 0,
+            'images_field_exists' => isset($data['images']),
+            'images_field_type' => isset($data['images']) ? gettype($data['images']) : 'missing',
+            'images_field_count' => isset($data['images']) && is_array($data['images']) ? count($data['images']) : 'not_array'
+        ]);
+
+                $enrichedData = $this->parseEnrichedHotelResponse($data, $hotelName, $location);
+
+                Log::info('SerpApiService: Enriched data parsed', [
+                    'hotel_name' => $hotelName,
+                    'data_keys' => $enrichedData ? array_keys($enrichedData) : [],
+                    'canonical_name' => $enrichedData['canonical_hotel_name'] ?? 'N/A',
+                    'star_rating' => $enrichedData['star_rating'] ?? 'N/A',
+                    'amenities_count' => count($enrichedData['amenities'] ?? []),
+                    'facilities_count' => count($enrichedData['facilities'] ?? [])
+                ]);
+
+                return $enrichedData;
             }
 
             Log::error('SerpAPI hotel enrichment failed', [
                 'hotel' => $hotelName,
                 'location' => $location,
+                'status_code' => $response->status(),
                 'response' => $response->body()
             ]);
 
-            return null;
-            */
+            // Fallback to dummy data for demo purposes
+            Log::info('SerpApiService: Using fallback dummy data', [
+                'hotel_name' => $hotelName
+            ]);
+
+            return $this->getEnrichedHotelData($hotelName, $location, $checkIn, $checkOut, $currency);
         } catch (\Exception $e) {
             Log::error('Error enriching hotel data', [
                 'hotel' => $hotelName,
@@ -520,39 +556,182 @@ class SerpApiService
         }
     }
 
-    /**
+            /**
      * Parse enriched hotel response from SerpAPI
      */
     protected function parseEnrichedHotelResponse($data, $hotelName, $location)
     {
-        if (!isset($data['properties']) || empty($data['properties'])) {
-            return null;
+        Log::info('SerpApiService: Parsing API response', [
+            'hotel_name' => $hotelName,
+            'has_properties' => isset($data['properties']),
+            'properties_count' => isset($data['properties']) ? count($data['properties']) : 0,
+            'response_keys' => array_keys($data)
+        ]);
+
+        // Check if we have properties array (Google Hotels format)
+        if (isset($data['properties']) && !empty($data['properties'])) {
+            $property = $data['properties'][0];
+        }
+        // Check if we have direct hotel data (single hotel format)
+        elseif (isset($data['name']) || isset($data['address'])) {
+            $property = $data;
+        }
+        // No valid data found
+        else {
+            Log::warning('SerpApiService: No valid hotel data found in response, using fallback data', [
+                'hotel_name' => $hotelName,
+                'data_structure' => array_keys($data)
+            ]);
+
+            // Return fallback data instead of null
+            return $this->getEnrichedHotelData($hotelName, $location, '', '', 'USD');
         }
 
-        $property = $data['properties'][0];
+        // Log the property structure for debugging
+        Log::info('SerpApiService: Property structure', [
+            'hotel_name' => $hotelName,
+            'property_keys' => array_keys($property),
+            'has_images' => isset($property['images']),
+            'images_type' => isset($property['images']) ? gettype($property['images']) : 'not_set',
+            'images_count' => isset($property['images']) ? (is_array($property['images']) ? count($property['images']) : 'not_array') : 'not_set',
+            'images_raw_data' => isset($property['images']) ? $property['images'] : 'not_set'
+        ]);
 
-        return [
-            'canonical_hotel_id' => $property['hotel_id'] ?? null,
+                // Extract images from the property
+        $images = [];
+
+        // Handle different image formats from SerpAPI
+        if (isset($property['images']) && is_array($property['images'])) {
+            Log::info('SerpApiService: Found images array', [
+                'hotel_name' => $hotelName,
+                'images_count' => count($property['images']),
+                'first_image_structure' => isset($property['images'][0]) ? array_keys($property['images'][0]) : 'no_images',
+                'first_image_data' => isset($property['images'][0]) ? $property['images'][0] : 'no_first_image'
+            ]);
+
+            foreach ($property['images'] as $image) {
+                // Handle the standard SerpAPI images format with thumbnail and original_image
+                if (is_array($image)) {
+                    // Prefer original_image for better quality, fallback to thumbnail
+                    if (isset($image['original_image']) && !empty($image['original_image'])) {
+                        $images[] = $image['original_image'];
+                    } elseif (isset($image['thumbnail']) && !empty($image['thumbnail'])) {
+                        $images[] = $image['thumbnail'];
+                    } elseif (isset($image['image']) && !empty($image['image'])) {
+                        $images[] = $image['image'];
+                    } elseif (isset($image['url']) && !empty($image['url'])) {
+                        $images[] = $image['url'];
+                    } elseif (isset($image['src']) && !empty($image['src'])) {
+                        $images[] = $image['src'];
+                    }
+                } elseif (is_string($image) && !empty($image)) {
+                    // Handle direct string URLs
+                    $images[] = $image;
+                }
+            }
+        } elseif (isset($property['photos']) && is_array($property['photos'])) {
+            Log::info('SerpApiService: Found photos array', [
+                'hotel_name' => $hotelName,
+                'photos_count' => count($property['photos'])
+            ]);
+
+            foreach ($property['photos'] as $photo) {
+                // Handle photos array with similar logic
+                if (is_array($photo)) {
+                    if (isset($photo['original_image']) && !empty($photo['original_image'])) {
+                        $images[] = $photo['original_image'];
+                    } elseif (isset($photo['thumbnail']) && !empty($photo['thumbnail'])) {
+                        $images[] = $photo['thumbnail'];
+                    } elseif (isset($photo['image']) && !empty($photo['image'])) {
+                        $images[] = $photo['image'];
+                    } elseif (isset($photo['url']) && !empty($photo['url'])) {
+                        $images[] = $photo['url'];
+                    } elseif (isset($photo['src']) && !empty($photo['src'])) {
+                        $images[] = $photo['src'];
+                    }
+                } elseif (is_string($photo) && !empty($photo)) {
+                    $images[] = $photo;
+                }
+            }
+        }
+
+        // Remove duplicates and filter out invalid URLs
+        $images = array_unique(array_filter($images, function($url) {
+            return !empty($url) && filter_var($url, FILTER_VALIDATE_URL);
+        }));
+
+        // Log image extraction for debugging
+        Log::info('SerpApiService: Image extraction', [
+            'hotel_name' => $hotelName,
+            'images_found' => count($images),
+            'image_urls' => $images,
+            'has_images_field' => isset($property['images']),
+            'has_photos_field' => isset($property['photos']),
+            'images_field_type' => isset($property['images']) ? gettype($property['images']) : 'not_set',
+            'photos_field_type' => isset($property['photos']) ? gettype($property['photos']) : 'not_set'
+        ]);
+
+        // If no images found, log it but don't use fallback images
+        if (empty($images)) {
+            Log::warning('SerpApiService: No images found in API response', [
+                'hotel_name' => $hotelName,
+                'property_has_images_field' => isset($property['images']),
+                'property_has_photos_field' => isset($property['photos'])
+            ]);
+        }
+
+                // Extract amenities and facilities
+        $amenities = [];
+        $facilities = [];
+
+        if (isset($property['amenities']) && is_array($property['amenities'])) {
+            $amenities = $property['amenities'];
+        }
+
+        if (isset($property['facilities']) && is_array($property['facilities'])) {
+            $facilities = $property['facilities'];
+        }
+
+        // If no amenities found, try to extract from other fields
+        if (empty($amenities) && isset($property['hotel_class'])) {
+            $amenities = ['Hotel Class: ' . $property['hotel_class']];
+        }
+
+        $enrichedData = [
+            'canonical_hotel_id' => $property['hotel_id'] ?? $property['id'] ?? $property['property_token'] ?? null,
             'canonical_hotel_name' => $property['name'] ?? $hotelName,
-            'star_rating' => $property['rating'] ?? null,
+            'star_rating' => $property['overall_rating'] ?? $property['rating'] ?? $property['stars'] ?? $property['hotel_class'] ?? null,
             'address' => $property['address'] ?? null,
-            'latitude' => $property['latitude'] ?? null,
-            'longitude' => $property['longitude'] ?? null,
-            'base_rate' => $this->extractPrice($property['price'] ?? ''),
-            'taxes_fees' => $this->extractPrice($property['taxes'] ?? ''),
-            'cancellation_policy' => $property['cancellation_policy'] ?? null,
-            'breakfast_included' => $property['breakfast_included'] ?? false,
-            'amenities' => $property['amenities'] ?? [],
-            'facilities' => $property['facilities'] ?? [],
-            'room_type' => $property['room_type'] ?? null,
-            'room_code' => $property['room_code'] ?? null,
-            'room_description' => $property['room_description'] ?? null,
-            'booking_link' => $property['link'] ?? null,
-            'hotel_website' => $property['website'] ?? null,
-            'screenshots' => $property['screenshots'] ?? [],
+            'latitude' => $property['gps_coordinates']['latitude'] ?? $property['latitude'] ?? $property['lat'] ?? null,
+            'longitude' => $property['gps_coordinates']['longitude'] ?? $property['longitude'] ?? $property['lng'] ?? null,
+            'base_rate' => $this->extractPrice($property['rate_per_night'] ?? $property['price'] ?? $property['rate'] ?? ''),
+            'taxes_fees' => $this->extractPrice($property['taxes'] ?? $property['fees'] ?? ''),
+            'cancellation_policy' => $property['cancellation_policy'] ?? $property['policy'] ?? 'Standard cancellation policy applies',
+            'breakfast_included' => $property['breakfast_included'] ?? $property['breakfast'] ?? false,
+            'amenities' => $amenities,
+            'facilities' => $facilities,
+            'room_type' => $property['room_type'] ?? $property['type'] ?? null,
+            'room_code' => $property['room_code'] ?? $property['code'] ?? null,
+            'room_description' => $property['room_description'] ?? $property['description'] ?? null,
+            'booking_link' => $property['link'] ?? $property['url'] ?? null,
+            'hotel_website' => $property['website'] ?? $property['site'] ?? null,
+            'screenshots' => $images,
             'enrichment_successful' => true,
             'enriched_at' => now()->toISOString()
         ];
+
+        Log::info('SerpApiService: Parsed enriched data', [
+            'hotel_name' => $hotelName,
+            'canonical_name' => $enrichedData['canonical_hotel_name'],
+            'star_rating' => $enrichedData['star_rating'],
+            'images_count' => count($enrichedData['screenshots']),
+            'amenities_count' => count($enrichedData['amenities']),
+            'facilities_count' => count($enrichedData['facilities']),
+            'raw_images_field' => isset($property['images']) ? 'exists' : 'missing',
+            'raw_photos_field' => isset($property['photos']) ? 'exists' : 'missing'
+        ]);
+
+        return $enrichedData;
     }
 
         /**
@@ -567,17 +746,17 @@ class SerpApiService
 
         // Generate realistic enriched data based on hotel name
         $hotelData = $this->getHotelEnrichmentData($hotelName, $location);
-        
+
         Log::info('SerpApiService: Hotel enrichment data retrieved', [
             'hotel_name' => $hotelName,
             'hotel_data_keys' => array_keys($hotelData),
             'canonical_name' => $hotelData['canonical_name'] ?? 'N/A'
         ]);
-        
+
         // Calculate rates based on dates and hotel type
         $baseRate = $this->calculateEnrichedBaseRate($hotelName, $checkIn, $checkOut);
         $taxesFees = $baseRate * 0.15; // 15% taxes and fees
-        
+
         $enrichedData = [
             'canonical_hotel_id' => $hotelData['id'],
             'canonical_hotel_name' => $hotelData['canonical_name'],
@@ -638,10 +817,7 @@ class SerpApiService
                 'room_description' => 'Spacious room with king bed, city view, and modern amenities',
                 'booking_link' => 'https://www.fairmont.com/royal-york-toronto/',
                 'hotel_website' => 'https://www.fairmont.com/royal-york-toronto/',
-                'screenshots' => [
-                    'https://example.com/screenshots/fairmont_royal_york_1.jpg',
-                    'https://example.com/screenshots/fairmont_royal_york_2.jpg'
-                ]
+                'screenshots' => []
             ];
         }
 
@@ -663,10 +839,7 @@ class SerpApiService
                 'room_description' => 'Luxurious suite with separate living area and premium amenities',
                 'booking_link' => 'https://www.ritzcarlton.com/',
                 'hotel_website' => 'https://www.ritzcarlton.com/',
-                'screenshots' => [
-                    'https://example.com/screenshots/ritz_carlton_1.jpg',
-                    'https://example.com/screenshots/ritz_carlton_2.jpg'
-                ]
+                'screenshots' => []
             ];
         }
 
@@ -688,10 +861,7 @@ class SerpApiService
                 'room_description' => 'Comfortable room with king bed and business amenities',
                 'booking_link' => 'https://www.hyatt.com/',
                 'hotel_website' => 'https://www.hyatt.com/',
-                'screenshots' => [
-                    'https://example.com/screenshots/hyatt_1.jpg',
-                    'https://example.com/screenshots/hyatt_2.jpg'
-                ]
+                'screenshots' => []
             ];
         }
 
@@ -712,9 +882,7 @@ class SerpApiService
             'room_description' => 'Comfortable standard room with essential amenities',
             'booking_link' => 'https://www.example.com/booking',
             'hotel_website' => 'https://www.example.com/',
-            'screenshots' => [
-                'https://example.com/screenshots/default_1.jpg'
-            ]
+            'screenshots' => []
         ];
     }
 
