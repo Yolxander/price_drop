@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { ChevronLeftIcon, ChevronRightIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export default function ImageGalleryModal({
   images,
@@ -50,6 +50,14 @@ export default function ImageGalleryModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] w-full p-0 bg-black border-0 h-[95vh] overflow-hidden">
+        {/* Accessibility components - visually hidden but available to screen readers */}
+        <DialogTitle className="sr-only">
+          Hotel Image Gallery
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          View hotel images in full screen. Use arrow keys or navigation buttons to browse through {images.length} images.
+        </DialogDescription>
+
         <div className="relative h-full flex flex-col">
           {/* Close button */}
           <Button
@@ -57,6 +65,7 @@ export default function ImageGalleryModal({
             variant="ghost"
             className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-black/80 text-white h-12 w-12 rounded-full"
             onClick={onClose}
+            aria-label="Close gallery"
           >
             <X className="h-6 w-6" />
           </Button>
@@ -93,6 +102,7 @@ export default function ImageGalleryModal({
                   variant="ghost"
                   className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white h-14 w-14 rounded-full"
                   onClick={prevSlide}
+                  aria-label="Previous image"
                 >
                   <ChevronLeftIcon className="h-7 w-7" />
                 </Button>
@@ -102,6 +112,7 @@ export default function ImageGalleryModal({
                   variant="ghost"
                   className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white h-14 w-14 rounded-full"
                   onClick={nextSlide}
+                  aria-label="Next image"
                 >
                   <ChevronRightIcon className="h-7 w-7" />
                 </Button>
@@ -133,6 +144,8 @@ export default function ImageGalleryModal({
                         : "border-transparent hover:border-white/50",
                     )}
                     onClick={() => setCurrentIndex(index)}
+                    aria-label={`Go to image ${index + 1}: ${image.alt}`}
+                    aria-current={index === currentIndex ? "true" : "false"}
                   >
                     <img
                       src={image.src}

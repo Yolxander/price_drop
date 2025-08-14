@@ -245,7 +245,7 @@ export default function Show({ auth, booking }) {
                                                                     <div
                                                                         key={image.originalIndex}
                                                                         className="aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
-                                                                        onClick={() => openGallery(index)}
+                                                                        onClick={() => openGallery(image.originalIndex)}
                                                                     >
                                                                         <img
                                                                             src={image.src}
