@@ -286,7 +286,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             <DollarSign className="h-5 w-5 text-blue-600" />
                                                         </div>
                                                         <div>
-                                                            <span>Price Alert Rules</span>
+                                                        <span>Price Alert Rules</span>
                                                             <p className="text-sm text-gray-500 font-normal mt-1">Configure price drop thresholds and rules</p>
                                                         </div>
                                                     </CardTitle>
@@ -295,25 +295,25 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div className="space-y-2">
                                                             <Label htmlFor="global-threshold" className="text-sm font-medium">Global Threshold ($)</Label>
-                                                            <Input
-                                                                id="global-threshold"
-                                                                type="number"
-                                                                value={formData.alert_rules.global_threshold}
-                                                                onChange={(e) => handleAlertRuleChange('global_threshold', parseFloat(e.target.value))}
-                                                                placeholder="50.00"
+                                                        <Input
+                                                            id="global-threshold"
+                                                            type="number"
+                                                            value={formData.alert_rules.global_threshold}
+                                                            onChange={(e) => handleAlertRuleChange('global_threshold', parseFloat(e.target.value))}
+                                                            placeholder="50.00"
                                                                 className="h-10"
-                                                            />
-                                                        </div>
+                                                        />
+                                                    </div>
                                                         <div className="space-y-2">
                                                             <Label htmlFor="global-percentage" className="text-sm font-medium">Global Percentage (%)</Label>
-                                                            <Input
-                                                                id="global-percentage"
-                                                                type="number"
-                                                                value={formData.alert_rules.global_percentage}
-                                                                onChange={(e) => handleAlertRuleChange('global_percentage', parseFloat(e.target.value))}
-                                                                placeholder="5.0"
+                                                        <Input
+                                                            id="global-percentage"
+                                                            type="number"
+                                                            value={formData.alert_rules.global_percentage}
+                                                            onChange={(e) => handleAlertRuleChange('global_percentage', parseFloat(e.target.value))}
+                                                            placeholder="5.0"
                                                                 className="h-10"
-                                                            />
+                                                        />
                                                         </div>
                                                     </div>
                                                     <div className="space-y-3">
@@ -321,23 +321,23 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="quiet-start" className="text-xs text-gray-500">Start Time</Label>
-                                                                <Input
-                                                                    id="quiet-start"
-                                                                    type="time"
-                                                                    value={formData.alert_rules.quiet_hours_start}
-                                                                    onChange={(e) => handleAlertRuleChange('quiet_hours_start', e.target.value)}
+                                                            <Input
+                                                                id="quiet-start"
+                                                                type="time"
+                                                                value={formData.alert_rules.quiet_hours_start}
+                                                                onChange={(e) => handleAlertRuleChange('quiet_hours_start', e.target.value)}
                                                                     className="h-10"
-                                                                />
-                                                            </div>
+                                                            />
+                                                        </div>
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="quiet-end" className="text-xs text-gray-500">End Time</Label>
-                                                                <Input
-                                                                    id="quiet-end"
-                                                                    type="time"
-                                                                    value={formData.alert_rules.quiet_hours_end}
-                                                                    onChange={(e) => handleAlertRuleChange('quiet_hours_end', e.target.value)}
+                                                            <Input
+                                                                id="quiet-end"
+                                                                type="time"
+                                                                value={formData.alert_rules.quiet_hours_end}
+                                                                onChange={(e) => handleAlertRuleChange('quiet_hours_end', e.target.value)}
                                                                     className="h-10"
-                                                                />
+                                                            />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -352,7 +352,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             <BellIcon className="h-5 w-5 text-green-600" />
                                                         </div>
                                                         <div>
-                                                            <span>Notifications</span>
+                                                        <span>Notifications</span>
                                                             <p className="text-sm text-gray-500 font-normal mt-1">Manage alert delivery methods</p>
                                                         </div>
                                                     </CardTitle>
@@ -363,13 +363,13 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             <div className="space-y-1">
                                                                 <Label htmlFor="email-notifications" className="text-sm font-medium">Email Notifications</Label>
                                                                 <p className="text-xs text-gray-500">Receive alerts via email</p>
-                                                            </div>
-                                                            <Switch
-                                                                id="email-notifications"
-                                                                checked={formData.alert_rules.email_notifications}
-                                                                onCheckedChange={(checked) => handleAlertRuleChange('email_notifications', checked)}
-                                                            />
                                                         </div>
+                                                        <Switch
+                                                            id="email-notifications"
+                                                            checked={formData.alert_rules.email_notifications}
+                                                            onCheckedChange={(checked) => handleAlertRuleChange('email_notifications', checked)}
+                                                        />
+                                                    </div>
                                                     </div>
                                                     <div className="space-y-3">
                                                         <Label htmlFor="webhook-url" className="text-sm font-medium">Webhook URL</Label>
@@ -405,8 +405,8 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                     <CardTitle className="flex items-center space-x-3 text-lg">
                                                         <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                                                             <Database className="h-5 w-5 text-purple-600" />
-                                                        </div>
-                                                        <div>
+                                                                </div>
+                                                                <div>
                                                             <span>Data Retention</span>
                                                             <p className="text-sm text-gray-500 font-normal mt-1">Manage data storage and export settings</p>
                                                         </div>
@@ -416,26 +416,26 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div className="space-y-2">
                                                             <Label htmlFor="retention-window" className="text-sm font-medium">Retention Window (days)</Label>
-                                                            <Input
-                                                                id="retention-window"
-                                                                type="number"
-                                                                value={settings.data_retention.retention_window}
-                                                                placeholder="90"
+                                                        <Input
+                                                            id="retention-window"
+                                                            type="number"
+                                                            value={settings.data_retention.retention_window}
+                                                            placeholder="90"
                                                                 className="h-10"
-                                                            />
+                                                        />
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label htmlFor="export-frequency" className="text-sm font-medium">Export Frequency</Label>
-                                                            <Select value={settings.data_retention.export_frequency}>
+                                                        <Select value={settings.data_retention.export_frequency}>
                                                                 <SelectTrigger className="h-10">
-                                                                    <SelectValue />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="weekly">Weekly</SelectItem>
-                                                                    <SelectItem value="monthly">Monthly</SelectItem>
-                                                                    <SelectItem value="quarterly">Quarterly</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="weekly">Weekly</SelectItem>
+                                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
                                                         </div>
                                                     </div>
                                                     <div className="space-y-4">
@@ -461,7 +461,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             <Globe className="h-5 w-5 text-orange-600" />
                                                         </div>
                                                         <div>
-                                                            <span>Currency Settings</span>
+                                                        <span>Currency Settings</span>
                                                             <p className="text-sm text-gray-500 font-normal mt-1">Configure display preferences</p>
                                                         </div>
                                                     </CardTitle>
@@ -487,11 +487,11 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             <div className="space-y-1">
                                                                 <Label htmlFor="tax-inclusive" className="text-sm font-medium">Tax Inclusive</Label>
                                                                 <p className="text-xs text-gray-500">Include taxes in prices</p>
-                                                            </div>
-                                                            <Switch
-                                                                id="tax-inclusive"
-                                                                checked={settings.currency.tax_inclusive}
-                                                            />
+                                                        </div>
+                                                        <Switch
+                                                            id="tax-inclusive"
+                                                            checked={settings.currency.tax_inclusive}
+                                                        />
                                                         </div>
                                                     </div>
                                                 </CardContent>
@@ -513,8 +513,8 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             <span>Password Management</span>
                                                             <p className="text-sm text-gray-500 font-normal mt-1">Update your account password</p>
                                                         </div>
-                                                    </CardTitle>
-                                                </CardHeader>
+                                                </CardTitle>
+                                            </CardHeader>
                                                 <CardContent className="space-y-4">
                                                     <div className="space-y-3">
                                                         <Label htmlFor="current-password" className="text-sm font-medium">Current Password</Label>
@@ -556,7 +556,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                     <CardTitle className="flex items-center space-x-3 text-lg">
                                                         <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
                                                             <Shield className="h-5 w-5 text-indigo-600" />
-                                                        </div>
+                                                </div>
                                                         <div>
                                                             <span>Two-Factor Authentication</span>
                                                             <p className="text-sm text-gray-500 font-normal mt-1">Add an extra layer of security</p>
@@ -576,7 +576,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                     </div>
                                                 </CardContent>
                                             </Card>
-                                        </div>
+                                                </div>
 
                                         {/* Active Sessions */}
                                         <Card className="border-l-4 border-l-yellow-500">
@@ -592,7 +592,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                 </CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="space-y-3">
+                                                    <div className="space-y-3">
                                                     <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-green-50">
                                                         <div className="flex items-center space-x-3">
                                                             <div className="w-3 h-3 bg-green-500 rounded-full"></div>

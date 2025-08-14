@@ -41,6 +41,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [showImageGallery, setShowImageGallery] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [activeNavTab, setActiveNavTab] = useState('most-popular');
     const [formData, setFormData] = useState({
         hotel_name: '',
         location: '',
@@ -442,7 +443,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 {booking.location}
                                             </div>
                                             <p className="text-lg font-bold text-gray-900">
-                                                ${booking.price_per_night} / night
+                                                ${Number(booking.price_per_night).toFixed(2)} / night
                                             </p>
                                             <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
                                                 <span>{booking.nights} nights</span>
@@ -462,39 +463,129 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         </div>
                     </div>
 
-                    {/* Most Popular */}
+                    {/* Navigation Tabs */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center space-x-6">
-                                <h2 className="text-xl font-semibold text-gray-900 border-b-2 border-blue-600 pb-1">Most Popular</h2>
-                                <div className="flex space-x-4">
-                                    <Button variant="ghost" className="text-gray-600 hover:text-gray-900">Special Offers</Button>
-                                    <Button variant="ghost" className="text-gray-600 hover:text-gray-900">Near Me</Button>
+                                <div className="flex items-center space-x-4">
+                                    <button
+                                        onClick={() => setActiveNavTab('most-popular')}
+                                        className={`font-semibold pb-1 transition-colors ${
+                                            activeNavTab === 'most-popular'
+                                                ? 'text-xl text-gray-900 border-b-2 border-blue-600'
+                                                : 'text-lg text-gray-600 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        Most Popular
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveNavTab('special-offers')}
+                                        className={`font-semibold pb-1 transition-colors ${
+                                            activeNavTab === 'special-offers'
+                                                ? 'text-xl text-gray-900 border-b-2 border-blue-600'
+                                                : 'text-lg text-gray-600 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        Special Offers
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveNavTab('near-me')}
+                                        className={`font-semibold pb-1 transition-colors ${
+                                            activeNavTab === 'near-me'
+                                                ? 'text-xl text-gray-900 border-b-2 border-blue-600'
+                                                : 'text-lg text-gray-600 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        Near Me
+                                    </button>
                                 </div>
                             </div>
                             <Button variant="link" className="text-blue-600 p-0 h-auto">View All</Button>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {popularHotels.map((hotel, index) => (
-                                <Card key={index} className="cursor-pointer hover:shadow-lg transition-shadow">
-                                    <div className="relative">
-                                        <img
-                                            src={hotel.image}
-                                            alt={hotel.name}
-                                            className="w-full h-24 object-cover rounded-t-lg"
-                                        />
-                                    </div>
-                                    <CardContent className="p-3">
-                                        <h3 className="font-medium text-gray-900 text-sm mb-1">{hotel.name}</h3>
-                                        <div className="flex items-center text-xs text-gray-600 mb-1">
-                                            <MapPin className="h-3 w-3 mr-1" />
-                                            {hotel.country}
+                        {/* Tab Content */}
+                        {activeNavTab === 'most-popular' && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {popularHotels.map((hotel, index) => (
+                                    <Card key={index} className="cursor-pointer hover:shadow-lg transition-shadow">
+                                        <div className="relative">
+                                            <img
+                                                src={hotel.image}
+                                                alt={hotel.name}
+                                                className="w-full h-24 object-cover rounded-t-lg"
+                                            />
                                         </div>
-                                        <p className="text-sm font-bold text-gray-900">${hotel.price} / night</p>
-                        </CardContent>
-                    </Card>
-                            ))}
-                        </div>
+                                        <CardContent className="p-3">
+                                            <h3 className="font-medium text-gray-900 text-sm mb-1">{hotel.name}</h3>
+                                            <div className="flex items-center text-xs text-gray-600 mb-1">
+                                                <MapPin className="h-3 w-3 mr-1" />
+                                                {hotel.country}
+                                            </div>
+                                            <p className="text-sm font-bold text-gray-900">${Number(hotel.price).toFixed(2)} / night</p>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+
+                        {activeNavTab === 'special-offers' && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {popularHotels.slice(0, 2).map((hotel, index) => (
+                                    <Card key={index} className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-orange-200">
+                                        <div className="relative">
+                                            <img
+                                                src={hotel.image}
+                                                alt={hotel.name}
+                                                className="w-full h-24 object-cover rounded-t-lg"
+                                            />
+                                            <div className="absolute top-2 right-2">
+                                                <Badge className="bg-orange-500 text-white text-xs">Special Offer</Badge>
+                                            </div>
+                                        </div>
+                                        <CardContent className="p-3">
+                                            <h3 className="font-medium text-gray-900 text-sm mb-1">{hotel.name}</h3>
+                                            <div className="flex items-center text-xs text-gray-600 mb-1">
+                                                <MapPin className="h-3 w-3 mr-1" />
+                                                {hotel.country}
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <p className="text-sm line-through text-gray-400">${Number(hotel.price + 10).toFixed(2)}</p>
+                                                <p className="text-sm font-bold text-orange-600">${Number(hotel.price).toFixed(2)} / night</p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+
+                        {activeNavTab === 'near-me' && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {popularHotels.slice(0, 3).map((hotel, index) => (
+                                    <Card key={index} className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-green-200">
+                                        <div className="relative">
+                                            <img
+                                                src={hotel.image}
+                                                alt={hotel.name}
+                                                className="w-full h-24 object-cover rounded-t-lg"
+                                            />
+                                            <div className="absolute top-2 right-2">
+                                                <Badge className="bg-green-500 text-white text-xs">Nearby</Badge>
+                                            </div>
+                                        </div>
+                                        <CardContent className="p-3">
+                                            <h3 className="font-medium text-gray-900 text-sm mb-1">{hotel.name}</h3>
+                                            <div className="flex items-center text-xs text-gray-600 mb-1">
+                                                <MapPin className="h-3 w-3 mr-1" />
+                                                {hotel.country}
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-sm font-bold text-gray-900">${Number(hotel.price).toFixed(2)} / night</p>
+                                                <p className="text-xs text-green-600">0.5 km away</p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
                 </div>
