@@ -114,6 +114,12 @@ export default function Show({ auth, booking }) {
                             <span className="font-medium text-gray-900">All Bookings</span>
                         </div>
                     </Link>
+                    <Link href="/calendar" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Bell className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Calendar</span>
+                        </div>
+                    </Link>
                     <Link href="/price-alerts" className="block">
                         <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
                             <div className="relative">
@@ -140,7 +146,7 @@ export default function Show({ auth, booking }) {
                 </nav>
 
                 {/* Promotional Card */}
-                <div className="p-4">
+                {/* <div className="p-4">
                     <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                         <CardContent className="p-4">
                             <h3 className="font-bold text-blue-900 mb-2">Get 45% Off.</h3>
@@ -148,7 +154,7 @@ export default function Show({ auth, booking }) {
                             <div className="w-full h-20 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg"></div>
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
 
                 {/* Logout */}
                 <div className="p-4 border-t border-gray-200">

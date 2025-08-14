@@ -153,7 +153,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                 </nav>
 
                 {/* Promotional Card */}
-                <div className="p-4">
+                {/* <div className="p-4">
                     <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                         <CardContent className="p-4">
                             <h3 className="font-bold text-blue-900 mb-2">Get 45% Off.</h3>
@@ -161,7 +161,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                             <div className="w-full h-20 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg"></div>
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
 
                 {/* Logout */}
                 <div className="p-4 border-t border-gray-200">

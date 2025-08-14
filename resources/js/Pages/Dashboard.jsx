@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import { Link, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     Home,
     Grid3X3,
@@ -49,6 +49,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         check_out_date: '',
         guests: '',
         rooms: '',
+        room_type: '',
         original_price: '',
         currency: ''
     });
@@ -235,6 +236,12 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             <span className="text-gray-700">All Bookings</span>
                         </div>
                     </Link>
+                    <Link href="/calendar" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Bell className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Calendar</span>
+                        </div>
+                    </Link>
                     <Link href="/price-alerts" className="block">
                         <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
                             <div className="relative">
@@ -273,22 +280,31 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                                {/* Header */}
+                <Head title="Dashboard" />
+
+                {/* Header */}
                 <div className="bg-white border-b border-gray-200 p-6">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold text-gray-900">
-                            Find hotel to stay
-                        </h1>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                            <Button
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-8"
-                                    onClick={handleAddBookingClick}
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Booking
-                            </Button>
-                            </DialogTrigger>
+                        <div className="flex-1 max-w-md">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="Search hotels..."
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <Dialog open={showAddBooking} onOpenChange={setShowAddBooking}>
+                                <DialogTrigger asChild>
+                                <Button
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                                        onClick={handleAddBookingClick}
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Booking
+                                </Button>
+                                </DialogTrigger>
                             <DialogContent className="sm:max-w-[600px]">
                                 <DialogHeader>
                                     <DialogTitle>Add New Booking</DialogTitle>
@@ -710,7 +726,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 </div>
                                                 <div className="pt-2">
                                                     <span className="text-gray-600 text-sm">Total Price:</span>
-                                                    <p className="text-lg font-bold text-gray-900">${selectedBooking.total_price} {selectedBooking.currency}</p>
+                                                    <p className="text-lg font-bold text-gray-900">${Number(selectedBooking.total_price).toFixed(2)} {selectedBooking.currency}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -798,15 +814,15 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                             <span className="text-sm text-gray-600">Base Rate:</span>
                                                             <p className="text-sm font-medium">
                                                                 {selectedBooking.enriched_data.details.base_rate
-                                                                    ? `$${selectedBooking.enriched_data.details.base_rate}`
-                                                                    : `$${selectedBooking.original_price}`
+                                                                    ? `$${Number(selectedBooking.enriched_data.details.base_rate).toFixed(2)}`
+                                                                    : `$${Number(selectedBooking.original_price).toFixed(2)}`
                                                                 }
                                                             </p>
                                                         </div>
                                                         <div>
                                                             <span className="text-sm text-gray-600">Total Price:</span>
                                                             <p className="text-sm font-medium">
-                                                                ${selectedBooking.original_price}
+                                                                ${Number(selectedBooking.original_price).toFixed(2)}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -1013,6 +1029,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                     </DialogContent>
                 </Dialog>
             )}
+            </div>
         </div>
     );
 }

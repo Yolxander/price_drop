@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
     ChevronLeft,
     ChevronRight,
@@ -25,7 +26,8 @@ import {
     Bell,
     Heart,
     Settings,
-    LogOut
+    LogOut,
+    Search
 } from 'lucide-react';
 
 export default function Calendar({ auth, bookings, upcomingBookings }) {
@@ -224,7 +226,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 </nav>
 
                 {/* Promotional Card */}
-                <div className="p-4">
+                {/* <div className="p-4">
                     <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                         <CardContent className="p-4">
                             <h3 className="font-bold text-blue-900 mb-2">Get 45% Off.</h3>
@@ -232,7 +234,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             <div className="w-full h-20 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg"></div>
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
 
                 {/* Logout */}
                 <div className="p-4 border-t border-gray-200">
@@ -252,10 +254,16 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 {/* Header */}
                 <div className="bg-white border-b border-gray-200 p-6">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold text-gray-900">
-                            Calendar View 📅
-                        </h1>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex-1 max-w-md">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="Search calendar..."
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
                             <Button
                                 variant="outline"
                                 onClick={handleToggleSummary}

@@ -26,7 +26,8 @@ import {
     AlertTriangle,
     ArrowRight,
     Building2,
-    Star
+    Star,
+    Search
 } from 'lucide-react';
 
 export default function AlertsIndex({ auth, alerts, stats }) {
@@ -140,6 +141,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             <span className="text-gray-700">All Bookings</span>
                         </div>
                     </Link>
+                    <Link href="/calendar" className="block">
+                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <Bell className="h-5 w-5 text-gray-600" />
+                            <span className="text-gray-700">Calendar</span>
+                        </div>
+                    </Link>
                     <Link href="/price-alerts" className="block">
                         <div className="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg">
                             <div className="relative">
@@ -166,7 +173,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                 </nav>
 
                 {/* Promotional Card */}
-                <div className="p-4">
+                {/* <div className="p-4">
                     <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                         <CardContent className="p-4">
                             <h3 className="font-bold text-blue-900 mb-2">Get 45% Off.</h3>
@@ -174,7 +181,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             <div className="w-full h-20 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg"></div>
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
 
                 {/* Logout */}
                 <div className="p-4 border-t border-gray-200">
@@ -192,11 +199,16 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                 {/* Header */}
                 <div className="bg-white border-b border-gray-200 p-6">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Price Alerts</h1>
-                            <p className="text-gray-600">Monitor price changes for your hotel bookings</p>
+                        <div className="flex-1 max-w-md">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="Search alerts..."
+                                    className="pl-10"
+                                />
+                            </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-4">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="sm">
