@@ -7,13 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Head, Link, router } from '@inertiajs/react';
+import Sidebar from '@/components/ui/sidebar';
 import {
-    Home,
-    Grid3X3,
-    Bell,
-    Heart,
-    Settings,
-    LogOut,
     Search,
     Filter,
     MoreHorizontal,
@@ -29,7 +24,8 @@ import {
     Calendar,
     Eye,
     Trash2,
-    Menu
+    Menu,
+    Settings
 } from 'lucide-react';
 
 export default function BookingsIndex({ auth, bookings, stats }) {
@@ -120,83 +116,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Left Sidebar */}
-            <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-                {/* Logo */}
-                <div className="p-6 border-b border-gray-200">
-                    <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-lg">T</span>
-                        </div>
-                        <span className="text-xl font-bold text-blue-600">Tamago</span>
-                    </div>
-                </div>
-
-                {/* Navigation */}
-                <nav className="flex-1 p-4 space-y-2">
-                    <Link href="/dashboard" className="block">
-                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <Home className="h-5 w-5 text-gray-600" />
-                            <span className="text-gray-700">Dashboard</span>
-                        </div>
-                    </Link>
-                    <Link href="/bookings" className="block">
-                        <div className="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg">
-                            <Grid3X3 className="h-5 w-5 text-blue-600" />
-                            <span className="font-medium text-gray-900">All Bookings</span>
-                        </div>
-                    </Link>
-                    <Link href="/calendar" className="block">
-                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <Bell className="h-5 w-5 text-gray-600" />
-                            <span className="text-gray-700">Calendar</span>
-                        </div>
-                    </Link>
-                    <Link href="/price-alerts" className="block">
-                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <div className="relative">
-                                <Bell className="h-5 w-5 text-gray-600" />
-                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                                    <span className="text-xs text-white font-medium">2</span>
-                                </div>
-                            </div>
-                            <span className="text-gray-700">Price Drops</span>
-                        </div>
-                    </Link>
-                    <Link href="/favorites" className="block">
-                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <Heart className="h-5 w-5 text-gray-600" />
-                            <span className="text-gray-700">Favorite</span>
-                        </div>
-                    </Link>
-                    <Link href="/settings" className="block">
-                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <Settings className="h-5 w-5 text-gray-600" />
-                            <span className="text-gray-700">Settings</span>
-                        </div>
-                    </Link>
-                </nav>
-
-                {/* Promotional Card */}
-                {/* <div className="p-4">
-                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                        <CardContent className="p-4">
-                            <h3 className="font-bold text-blue-900 mb-2">Get 45% Off.</h3>
-                            <p className="text-sm text-blue-700 mb-3">Special Price for you, hotel discount up to 45%</p>
-                            <div className="w-full h-20 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg"></div>
-                        </CardContent>
-                    </Card>
-                </div> */}
-
-                {/* Logout */}
-                <div className="p-4 border-t border-gray-200">
-                    <Link href="/logout" method="post" as="button" className="w-full">
-                        <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <LogOut className="h-5 w-5 text-gray-600" />
-                            <span className="text-gray-700">Log Out</span>
-                        </div>
-                    </Link>
-                </div>
-            </div>
+            <Sidebar activePage="bookings" />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
