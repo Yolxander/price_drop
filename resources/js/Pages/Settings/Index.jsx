@@ -19,29 +19,25 @@ import {
     Save,
     RefreshCw,
     Shield,
-    Users,
     Database,
     Globe,
     Bell as BellIcon,
     Clock,
     DollarSign,
     Key,
-    Eye,
-    EyeOff,
     Trash2,
     Plus,
-    Edit,
     CheckCircle,
     AlertCircle,
     Building2,
     Zap,
     Download,
-    Upload
+    Upload,
+    Search
 } from 'lucide-react';
 
 export default function SettingsIndex({ auth, settings, stats }) {
     const [activeTab, setActiveTab] = useState('providers');
-    const [showApiKeys, setShowApiKeys] = useState(false);
     const [formData, setFormData] = useState({
         providers: settings.providers,
         alert_rules: settings.alert_rules,
@@ -62,18 +58,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
         }));
     };
 
-    const handleApiKeyChange = (providerKey, apiKey) => {
-        setFormData(prev => ({
-            ...prev,
-            providers: {
-                ...prev.providers,
-                [providerKey]: {
-                    ...prev.providers[providerKey],
-                    api_key: apiKey
-                }
-            }
-        }));
-    };
+
 
     const handleAlertRuleChange = (key, value) => {
         setFormData(prev => ({
@@ -196,11 +181,16 @@ export default function SettingsIndex({ auth, settings, stats }) {
                 {/* Header */}
                 <div className="bg-white border-b border-gray-200 p-6">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-                            <p className="text-gray-600 mt-1">Manage your account preferences and integrations</p>
+                        <div className="flex-1 max-w-md">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="Search settings..."
+                                    className="pl-10"
+                                />
+                            </div>
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-4">
                             <Button variant="outline" className="flex items-center space-x-2">
                                 <RefreshCw className="h-4 w-4" />
                                 <span>Refresh</span>
@@ -215,67 +205,9 @@ export default function SettingsIndex({ auth, settings, stats }) {
 
                 {/* Content */}
                 <div className="flex-1 overflow-auto p-6">
-                    <div className="max-w-4xl mx-auto space-y-6">
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <Card>
-                                <CardContent className="p-4">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                            <Building2 className="h-5 w-5 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Active Providers</p>
-                                            <p className="text-2xl font-bold text-gray-900">{stats.active_providers}</p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="p-4">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                            <Users className="h-5 w-5 text-green-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Team Members</p>
-                                            <p className="text-2xl font-bold text-gray-900">{stats.team_members}</p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="p-4">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                            <Database className="h-5 w-5 text-purple-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Storage Used</p>
-                                            <p className="text-2xl font-bold text-gray-900">{stats.storage_used}</p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="p-4">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                                            <Download className="h-5 w-5 text-orange-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Last Backup</p>
-                                            <p className="text-sm font-medium text-gray-900">
-                                                {formatDate(stats.last_backup)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-
+                    <div className="max-w-6xl mx-auto">
                         {/* Settings Tabs */}
-                        <Card>
+                        <Card className="h-full">
                             <CardHeader>
                                 <CardTitle>Configuration</CardTitle>
                                 <CardDescription>
@@ -284,7 +216,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                             </CardHeader>
                             <CardContent>
                                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                    <TabsList className="grid w-full grid-cols-5">
+                                    <TabsList className="grid w-full grid-cols-4">
                                         <TabsTrigger value="providers" className="flex items-center space-x-2">
                                             <Building2 className="h-4 w-4" />
                                             <span>Providers</span>
@@ -292,10 +224,6 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                         <TabsTrigger value="alerts" className="flex items-center space-x-2">
                                             <BellIcon className="h-4 w-4" />
                                             <span>Alerts</span>
-                                        </TabsTrigger>
-                                        <TabsTrigger value="team" className="flex items-center space-x-2">
-                                            <Users className="h-4 w-4" />
-                                            <span>Team</span>
                                         </TabsTrigger>
                                         <TabsTrigger value="data" className="flex items-center space-x-2">
                                             <Database className="h-4 w-4" />
@@ -308,7 +236,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     </TabsList>
 
                                     {/* Providers Tab */}
-                                    <TabsContent value="providers" className="space-y-6">
+                                    <TabsContent value="providers" className="space-y-6 mt-6">
                                         <div className="space-y-4">
                                             {Object.entries(formData.providers).map(([key, provider]) => (
                                                 <Card key={key} className="border-l-4 border-l-blue-500">
@@ -337,44 +265,10 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                     checked={provider.enabled}
                                                                     onCheckedChange={(enabled) => handleProviderToggle(key, enabled)}
                                                                 />
-                                                                <Button variant="outline" size="sm">
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
                                                             </div>
                                                         </div>
 
-                                                        {provider.enabled && (
-                                                            <div className="mt-4 space-y-3">
-                                                                <div>
-                                                                    <Label htmlFor={`api-key-${key}`} className="text-sm font-medium">
-                                                                        API Key
-                                                                    </Label>
-                                                                    <div className="relative mt-1">
-                                                                        <Input
-                                                                            id={`api-key-${key}`}
-                                                                            type={showApiKeys ? "text" : "password"}
-                                                                            value={provider.api_key || ''}
-                                                                            onChange={(e) => handleApiKeyChange(key, e.target.value)}
-                                                                            placeholder="Enter API key..."
-                                                                            className="pr-10"
-                                                                        />
-                                                                        <Button
-                                                                            type="button"
-                                                                            variant="ghost"
-                                                                            size="sm"
-                                                                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                                            onClick={() => setShowApiKeys(!showApiKeys)}
-                                                                        >
-                                                                            {showApiKeys ? (
-                                                                                <EyeOff className="h-4 w-4" />
-                                                                            ) : (
-                                                                                <Eye className="h-4 w-4" />
-                                                                            )}
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )}
+
                                                     </CardContent>
                                                 </Card>
                                             ))}
@@ -382,94 +276,119 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     </TabsContent>
 
                                     {/* Alerts Tab */}
-                                    <TabsContent value="alerts" className="space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <Card>
-                                                <CardHeader>
-                                                    <CardTitle className="flex items-center space-x-2">
-                                                        <DollarSign className="h-5 w-5" />
-                                                        <span>Price Alert Rules</span>
+                                    <TabsContent value="alerts" className="space-y-6 mt-6">
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                            {/* Price Alert Rules */}
+                                            <Card className="lg:col-span-2 border-l-4 border-l-blue-500">
+                                                <CardHeader className="pb-4">
+                                                    <CardTitle className="flex items-center space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                            <DollarSign className="h-5 w-5 text-blue-600" />
+                                                        </div>
+                                                        <div>
+                                                            <span>Price Alert Rules</span>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">Configure price drop thresholds and rules</p>
+                                                        </div>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-4">
-                                                    <div>
-                                                        <Label htmlFor="global-threshold">Global Threshold ($)</Label>
-                                                        <Input
-                                                            id="global-threshold"
-                                                            type="number"
-                                                            value={formData.alert_rules.global_threshold}
-                                                            onChange={(e) => handleAlertRuleChange('global_threshold', parseFloat(e.target.value))}
-                                                            placeholder="50.00"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label htmlFor="global-percentage">Global Percentage (%)</Label>
-                                                        <Input
-                                                            id="global-percentage"
-                                                            type="number"
-                                                            value={formData.alert_rules.global_percentage}
-                                                            onChange={(e) => handleAlertRuleChange('global_percentage', parseFloat(e.target.value))}
-                                                            placeholder="5.0"
-                                                        />
-                                                    </div>
-                                                    <div className="flex items-center space-x-4">
-                                                        <div className="flex-1">
-                                                            <Label htmlFor="quiet-start">Quiet Hours Start</Label>
+                                                <CardContent className="space-y-6">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="global-threshold" className="text-sm font-medium">Global Threshold ($)</Label>
                                                             <Input
-                                                                id="quiet-start"
-                                                                type="time"
-                                                                value={formData.alert_rules.quiet_hours_start}
-                                                                onChange={(e) => handleAlertRuleChange('quiet_hours_start', e.target.value)}
+                                                                id="global-threshold"
+                                                                type="number"
+                                                                value={formData.alert_rules.global_threshold}
+                                                                onChange={(e) => handleAlertRuleChange('global_threshold', parseFloat(e.target.value))}
+                                                                placeholder="50.00"
+                                                                className="h-10"
                                                             />
                                                         </div>
-                                                        <div className="flex-1">
-                                                            <Label htmlFor="quiet-end">Quiet Hours End</Label>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="global-percentage" className="text-sm font-medium">Global Percentage (%)</Label>
                                                             <Input
-                                                                id="quiet-end"
-                                                                type="time"
-                                                                value={formData.alert_rules.quiet_hours_end}
-                                                                onChange={(e) => handleAlertRuleChange('quiet_hours_end', e.target.value)}
+                                                                id="global-percentage"
+                                                                type="number"
+                                                                value={formData.alert_rules.global_percentage}
+                                                                onChange={(e) => handleAlertRuleChange('global_percentage', parseFloat(e.target.value))}
+                                                                placeholder="5.0"
+                                                                className="h-10"
                                                             />
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <Label className="text-sm font-medium">Quiet Hours</Label>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="quiet-start" className="text-xs text-gray-500">Start Time</Label>
+                                                                <Input
+                                                                    id="quiet-start"
+                                                                    type="time"
+                                                                    value={formData.alert_rules.quiet_hours_start}
+                                                                    onChange={(e) => handleAlertRuleChange('quiet_hours_start', e.target.value)}
+                                                                    className="h-10"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="quiet-end" className="text-xs text-gray-500">End Time</Label>
+                                                                <Input
+                                                                    id="quiet-end"
+                                                                    type="time"
+                                                                    value={formData.alert_rules.quiet_hours_end}
+                                                                    onChange={(e) => handleAlertRuleChange('quiet_hours_end', e.target.value)}
+                                                                    className="h-10"
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </CardContent>
                                             </Card>
 
-                                            <Card>
-                                                <CardHeader>
-                                                    <CardTitle className="flex items-center space-x-2">
-                                                        <BellIcon className="h-5 w-5" />
-                                                        <span>Notifications</span>
+                                            {/* Notifications */}
+                                            <Card className="border-l-4 border-l-green-500">
+                                                <CardHeader className="pb-4">
+                                                    <CardTitle className="flex items-center space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                                            <BellIcon className="h-5 w-5 text-green-600" />
+                                                        </div>
+                                                        <div>
+                                                            <span>Notifications</span>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">Manage alert delivery methods</p>
+                                                        </div>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <div>
-                                                            <Label htmlFor="email-notifications">Email Notifications</Label>
-                                                            <p className="text-sm text-gray-500">Receive alerts via email</p>
+                                                <CardContent className="space-y-6">
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                                            <div className="space-y-1">
+                                                                <Label htmlFor="email-notifications" className="text-sm font-medium">Email Notifications</Label>
+                                                                <p className="text-xs text-gray-500">Receive alerts via email</p>
+                                                            </div>
+                                                            <Switch
+                                                                id="email-notifications"
+                                                                checked={formData.alert_rules.email_notifications}
+                                                                onCheckedChange={(checked) => handleAlertRuleChange('email_notifications', checked)}
+                                                            />
                                                         </div>
-                                                        <Switch
-                                                            id="email-notifications"
-                                                            checked={formData.alert_rules.email_notifications}
-                                                            onCheckedChange={(checked) => handleAlertRuleChange('email_notifications', checked)}
-                                                        />
                                                     </div>
-                                                    <div>
-                                                        <Label htmlFor="webhook-url">Webhook URL</Label>
+                                                    <div className="space-y-3">
+                                                        <Label htmlFor="webhook-url" className="text-sm font-medium">Webhook URL</Label>
                                                         <Input
                                                             id="webhook-url"
                                                             value={formData.alert_rules.webhook_url}
                                                             onChange={(e) => handleAlertRuleChange('webhook_url', e.target.value)}
                                                             placeholder="https://hooks.slack.com/..."
+                                                            className="h-10"
                                                         />
                                                     </div>
-                                                    <div>
-                                                        <Label htmlFor="slack-channel">Slack Channel</Label>
+                                                    <div className="space-y-3">
+                                                        <Label htmlFor="slack-channel" className="text-sm font-medium">Slack Channel</Label>
                                                         <Input
                                                             id="slack-channel"
                                                             value={formData.alert_rules.slack_channel}
                                                             onChange={(e) => handleAlertRuleChange('slack_channel', e.target.value)}
                                                             placeholder="#hotel-alerts"
+                                                            className="h-10"
                                                         />
                                                     </div>
                                                 </CardContent>
@@ -477,112 +396,81 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                         </div>
                                     </TabsContent>
 
-                                    {/* Team Tab */}
-                                    <TabsContent value="team" className="space-y-6">
-                                        <Card>
-                                            <CardHeader>
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <CardTitle>Team Members</CardTitle>
-                                                        <CardDescription>Manage access to your account</CardDescription>
-                                                    </div>
-                                                    <Button>
-                                                        <Plus className="h-4 w-4 mr-2" />
-                                                        Add Member
-                                                    </Button>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="space-y-4">
-                                                    {settings.team.members.map((member) => (
-                                                        <div key={member.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                                                            <div className="flex items-center space-x-3">
-                                                                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                                                                    <span className="text-sm font-medium text-gray-600">
-                                                                        {member.name.split(' ').map(n => n[0]).join('')}
-                                                                    </span>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="font-medium text-gray-900">{member.name}</p>
-                                                                    <p className="text-sm text-gray-500">{member.email}</p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex items-center space-x-3">
-                                                                <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
-                                                                    {member.role}
-                                                                </Badge>
-                                                                <Button variant="outline" size="sm">
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
-                                                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    </TabsContent>
-
                                     {/* Data Tab */}
-                                    <TabsContent value="data" className="space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <Card>
-                                                <CardHeader>
-                                                    <CardTitle className="flex items-center space-x-2">
-                                                        <Database className="h-5 w-5" />
-                                                        <span>Data Retention</span>
+                                    <TabsContent value="data" className="space-y-6 mt-6">
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                            {/* Data Retention */}
+                                            <Card className="lg:col-span-2 border-l-4 border-l-purple-500">
+                                                <CardHeader className="pb-4">
+                                                    <CardTitle className="flex items-center space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                                            <Database className="h-5 w-5 text-purple-600" />
+                                                        </div>
+                                                        <div>
+                                                            <span>Data Retention</span>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">Manage data storage and export settings</p>
+                                                        </div>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-4">
-                                                    <div>
-                                                        <Label htmlFor="retention-window">Retention Window (days)</Label>
-                                                        <Input
-                                                            id="retention-window"
-                                                            type="number"
-                                                            value={settings.data_retention.retention_window}
-                                                            placeholder="90"
-                                                        />
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <div>
-                                                            <Label htmlFor="auto-export">Auto Export</Label>
-                                                            <p className="text-sm text-gray-500">Automatically export data</p>
+                                                <CardContent className="space-y-6">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="retention-window" className="text-sm font-medium">Retention Window (days)</Label>
+                                                            <Input
+                                                                id="retention-window"
+                                                                type="number"
+                                                                value={settings.data_retention.retention_window}
+                                                                placeholder="90"
+                                                                className="h-10"
+                                                            />
                                                         </div>
-                                                        <Switch
-                                                            id="auto-export"
-                                                            checked={settings.data_retention.auto_export}
-                                                        />
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="export-frequency" className="text-sm font-medium">Export Frequency</Label>
+                                                            <Select value={settings.data_retention.export_frequency}>
+                                                                <SelectTrigger className="h-10">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <Label htmlFor="export-frequency">Export Frequency</Label>
-                                                        <Select value={settings.data_retention.export_frequency}>
-                                                            <SelectTrigger>
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="weekly">Weekly</SelectItem>
-                                                                <SelectItem value="monthly">Monthly</SelectItem>
-                                                                <SelectItem value="quarterly">Quarterly</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                                            <div className="space-y-1">
+                                                                <Label htmlFor="auto-export" className="text-sm font-medium">Auto Export</Label>
+                                                                <p className="text-xs text-gray-500">Automatically export data</p>
+                                                            </div>
+                                                            <Switch
+                                                                id="auto-export"
+                                                                checked={settings.data_retention.auto_export}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </CardContent>
                                             </Card>
 
-                                            <Card>
-                                                <CardHeader>
-                                                    <CardTitle className="flex items-center space-x-2">
-                                                        <Globe className="h-5 w-5" />
-                                                        <span>Currency Settings</span>
+                                            {/* Currency Settings */}
+                                            <Card className="border-l-4 border-l-orange-500">
+                                                <CardHeader className="pb-4">
+                                                    <CardTitle className="flex items-center space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                                            <Globe className="h-5 w-5 text-orange-600" />
+                                                        </div>
+                                                        <div>
+                                                            <span>Currency Settings</span>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">Configure display preferences</p>
+                                                        </div>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-4">
-                                                    <div>
-                                                        <Label htmlFor="default-currency">Default Currency</Label>
+                                                <CardContent className="space-y-6">
+                                                    <div className="space-y-3">
+                                                        <Label htmlFor="default-currency" className="text-sm font-medium">Default Currency</Label>
                                                         <Select value={settings.currency.default_currency}>
-                                                            <SelectTrigger>
+                                                            <SelectTrigger className="h-10">
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent>
@@ -594,15 +482,17 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <div>
-                                                            <Label htmlFor="tax-inclusive">Tax Inclusive</Label>
-                                                            <p className="text-sm text-gray-500">Include taxes in prices</p>
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                                            <div className="space-y-1">
+                                                                <Label htmlFor="tax-inclusive" className="text-sm font-medium">Tax Inclusive</Label>
+                                                                <p className="text-xs text-gray-500">Include taxes in prices</p>
+                                                            </div>
+                                                            <Switch
+                                                                id="tax-inclusive"
+                                                                checked={settings.currency.tax_inclusive}
+                                                            />
                                                         </div>
-                                                        <Switch
-                                                            id="tax-inclusive"
-                                                            checked={settings.currency.tax_inclusive}
-                                                        />
                                                     </div>
                                                 </CardContent>
                                             </Card>
@@ -610,83 +500,120 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     </TabsContent>
 
                                     {/* Security Tab */}
-                                    <TabsContent value="security" className="space-y-6">
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle className="flex items-center space-x-2">
-                                                    <Shield className="h-5 w-5" />
-                                                    <span>Security Settings</span>
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="space-y-6">
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <Label htmlFor="current-password">Current Password</Label>
+                                    <TabsContent value="security" className="space-y-6 mt-6">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            {/* Password Management */}
+                                            <Card className="border-l-4 border-l-red-500">
+                                                <CardHeader className="pb-4">
+                                                    <CardTitle className="flex items-center space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                                            <Shield className="h-5 w-5 text-red-600" />
+                                                        </div>
+                                                        <div>
+                                                            <span>Password Management</span>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">Update your account password</p>
+                                                        </div>
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="space-y-4">
+                                                    <div className="space-y-3">
+                                                        <Label htmlFor="current-password" className="text-sm font-medium">Current Password</Label>
                                                         <Input
                                                             id="current-password"
                                                             type="password"
                                                             placeholder="Enter current password"
+                                                            className="h-10"
                                                         />
                                                     </div>
-                                                    <div>
-                                                        <Label htmlFor="new-password">New Password</Label>
+                                                    <div className="space-y-3">
+                                                        <Label htmlFor="new-password" className="text-sm font-medium">New Password</Label>
                                                         <Input
                                                             id="new-password"
                                                             type="password"
                                                             placeholder="Enter new password"
+                                                            className="h-10"
                                                         />
                                                     </div>
-                                                    <div>
-                                                        <Label htmlFor="confirm-password">Confirm New Password</Label>
+                                                    <div className="space-y-3">
+                                                        <Label htmlFor="confirm-password" className="text-sm font-medium">Confirm New Password</Label>
                                                         <Input
                                                             id="confirm-password"
                                                             type="password"
                                                             placeholder="Confirm new password"
+                                                            className="h-10"
                                                         />
                                                     </div>
-                                                    <Button className="w-full">
+                                                    <Button className="w-full h-10">
                                                         <Shield className="h-4 w-4 mr-2" />
                                                         Update Password
                                                     </Button>
-                                                </div>
+                                                </CardContent>
+                                            </Card>
 
-                                                <Separator />
-
-                                                <div className="space-y-4">
-                                                    <h3 className="font-medium text-gray-900">Two-Factor Authentication</h3>
-                                                    <div className="flex items-center justify-between">
-                                                        <div>
-                                                            <p className="font-medium text-gray-900">Enable 2FA</p>
-                                                            <p className="text-sm text-gray-500">Add an extra layer of security</p>
+                                            {/* Two-Factor Authentication */}
+                                            <Card className="border-l-4 border-l-indigo-500">
+                                                <CardHeader className="pb-4">
+                                                    <CardTitle className="flex items-center space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                                            <Shield className="h-5 w-5 text-indigo-600" />
                                                         </div>
-                                                        <Button variant="outline">
+                                                        <div>
+                                                            <span>Two-Factor Authentication</span>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">Add an extra layer of security</p>
+                                                        </div>
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="space-y-4">
+                                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                                        <div className="space-y-1">
+                                                            <p className="font-medium text-gray-900">Enable 2FA</p>
+                                                            <p className="text-sm text-gray-500">Protect your account with two-factor authentication</p>
+                                                        </div>
+                                                        <Button variant="outline" className="h-10">
                                                             <Shield className="h-4 w-4 mr-2" />
                                                             Setup 2FA
                                                         </Button>
                                                     </div>
-                                                </div>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
 
-                                                <Separator />
-
-                                                <div className="space-y-4">
-                                                    <h3 className="font-medium text-gray-900">Active Sessions</h3>
-                                                    <div className="space-y-3">
-                                                        <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                                        {/* Active Sessions */}
+                                        <Card className="border-l-4 border-l-yellow-500">
+                                            <CardHeader className="pb-4">
+                                                <CardTitle className="flex items-center space-x-3 text-lg">
+                                                    <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                                        <Clock className="h-5 w-5 text-yellow-600" />
+                                                    </div>
+                                                    <div>
+                                                        <span>Active Sessions</span>
+                                                        <p className="text-sm text-gray-500 font-normal mt-1">Manage your active login sessions</p>
+                                                    </div>
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-green-50">
+                                                        <div className="flex items-center space-x-3">
+                                                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                                             <div>
                                                                 <p className="font-medium text-gray-900">Current Session</p>
                                                                 <p className="text-sm text-gray-500">macOS • Chrome • San Francisco, CA</p>
                                                             </div>
-                                                            <Badge variant="default">Active</Badge>
                                                         </div>
-                                                        <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                                                        <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
+                                                    </div>
+                                                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                                                        <div className="flex items-center space-x-3">
+                                                            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
                                                             <div>
                                                                 <p className="font-medium text-gray-900">Previous Session</p>
                                                                 <p className="text-sm text-gray-500">Windows • Firefox • New York, NY</p>
                                                             </div>
-                                                            <Button variant="outline" size="sm">
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
                                                         </div>
+                                                        <Button variant="outline" size="sm" className="h-8">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </CardContent>
