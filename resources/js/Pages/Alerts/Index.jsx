@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Link } from '@inertiajs/react';
 import {
     Home,
     Grid3X3,
@@ -12,25 +12,28 @@ import {
     Heart,
     Settings,
     LogOut,
-    Search,
-    Filter,
-    MoreHorizontal,
-    MapPin,
-    Calendar,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    Star,
     TrendingDown,
     DollarSign,
-    X,
-    ArrowRight
+    MapPin,
+    Calendar,
+    Clock,
+    Filter,
+    Search,
+    MoreHorizontal,
+    Eye,
+    EyeOff,
+    CheckCircle,
+    XCircle,
+    AlertTriangle,
+    ArrowRight,
+    Building2,
+    Star
 } from 'lucide-react';
 
 export default function AlertsIndex({ auth, alerts, stats }) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('hotel');
-    const [favorites, setFavorites] = useState(new Set([1])); // Opula Haven Hotel is favorited
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [severityFilter, setSeverityFilter] = useState('all');
 
     const formatCurrency = (amount, currency) => {
         return new Intl.NumberFormat('en-US', {
@@ -52,82 +55,66 @@ export default function AlertsIndex({ auth, alerts, stats }) {
         return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
     };
 
-    const toggleFavorite = (hotelId) => {
-        const newFavorites = new Set(favorites);
-        if (newFavorites.has(hotelId)) {
-            newFavorites.delete(hotelId);
-        } else {
-            newFavorites.add(hotelId);
-        }
-        setFavorites(newFavorites);
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     };
 
-    // Sample price drop data
-    const priceDrops = [
-        {
-            id: 1,
-            name: "Opula Haven Hotel",
-            location: "Bantul, Yogyakarta",
-            price: 450,
-            originalPrice: 580,
-            savings: 130,
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-            rating: 4.5,
-            timeAgo: "2 hours ago"
-        },
-        {
-            id: 2,
-            name: "Green Hottel",
-            location: "Sleman, Yogyakarta",
-            price: 450,
-            originalPrice: 520,
-            savings: 70,
-            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop",
-            rating: 4.5,
-            timeAgo: "4 hours ago"
-        },
-        {
-            id: 3,
-            name: "Garden Hottel",
-            location: "Gunungkidul, Yogyakarta",
-            price: 450,
-            originalPrice: 600,
-            savings: 150,
-            image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=300&fit=crop",
-            rating: 4.5,
-            timeAgo: "6 hours ago"
+    const getStatusBadgeVariant = (status) => {
+        switch (status) {
+            case 'new':
+                return 'default';
+            case 'actioned':
+                return 'secondary';
+            case 'dismissed':
+                return 'outline';
+            default:
+                return 'outline';
         }
-    ];
+    };
 
-    const recentSearches = [
-        {
-            id: 1,
-            name: "Singgah Hottel",
-            location: "Bantul, Yogyakarta",
-            image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=150&h=100&fit=crop"
-        },
-        {
-            id: 2,
-            name: "Mint Hotel",
-            location: "Magelang",
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=150&h=100&fit=crop"
-        },
-        {
-            id: 3,
-            name: "Skyview Hotel",
-            location: "Sleman, Yogyakarta",
-            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=150&h=100&fit=crop"
+    const getSeverityBadgeVariant = (severity) => {
+        switch (severity) {
+            case 'high':
+                return 'destructive';
+            case 'medium':
+                return 'default';
+            case 'low':
+                return 'secondary';
+            default:
+                return 'outline';
         }
-    ];
+    };
 
-    const categories = [
-        { id: 'hotel', name: 'Hotel' },
-        { id: 'motel', name: 'Motel' },
-        { id: 'resort', name: 'Resort' },
-        { id: 'villa', name: 'Villa' },
-        { id: 'apartment', name: 'Apartment' },
-        { id: 'guesthouse', name: 'Guesthouse' }
-    ];
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case 'new':
+                return <AlertTriangle className="w-4 h-4" />;
+            case 'actioned':
+                return <CheckCircle className="w-4 h-4" />;
+            case 'dismissed':
+                return <XCircle className="w-4 h-4" />;
+            default:
+                return <AlertTriangle className="w-4 h-4" />;
+        }
+    };
+
+    const filteredAlerts = alerts?.filter(alert => {
+        const matchesSearch = alert.hotel_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            alert.location.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || alert.status === statusFilter;
+        const matchesSeverity = severityFilter === 'all' || alert.severity === severityFilter;
+
+        return matchesSearch && matchesStatus && matchesSeverity;
+    }) || [];
+
+    const handleAlertAction = (alertId, action) => {
+        // TODO: Implement alert actions
+        console.log(`Alert ${alertId}: ${action}`);
+    };
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -209,180 +196,313 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                 {/* Header */}
                 <div className="bg-white border-b border-gray-200 p-6">
                     <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                            <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-                            <p className="text-lg text-gray-600">{auth?.user?.name || 'Brooklyn Simmons'}</p>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">Price Alerts</h1>
+                            <p className="text-gray-600">Monitor price changes for your hotel bookings</p>
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-2">
-                                <MapPin className="h-4 w-4 text-gray-600" />
-                                <span className="text-gray-700">Yogyakarta</span>
-                                <ChevronDown className="h-4 w-4 text-gray-600" />
-                            </div>
-                            <div className="flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-2">
-                                <Calendar className="h-4 w-4 text-gray-600" />
-                                <span className="text-gray-700">March 17 - March 20, 2024</span>
-                                <ChevronDown className="h-4 w-4 text-gray-600" />
-                            </div>
+                        <div className="flex items-center space-x-2">
+                            <Button variant="outline" size="sm">
+                                <Eye className="w-4 h-4 mr-2" />
+                                Mark All Read
+                            </Button>
+                            <Button size="sm">
+                                <Bell className="w-4 h-4 mr-2" />
+                                Alert Settings
+                            </Button>
                         </div>
                     </div>
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6">
-                    {/* Promotional Banner */}
-                    <Card className="bg-gradient-to-br from-blue-900 to-blue-800 text-white mb-6 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/10 opacity-20"></div>
-                        <CardContent className="p-6 relative z-10">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="inline-block bg-gray-200/20 text-gray-200 px-3 py-1 rounded-full text-sm mb-4">
-                                        Have a nice stay.
-                                    </div>
-                                    <h2 className="text-3xl font-bold mb-2">Only here book</h2>
-                                    <p className="text-xl text-blue-100">Staycation like your own home.</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <Head title="Price Alerts" />
 
-                    {/* Category Tabs */}
-                    <div className="flex items-center space-x-2 mb-6 overflow-x-auto">
-                        {categories.map((category) => (
-                            <Button
-                                key={category.id}
-                                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                                className={`whitespace-nowrap ${selectedCategory === category.id ? 'bg-green-500 hover:bg-green-600' : ''}`}
-                                onClick={() => setSelectedCategory(category.id)}
-                            >
-                                {category.name}
-                            </Button>
-                        ))}
-                        <Button variant="outline" size="sm" className="rounded-full w-8 h-8 p-0">
-                            <ArrowRight className="h-4 w-4" />
-                        </Button>
-                    </div>
-
-                    {/* Price Drops Section */}
-                    <div className="mb-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xl font-semibold text-gray-900">Price Drops for you</h3>
-                            <div className="flex items-center space-x-2">
-                                <Button variant="outline" size="sm" className="w-8 h-8 p-0">
-                                    <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm" className="w-8 h-8 p-0">
-                                    <ChevronRight className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {priceDrops.map((hotel) => (
-                                <Card key={hotel.id} className="cursor-pointer hover:shadow-lg transition-shadow">
-                                    <div className="relative">
-                                        <img
-                                            src={hotel.image}
-                                            alt={hotel.name}
-                                            className="w-full h-48 object-cover rounded-t-lg"
-                                        />
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                            className="absolute top-2 right-2 w-8 h-8 p-0 bg-white/80 hover:bg-white"
-                                            onClick={() => toggleFavorite(hotel.id)}
-                                                >
-                                            <Heart className={`h-4 w-4 ${favorites.has(hotel.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-                                                </Button>
-                                        <div className="absolute top-2 left-2">
-                                            <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
-                                                Save ${hotel.savings}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <CardContent className="p-4">
-                                        <h3 className="font-semibold text-gray-900 mb-1">{hotel.name}</h3>
-                                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                                            <MapPin className="h-3 w-3 mr-1" />
-                                            {hotel.location}
-                                            </div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center">
-                                                <span className="text-lg font-bold text-gray-900">${hotel.price}</span>
-                                                <span className="text-sm text-gray-500 ml-1">/24 hours</span>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                                                <span className="text-sm text-gray-600 ml-1">{hotel.rating}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-gray-500 line-through">${hotel.originalPrice}</span>
-                                            <span className="text-green-600 font-medium">{hotel.timeAgo}</span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right Sidebar */}
-            <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
-                {/* Recent Search Section */}
-                <div className="p-6 border-b border-gray-200">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">Recent Search</h3>
-                        <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </div>
-                    <div className="space-y-3">
-                        {recentSearches.map((search) => (
-                            <div key={search.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                                <img
-                                    src={search.image}
-                                    alt={search.name}
-                                    className="w-12 h-12 object-cover rounded-lg"
-                                />
-                                <div className="flex-1">
-                                    <h4 className="font-medium text-gray-900 text-sm">{search.name}</h4>
-                                    <p className="text-xs text-gray-600">{search.location}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <Button variant="outline" className="w-full mt-4">
-                        See More
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                </div>
-
-                {/* Map View */}
-                <div className="flex-1 p-6">
-                    <div className="relative">
-                        <div className="w-full h-64 bg-gray-200 rounded-lg relative">
-                            {/* Placeholder for map */}
-                            <div className="absolute inset-0 bg-gray-300 rounded-lg opacity-20"></div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-gray-500">Map View</span>
-                            </div>
-                        </div>
-                        <Card className="absolute bottom-4 left-4 right-4">
-                            <CardContent className="p-3">
-                                <div className="flex items-center space-x-3">
-                                    <img
-                                        src={recentSearches[2].image}
-                                        alt={recentSearches[2].name}
-                                        className="w-12 h-12 object-cover rounded-lg"
-                                    />
-                                    <div className="flex-1">
-                                        <h4 className="font-medium text-gray-900 text-sm">{recentSearches[2].name}</h4>
-                                        <p className="text-xs text-gray-600">{recentSearches[2].location}</p>
-                                        </div>
-                                    </div>
+                    <div className="space-y-6">
+                        {/* Stats Cards */}
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Total Alerts</CardTitle>
+                                    <Bell className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{stats?.total_alerts || 0}</div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Across all bookings
+                                    </p>
                                 </CardContent>
                             </Card>
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">New Alerts</CardTitle>
+                                    <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{stats?.new_alerts || 0}</div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Require attention
+                                    </p>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Actioned</CardTitle>
+                                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{stats?.actioned_alerts || 0}</div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Already handled
+                                    </p>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
+                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">
+                                        {formatCurrency(stats?.total_savings || 0)}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Potential savings detected
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Filters and Search */}
+                        <Card>
+                            <CardContent className="p-4">
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <div className="flex-1">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                                            <Input
+                                                placeholder="Search hotels or locations..."
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                className="pl-10"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="outline" size="sm">
+                                                    <Filter className="w-4 h-4 mr-2" />
+                                                    Status: {statusFilter === 'all' ? 'All' : statusFilter}
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuItem onClick={() => setStatusFilter('all')}>
+                                                    All Status
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setStatusFilter('new')}>
+                                                    New
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setStatusFilter('actioned')}>
+                                                    Actioned
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setStatusFilter('dismissed')}>
+                                                    Dismissed
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="outline" size="sm">
+                                                    <Filter className="w-4 h-4 mr-2" />
+                                                    Severity: {severityFilter === 'all' ? 'All' : severityFilter}
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuItem onClick={() => setSeverityFilter('all')}>
+                                                    All Severity
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setSeverityFilter('high')}>
+                                                    High
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setSeverityFilter('medium')}>
+                                                    Medium
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setSeverityFilter('low')}>
+                                                    Low
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Alerts List */}
+                        <div className="space-y-4">
+                            {filteredAlerts.length === 0 ? (
+                                <Card>
+                                    <CardContent className="p-8 text-center">
+                                        <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                        <h3 className="text-lg font-semibold mb-2">No alerts found</h3>
+                                        <p className="text-muted-foreground mb-4">
+                                            {searchQuery || statusFilter !== 'all' || severityFilter !== 'all'
+                                                ? 'Try adjusting your filters or search terms.'
+                                                : 'You\'re all caught up! No price alerts at the moment.'
+                                            }
+                                        </p>
+                                        {(searchQuery || statusFilter !== 'all' || severityFilter !== 'all') && (
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setSearchQuery('');
+                                                    setStatusFilter('all');
+                                                    setSeverityFilter('all');
+                                                }}
+                                            >
+                                                Clear Filters
+                                            </Button>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                filteredAlerts.map((alert) => (
+                                    <Card key={alert.id} className="hover:shadow-md transition-shadow">
+                                        <CardContent className="p-6">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <div className="flex items-start justify-between mb-3">
+                                                        <div className="flex items-center space-x-3">
+                                                            <div className="flex items-center space-x-2">
+                                                                {getStatusIcon(alert.status)}
+                                                                <Badge variant={getStatusBadgeVariant(alert.status)}>
+                                                                    {alert.status}
+                                                                </Badge>
+                                                                <Badge variant={getSeverityBadgeVariant(alert.severity)}>
+                                                                    {alert.severity}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="sm">
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem onClick={() => handleAlertAction(alert.id, 'view')}>
+                                                                    <Eye className="w-4 h-4 mr-2" />
+                                                                    View Booking
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleAlertAction(alert.id, 'dismiss')}>
+                                                                    <XCircle className="w-4 h-4 mr-2" />
+                                                                    Dismiss Alert
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+
+                                                    <div className="flex items-start space-x-4">
+                                                        <div className="flex-1">
+                                                            <h3 className="text-lg font-semibold mb-1">{alert.hotel_name}</h3>
+                                                            <div className="flex items-center text-sm text-muted-foreground mb-2">
+                                                                <MapPin className="w-4 h-4 mr-1" />
+                                                                {alert.location}
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                                <div className="flex items-center space-x-2">
+                                                                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                                                                    <span className="text-sm">
+                                                                        Check-in: {formatDate(alert.check_in_date)}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <Building2 className="w-4 h-4 text-muted-foreground" />
+                                                                    <span className="text-sm">
+                                                                        Provider: {alert.provider}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                                                    <span className="text-sm">
+                                                                        {formatTimeAgo(alert.triggered_at)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="bg-muted/50 rounded-lg p-4">
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                    <div>
+                                                                        <p className="text-sm text-muted-foreground mb-1">Price Change</p>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <span className="text-lg font-semibold">
+                                                                                {formatCurrency(alert.current_price, alert.currency)}
+                                                                            </span>
+                                                                            <span className="text-sm text-muted-foreground line-through">
+                                                                                {formatCurrency(alert.booked_price, alert.currency)}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-sm text-muted-foreground mb-1">Savings</p>
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <TrendingDown className="w-4 h-4 text-green-600" />
+                                                                            <span className="text-lg font-semibold text-green-600">
+                                                                                {formatCurrency(Math.abs(alert.delta_amount), alert.currency)}
+                                                                            </span>
+                                                                            <Badge variant="secondary" className="text-green-700">
+                                                                                {alert.delta_percent}%
+                                                                            </Badge>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="mt-2">
+                                                                    <p className="text-xs text-muted-foreground">
+                                                                        Rule: {alert.rule_threshold}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                                <div className="flex items-center space-x-2">
+                                                    <Link href={`/bookings/${alert.booking_id}`}>
+                                                        <Button variant="outline" size="sm">
+                                                            View Booking
+                                                            <ArrowRight className="w-4 h-4 ml-2" />
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    {alert.status === 'new' && (
+                                                        <>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => handleAlertAction(alert.id, 'action')}
+                                                            >
+                                                                <CheckCircle className="w-4 h-4 mr-2" />
+                                                                Mark Actioned
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleAlertAction(alert.id, 'dismiss')}
+                                                            >
+                                                                <XCircle className="w-4 h-4 mr-2" />
+                                                                Dismiss
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

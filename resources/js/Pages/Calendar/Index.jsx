@@ -248,7 +248,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Head title="Calendar" />
-                
+
                 {/* Header */}
                 <div className="bg-white border-b border-gray-200 p-6">
                     <div className="flex items-center justify-between">
@@ -283,7 +283,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
 
                 {/* Month Summary */}
                 <div className={`transition-all duration-300 ease-in-out ${showMonthSummary ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'}`}>
-                    <Card className="bg-card border-border">
+                    <Card className="bg-white border border-gray-200">
                         <CardContent className="p-4">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
                                 <div>
@@ -325,7 +325,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 </div>
 
                 {/* Calendar Navigation */}
-                <Card className="bg-card border-border">
+                <Card className="bg-white border border-gray-200">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
@@ -336,7 +336,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                 >
                                     <ChevronLeft className="w-4 h-4" />
                                 </Button>
-                                <h2 className="text-xl font-semibold text-foreground">
+                                <h2 className="text-xl font-semibold text-gray-900">
                                     {formatDate(currentDate)}
                                 </h2>
                                 <Button
@@ -349,7 +349,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             </div>
                             <div className="flex items-center space-x-4">
                                 {/* Legend */}
-                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-4 text-sm text-gray-600">
                                     <div className="flex items-center space-x-1">
                                         <Building2 className="w-3 h-3" />
                                         <span>Hotels</span>
@@ -371,7 +371,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                         <div className="grid grid-cols-7 gap-1">
                             {/* Day headers */}
                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
+                                <div key={day} className="p-2 text-center text-sm font-medium text-gray-600">
                                     {day}
                                 </div>
                             ))}
@@ -380,39 +380,39 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             {days.map((date, index) => (
                                 <div
                                     key={index}
-                                    className={`min-h-[100px] p-2 border border-border transition-colors ${
-                                        date ? 'hover:bg-muted/50 cursor-pointer' : ''
+                                    className={`min-h-[100px] p-2 border border-gray-200 transition-colors ${
+                                        date ? 'hover:bg-gray-50 cursor-pointer' : ''
                                     } ${
-                                        isToday(date) ? 'bg-primary/10 border-primary' : ''
+                                        isToday(date) ? 'bg-blue-50 border-blue-500' : ''
                                     } ${
-                                        isSelected(date) ? 'ring-2 ring-primary' : ''
+                                        isSelected(date) ? 'ring-2 ring-blue-500' : ''
                                     }`}
                                     onClick={() => date && setSelectedDate(date)}
                                 >
                                     {date ? (
                                         <>
-                                            <div className="text-sm font-medium text-foreground mb-1">
+                                            <div className="text-sm font-medium text-gray-900 mb-1">
                                                 {date.getDate()}
                                             </div>
                                             <div className="space-y-1">
                                                 {getBookingsForDate(date).slice(0, 2).map(booking => (
                                                     <div
                                                         key={booking.id}
-                                                        className="flex items-center space-x-1 p-1 rounded text-xs bg-muted"
+                                                        className="flex items-center space-x-1 p-1 rounded text-xs bg-gray-100"
                                                     >
                                                         <Building2 className="w-3 h-3" />
                                                         <span className="truncate">{booking.hotel_name}</span>
                                                     </div>
                                                 ))}
                                                 {getBookingsForDate(date).length > 2 && (
-                                                    <div className="text-xs text-muted-foreground">
+                                                    <div className="text-xs text-gray-500">
                                                         +{getBookingsForDate(date).length - 2} more
                                                     </div>
                                                 )}
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="text-sm text-muted-foreground/30">
+                                        <div className="text-sm text-gray-300">
                                             {/* Empty cell */}
                                         </div>
                                     )}
@@ -424,9 +424,9 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
 
                 {/* Selected Date Bookings */}
                 {selectedDate && (
-                    <Card className="bg-card border-border">
+                    <Card className="bg-white border border-gray-200">
                         <CardHeader>
-                            <CardTitle className="text-foreground">
+                            <CardTitle className="text-gray-900">
                                 Bookings for {selectedDate.toLocaleDateString('en-US', {
                                     weekday: 'long',
                                     year: 'numeric',
@@ -434,25 +434,25 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     day: 'numeric'
                                 })}
                             </CardTitle>
-                            <CardDescription className="text-muted-foreground">
+                            <CardDescription className="text-gray-600">
                                 {selectedDateBookings.length} bookings scheduled
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             {selectedDateBookings.length === 0 ? (
-                                <div className="text-center py-8 text-muted-foreground">
+                                <div className="text-center py-8 text-gray-500">
                                     No bookings scheduled for this date
                                 </div>
                             ) : (
                                 <div className="space-y-4">
                                     {selectedDateBookings.map(booking => (
                                         <Link key={booking.id} href={`/bookings/${booking.id}`}>
-                                            <div className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                                                 <div className="flex items-center space-x-3">
                                                     <Building2 className="w-5 h-5 text-blue-600" />
                                                     <div>
-                                                        <h3 className="font-medium text-foreground">{booking.hotel_name}</h3>
-                                                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                                        <h3 className="font-medium text-gray-900">{booking.hotel_name}</h3>
+                                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
                                                             <MapPin className="w-3 h-3" />
                                                             <span>{booking.location}</span>
                                                             {booking.star_rating && (
@@ -462,7 +462,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                                 </>
                                                             )}
                                                         </div>
-                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                        <p className="text-xs text-gray-500 mt-1">
                                                             {new Date(booking.check_in_date).toLocaleDateString()} - {new Date(booking.check_out_date).toLocaleDateString()}
                                                         </p>
                                                     </div>
@@ -491,28 +491,28 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 )}
 
                 {/* Upcoming Bookings */}
-                <Card className="bg-card border-border">
+                <Card className="bg-white border border-gray-200">
                     <CardHeader>
-                        <CardTitle className="text-foreground">Upcoming Bookings</CardTitle>
-                        <CardDescription className="text-muted-foreground">
+                        <CardTitle className="text-gray-900">Upcoming Bookings</CardTitle>
+                        <CardDescription className="text-gray-600">
                             Next 7 days
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         {safeUpcomingBookings.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
+                            <div className="text-center py-8 text-gray-500">
                                 No upcoming bookings in the next 7 days
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {safeUpcomingBookings.map(booking => (
                                     <Link key={booking.id} href={`/bookings/${booking.id}`}>
-                                        <div className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                                        <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                                             <div className="flex items-center space-x-3">
                                                 <Building2 className="w-5 h-5 text-blue-600" />
                                                 <div>
-                                                    <h3 className="font-medium text-foreground">{booking.hotel_name}</h3>
-                                                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                                    <h3 className="font-medium text-gray-900">{booking.hotel_name}</h3>
+                                                    <div className="flex items-center space-x-2 text-sm text-gray-600">
                                                         <MapPin className="w-3 h-3" />
                                                         <span>{booking.location}</span>
                                                         {booking.star_rating && (
@@ -522,7 +522,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                             </>
                                                         )}
                                                     </div>
-                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                    <p className="text-xs text-gray-500 mt-1">
                                                         {new Date(booking.check_in_date).toLocaleDateString()} - {new Date(booking.check_out_date).toLocaleDateString()}
                                                     </p>
                                                 </div>

@@ -16,20 +16,41 @@ class CalendarController extends Controller
             ->orderBy('check_in_date')
             ->get()
             ->map(function ($booking) {
+                $checkIn = Carbon::parse($booking->check_in_date);
+                $checkOut = Carbon::parse($booking->check_out_date);
+                $nights = $checkIn->diffInDays($checkOut);
+
                 return [
                     'id' => $booking->id,
                     'hotel_name' => $booking->hotel_name,
+                    'canonical_hotel_name' => $booking->canonical_hotel_name,
                     'location' => $booking->location,
+                    'address' => $booking->address,
                     'check_in_date' => $booking->check_in_date,
                     'check_out_date' => $booking->check_out_date,
                     'status' => $booking->status,
                     'star_rating' => $booking->star_rating,
+                    'original_price' => $booking->original_price,
                     'current_price' => $booking->current_price,
                     'currency' => $booking->currency,
                     'price_drop_detected' => $booking->price_drop_detected,
                     'price_drop_amount' => $booking->price_drop_amount,
                     'guests' => $booking->guests,
                     'room_type' => $booking->room_type,
+                    'room_description' => $booking->room_description,
+                    'nights' => $nights,
+                    'total_price' => $booking->original_price,
+                    'price_per_night' => $booking->original_price / $nights,
+                    'booking_reference' => $booking->booking_reference,
+                    'booking_link' => $booking->booking_link,
+                    'hotel_website' => $booking->hotel_website,
+                    'cancellation_policy' => $booking->cancellation_policy,
+                    'breakfast_included' => $booking->breakfast_included,
+                    'amenities' => $booking->amenities,
+                    'facilities' => $booking->facilities,
+                    'screenshots' => $booking->screenshots,
+                    'last_checked' => $booking->last_checked,
+                    'enriched_data' => $booking->getEnrichedData(),
                 ];
             });
 
@@ -40,20 +61,41 @@ class CalendarController extends Controller
             ->orderBy('check_in_date')
             ->get()
             ->map(function ($booking) {
+                $checkIn = Carbon::parse($booking->check_in_date);
+                $checkOut = Carbon::parse($booking->check_out_date);
+                $nights = $checkIn->diffInDays($checkOut);
+
                 return [
                     'id' => $booking->id,
                     'hotel_name' => $booking->hotel_name,
+                    'canonical_hotel_name' => $booking->canonical_hotel_name,
                     'location' => $booking->location,
+                    'address' => $booking->address,
                     'check_in_date' => $booking->check_in_date,
                     'check_out_date' => $booking->check_out_date,
                     'status' => $booking->status,
                     'star_rating' => $booking->star_rating,
+                    'original_price' => $booking->original_price,
                     'current_price' => $booking->current_price,
                     'currency' => $booking->currency,
                     'price_drop_detected' => $booking->price_drop_detected,
                     'price_drop_amount' => $booking->price_drop_amount,
                     'guests' => $booking->guests,
                     'room_type' => $booking->room_type,
+                    'room_description' => $booking->room_description,
+                    'nights' => $nights,
+                    'total_price' => $booking->original_price,
+                    'price_per_night' => $booking->original_price / $nights,
+                    'booking_reference' => $booking->booking_reference,
+                    'booking_link' => $booking->booking_link,
+                    'hotel_website' => $booking->hotel_website,
+                    'cancellation_policy' => $booking->cancellation_policy,
+                    'breakfast_included' => $booking->breakfast_included,
+                    'amenities' => $booking->amenities,
+                    'facilities' => $booking->facilities,
+                    'screenshots' => $booking->screenshots,
+                    'last_checked' => $booking->last_checked,
+                    'enriched_data' => $booking->getEnrichedData(),
                 ];
             });
 
