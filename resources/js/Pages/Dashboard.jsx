@@ -259,17 +259,6 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                     </Link>
                 </nav>
 
-                {/* Promotional Card */}
-                <div className="p-4">
-                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                        <CardContent className="p-4">
-                            <h3 className="font-bold text-blue-900 mb-2">Get 45% Off.</h3>
-                            <p className="text-sm text-blue-700 mb-3">Special Price for you, hotel discount up to 45%</p>
-                            <div className="w-full h-20 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-lg"></div>
-                        </CardContent>
-                    </Card>
-                </div>
-
                 {/* Logout */}
                 <div className="p-4 border-t border-gray-200">
                     <Link href="/logout" method="post" as="button" className="w-full">
@@ -287,7 +276,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 <div className="bg-white border-b border-gray-200 p-6">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold text-gray-900">
-                            Find hotel to stay 🏨
+                            Find hotel to stay
                         </h1>
                         <Dialog>
                             <DialogTrigger asChild>
@@ -431,7 +420,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         </div>
                         <div className="flex space-x-4 overflow-x-auto pb-4">
                             {hotel_bookings && hotel_bookings.length > 0 ? (
-                                hotel_bookings.slice(0, 3).map((booking, index) => (
+                                hotel_bookings.slice(0, 4).map((booking, index) => (
                                     <Card key={booking.id} className="min-w-[300px] cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleBookingClick(booking)}>
                                         <div className="relative">
                                             {booking.enriched_data?.overview?.screenshots && booking.enriched_data.overview.screenshots.length > 0 ? (

@@ -424,4 +424,52 @@ class HotelBookingController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Display a listing of favorite hotels
+     */
+    public function favorites()
+    {
+        // Get actual bookings from database and mark some as favorites for demo
+        $bookings = HotelBooking::where('user_id', 1) // For demo purposes, use user ID 1
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Add calculated fields and mark some as favorites for demo
+        $bookings->each(function ($booking, $index) {
+            $checkIn = \Carbon\Carbon::parse($booking->check_in_date);
+            $checkOut = \Carbon\Carbon::parse($booking->check_out_date);
+            $nights = $checkIn->diffInDays($checkOut);
+
+            $booking->total_price = $booking->original_price;
+            $booking->price_per_night = $booking->original_price / $nights;
+            $booking->rooms = 1; // Default to 1 room since we don't store this
+            $booking->nights = $nights;
+            // Mark first 3 bookings as favorites to ensure we have some data
+            $booking->is_favorite = $index < 3;
+
+            // Add enriched data for frontend
+            $booking->enriched_data = $booking->getEnrichedData();
+        });
+
+        // Filter to only show favorites
+        $favorites = $bookings->where('is_favorite', true);
+
+        return Inertia::render('Favorites/Index', [
+            'auth' => [
+                'user' => [
+                    'name' => 'John Doe',
+                    'email' => 'john@example.com',
+                    'avatar' => null,
+                ],
+            ],
+            'favorites' => $favorites->values(), // Ensure it's an array
+            'stats' => [
+                'total_favorites' => $favorites->count(),
+                'active_favorites' => $favorites->where('status', 'active')->count(),
+                'price_drops_detected' => $favorites->where('price_drop_detected', true)->count(),
+                'total_savings' => 0 // Will be calculated when price drops are implemented
+            ]
+        ]);
+    }
 }

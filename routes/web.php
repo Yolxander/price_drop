@@ -50,6 +50,9 @@ Route::get('/api-status', [StatusController::class, 'index'])->name('status.inde
 // Settings
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
 
+// Favorites
+Route::get('/favorites', [HotelBookingController::class, 'favorites'])->name('favorites.index');
+
 // Calendar
 Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
 

@@ -18,7 +18,6 @@ import {
     Calendar,
     Clock,
     Filter,
-    Search,
     MoreHorizontal,
     Eye,
     EyeOff,
@@ -31,7 +30,6 @@ import {
 } from 'lucide-react';
 
 export default function AlertsIndex({ auth, alerts, stats }) {
-    const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [severityFilter, setSeverityFilter] = useState('all');
 
@@ -103,12 +101,10 @@ export default function AlertsIndex({ auth, alerts, stats }) {
     };
 
     const filteredAlerts = alerts?.filter(alert => {
-        const matchesSearch = alert.hotel_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            alert.location.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || alert.status === statusFilter;
         const matchesSeverity = severityFilter === 'all' || alert.severity === severityFilter;
 
-        return matchesSearch && matchesStatus && matchesSeverity;
+        return matchesStatus && matchesSeverity;
     }) || [];
 
     const handleAlertAction = (alertId, action) => {
@@ -201,6 +197,50 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             <p className="text-gray-600">Monitor price changes for your hotel bookings</p>
                         </div>
                         <div className="flex items-center space-x-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                        <Filter className="w-4 h-4 mr-2" />
+                                        Status: {statusFilter === 'all' ? 'All' : statusFilter}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => setStatusFilter('all')}>
+                                        All Status
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setStatusFilter('new')}>
+                                        New
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setStatusFilter('actioned')}>
+                                        Actioned
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setStatusFilter('dismissed')}>
+                                        Dismissed
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                        <Filter className="w-4 h-4 mr-2" />
+                                        Severity: {severityFilter === 'all' ? 'All' : severityFilter}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => setSeverityFilter('all')}>
+                                        All Severity
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSeverityFilter('high')}>
+                                        High
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSeverityFilter('medium')}>
+                                        Medium
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSeverityFilter('low')}>
+                                        Low
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                             <Button variant="outline" size="sm">
                                 <Eye className="w-4 h-4 mr-2" />
                                 Mark All Read
@@ -272,70 +312,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                     </Card>
                         </div>
 
-                        {/* Filters and Search */}
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <div className="flex-1">
-                                    <div className="relative">
-                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                                            <Input
-                                                placeholder="Search hotels or locations..."
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="pl-10"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" size="sm">
-                                                    <Filter className="w-4 h-4 mr-2" />
-                                                    Status: {statusFilter === 'all' ? 'All' : statusFilter}
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem onClick={() => setStatusFilter('all')}>
-                                                    All Status
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setStatusFilter('new')}>
-                                                    New
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setStatusFilter('actioned')}>
-                                                    Actioned
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setStatusFilter('dismissed')}>
-                                                    Dismissed
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" size="sm">
-                                                    <Filter className="w-4 h-4 mr-2" />
-                                                    Severity: {severityFilter === 'all' ? 'All' : severityFilter}
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem onClick={() => setSeverityFilter('all')}>
-                                                    All Severity
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setSeverityFilter('high')}>
-                                                    High
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setSeverityFilter('medium')}>
-                                                    Medium
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setSeverityFilter('low')}>
-                                                    Low
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                            </div>
-                                        </div>
-                            </CardContent>
-                        </Card>
+
 
                         {/* Alerts List */}
                         <div className="space-y-4">
@@ -345,16 +322,15 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                         <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                                         <h3 className="text-lg font-semibold mb-2">No alerts found</h3>
                                         <p className="text-muted-foreground mb-4">
-                                            {searchQuery || statusFilter !== 'all' || severityFilter !== 'all'
-                                                ? 'Try adjusting your filters or search terms.'
+                                            {statusFilter !== 'all' || severityFilter !== 'all'
+                                                ? 'Try adjusting your filters.'
                                                 : 'You\'re all caught up! No price alerts at the moment.'
                                             }
                                         </p>
-                                        {(searchQuery || statusFilter !== 'all' || severityFilter !== 'all') && (
+                                        {(statusFilter !== 'all' || severityFilter !== 'all') && (
                                             <Button
                                                 variant="outline"
                                                 onClick={() => {
-                                                    setSearchQuery('');
                                                     setStatusFilter('all');
                                                     setSeverityFilter('all');
                                                 }}
