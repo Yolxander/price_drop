@@ -5,11 +5,29 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import ImageGalleryModal from '@/components/ui/image-gallery-modal';
 import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail, Home, Grid3X3, Bell, Heart, Settings, LogOut } from 'lucide-react';
 
 export default function Show({ auth, booking }) {
     const [loading, setLoading] = useState(false);
     const [enrichmentStatus, setEnrichmentStatus] = useState(null);
+    const [galleryOpen, setGalleryOpen] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [availableImages, setAvailableImages] = useState([]);
+
+    // Filter out unavailable images
+    React.useEffect(() => {
+        if (booking.enriched_data?.overview?.screenshots) {
+            const images = booking.enriched_data.overview.screenshots.map((src, index) => ({
+                src: src,
+                alt: `${booking.hotel_name} - Image ${index + 1}`,
+                originalIndex: index
+            }));
+            setAvailableImages(images);
+        } else {
+            setAvailableImages([]);
+        }
+    }, [booking.enriched_data?.overview?.screenshots, booking.hotel_name]);
 
     const triggerEnrichment = async () => {
         setLoading(true);
@@ -33,6 +51,23 @@ export default function Show({ auth, booking }) {
             setEnrichmentStatus({ success: false, message: 'Enrichment failed' });
         }
         setLoading(false);
+    };
+
+    const openGallery = (index) => {
+        // Find the corresponding index in available images
+        const availableIndex = availableImages.findIndex(img => img.originalIndex === index);
+        if (availableIndex !== -1) {
+            setSelectedImageIndex(availableIndex);
+            setGalleryOpen(true);
+        }
+    };
+
+    const closeGallery = () => {
+        setGalleryOpen(false);
+    };
+
+    const handleImageError = (originalIndex) => {
+        setAvailableImages(prev => prev.filter(img => img.originalIndex !== originalIndex));
     };
 
     const formatCurrency = (amount, currency) => {
@@ -202,22 +237,36 @@ export default function Show({ auth, booking }) {
                                                     </div>
 
                                                     {/* Hotel Images */}
-                                                    {booking.enriched_data.overview.screenshots && booking.enriched_data.overview.screenshots.length > 0 && (
+                                                    {availableImages.length > 0 ? (
                                                         <div>
                                                             <h3 className="font-semibold mb-3">Hotel Images</h3>
                                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                                {booking.enriched_data.overview.screenshots.map((image, index) => (
-                                                                    <div key={index} className="aspect-video rounded-lg overflow-hidden">
+                                                                {availableImages.map((image, index) => (
+                                                                    <div
+                                                                        key={image.originalIndex}
+                                                                        className="aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                                                                        onClick={() => openGallery(index)}
+                                                                    >
                                                                         <img
-                                                                            src={image}
-                                                                            alt={`Hotel ${index + 1}`}
+                                                                            src={image.src}
+                                                                            alt={image.alt}
                                                                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                                                                            onError={(e) => {
-                                                                                e.target.style.display = 'none';
-                                                                            }}
+                                                                            onError={() => handleImageError(image.originalIndex)}
                                                                         />
                                                                     </div>
                                                                 ))}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div>
+                                                            <h3 className="font-semibold mb-3">Hotel Images</h3>
+                                                            <div className="aspect-video rounded-lg bg-gray-100 flex items-center justify-center">
+                                                                <div className="text-center">
+                                                                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-2">
+                                                                        <span className="text-gray-500 text-xl">📷</span>
+                                                                    </div>
+                                                                    <p className="text-gray-500 text-sm">No images available</p>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     )}
@@ -558,24 +607,18 @@ export default function Show({ auth, booking }) {
                                     </Button>
                                 </CardContent>
                             </Card>
-
-                            {/* Booking Reference */}
-                            {booking.booking_reference && (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Booking Reference</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="font-mono text-sm bg-gray-100 p-2 rounded">
-                                            {booking.booking_reference}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Image Gallery Modal */}
+            <ImageGalleryModal
+                isOpen={galleryOpen}
+                onClose={closeGallery}
+                images={availableImages}
+                initialIndex={selectedImageIndex}
+            />
         </div>
     );
 }

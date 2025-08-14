@@ -268,8 +268,8 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     <p className="text-xs text-muted-foreground">
                                         Potential savings detected
                                     </p>
-                                </CardContent>
-                            </Card>
+                        </CardContent>
+                    </Card>
                         </div>
 
                         {/* Filters and Search */}
@@ -277,7 +277,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             <CardContent className="p-4">
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     <div className="flex-1">
-                                        <div className="relative">
+                                    <div className="relative">
                                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                                             <Input
                                                 placeholder="Search hotels or locations..."
@@ -332,8 +332,8 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
-                                    </div>
-                                </div>
+                                            </div>
+                                        </div>
                             </CardContent>
                         </Card>
 
@@ -462,10 +462,10 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
                                             <div className="flex items-center justify-between mt-4 pt-4 border-t">
                                                 <div className="flex items-center space-x-2">
@@ -473,9 +473,9 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                         <Button variant="outline" size="sm">
                                                             View Booking
                                                             <ArrowRight className="w-4 h-4 ml-2" />
-                                                        </Button>
+                        </Button>
                                                     </Link>
-                                                </div>
+                    </div>
                                                 <div className="flex items-center space-x-2">
                                                     {alert.status === 'new' && (
                                                         <>
@@ -493,13 +493,13 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                             >
                                                                 <XCircle className="w-4 h-4 mr-2" />
                                                                 Dismiss
-                                                            </Button>
+                    </Button>
                                                         </>
                                                     )}
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                                 ))
                             )}
                         </div>
