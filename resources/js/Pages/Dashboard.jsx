@@ -218,7 +218,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                             <span className="text-white font-bold text-lg">T</span>
                         </div>
-                        <span className="text-xl font-bold text-blue-600">Tamago</span>
+                        <span className="text-xl font-bold text-blue-600">Price Drop</span>
                     </div>
                 </div>
 
