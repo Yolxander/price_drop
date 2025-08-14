@@ -26,7 +26,9 @@ import {
     ChevronRight,
     LayoutGrid,
     List,
-    Calendar
+    Calendar,
+    Eye,
+    Trash2
 } from 'lucide-react';
 
 export default function BookingsIndex({ auth, bookings, stats }) {
@@ -238,7 +240,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                     <div className="flex-1 overflow-y-auto p-6">
                         <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}>
                             {currentProperties.map((property) => (
-                                <Link key={property.id} href={`/bookings/${property.id}`} className="block">
+                                <div key={property.id} className="relative">
                                     <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02]">
                                         <div className="relative">
                                             {property.image ? (
@@ -252,41 +254,6 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                                     <span className="text-gray-500 text-sm">No image available</span>
                                                 </div>
                                             )}
-                                            <div className="absolute top-3 right-3">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button
-                                                            variant="secondary"
-                                                            size="sm"
-                                                            className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                        >
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-48">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={`/bookings/${property.id}`}>
-                                                                View Details
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={`/bookings/${property.id}/edit`}>
-                                                                Edit Booking
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className="text-red-600 focus:text-red-600"
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                handleDeleteClick(property);
-                                                            }}
-                                                        >
-                                                            Delete Booking
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
                                             <div className="absolute top-3 left-3">
                                                 <Badge variant="default" className="bg-primary text-primary-foreground font-medium">
                                                     ${property.price}
@@ -301,43 +268,95 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             )}
                                         </div>
                                         <CardContent className="p-6">
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 group-hover:text-blue-600 transition-colors">
-                                                        {property.name}
-                                                    </h3>
-                                                    <div className="flex items-center text-sm text-muted-foreground">
-                                                        <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
-                                                        <span className="truncate">{property.location}</span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-3 gap-3 text-sm">
-                                                    <div className="flex items-center text-muted-foreground">
-                                                        <Bed className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                        <span>{property.beds} room{property.beds > 1 ? 's' : ''}</span>
-                                                    </div>
-                                                    <div className="flex items-center text-muted-foreground">
-                                                        <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                        <span>{property.nights} night{property.nights > 1 ? 's' : ''}</span>
-                                                    </div>
-                                                    <div className="flex items-center text-muted-foreground">
-                                                        <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                        <span>{property.guests} guest{property.guests > 1 ? 's' : ''}</span>
-                                                    </div>
-                                                </div>
-
-                                                {property.checkIn && (
-                                                    <div className="pt-2 border-t border-border">
-                                                        <div className="text-xs text-muted-foreground">
-                                                            Check-in: {formatDate(property.checkIn)}
+                                            <Link href={`/bookings/${property.id}`} className="block">
+                                                <div className="space-y-3">
+                                                    <div>
+                                                        <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 group-hover:text-blue-600 transition-colors">
+                                                            {property.name}
+                                                        </h3>
+                                                        <div className="flex items-center text-sm text-muted-foreground">
+                                                            <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                                                            <span className="truncate">{property.location}</span>
                                                         </div>
                                                     </div>
-                                                )}
-                                            </div>
+
+                                                    <div className="grid grid-cols-3 gap-3 text-sm">
+                                                        <div className="flex items-center text-muted-foreground">
+                                                            <Bed className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                            <span>{property.beds} room{property.beds > 1 ? 's' : ''}</span>
+                                                        </div>
+                                                        <div className="flex items-center text-muted-foreground">
+                                                            <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                            <span>{property.nights} night{property.nights > 1 ? 's' : ''}</span>
+                                                        </div>
+                                                        <div className="flex items-center text-muted-foreground">
+                                                            <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                            <span>{property.guests} guest{property.guests > 1 ? 's' : ''}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {property.checkIn && (
+                                                        <div className="pt-2 border-t border-border">
+                                                            <div className="text-xs text-muted-foreground">
+                                                                Check-in: {formatDate(property.checkIn)}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Link>
                                         </CardContent>
                                     </Card>
-                                </Link>
+
+                                    {/* Dropdown button positioned outside the card */}
+                                    <div className="absolute top-3 right-3 z-50">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger>
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    className="h-10 w-10 p-0 bg-white hover:bg-gray-50 shadow-lg border border-gray-300 rounded-full"
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        console.log('Dropdown button clicked!');
+                                                    }}
+                                                >
+                                                    <MoreHorizontal className="h-5 w-5" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent
+                                                align="end"
+                                                className="w-48 z-[100]"
+                                                sideOffset={5}
+                                                forceMount
+                                            >
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={`/bookings/${property.id}`} className="flex items-center">
+                                                        <Eye className="h-4 w-4 mr-2" />
+                                                        View Details
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={`/bookings/${property.id}/edit`} className="flex items-center">
+                                                        <Settings className="h-4 w-4 mr-2" />
+                                                        Edit Booking
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className="text-red-600 focus:text-red-600 flex items-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleDeleteClick(property);
+                                                    }}
+                                                >
+                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                    Delete Booking
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>
