@@ -16,7 +16,8 @@ import {
     Globe,
     Activity,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,6 +31,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
     const navigation = [
         { name: 'My Trips', href: '/dashboard', icon: Home },
         { name: 'All Bookings', href: '/bookings', icon: Building2 },
+        { name: 'Calendar', href: '/calendar', icon: Calendar },
         { name: 'Price Drops', href: '/price-alerts', icon: Bell },
         { name: 'Past Prices', href: '/price-history', icon: TrendingDown },
         { name: 'Savings & Trends', href: '/reports', icon: BarChart3 },

@@ -9,6 +9,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SerpApiController;
+use App\Http\Controllers\CalendarController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -48,6 +49,9 @@ Route::get('/api-status', [StatusController::class, 'index'])->name('status.inde
 
 // Settings
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+
+// Calendar
+Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
 
 // SerpAPI Routes
 Route::prefix('api/serp')->group(function () {
