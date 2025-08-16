@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,8 @@ import {
     Clock,
     CreditCard,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    Building
 } from 'lucide-react';
 
 export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }) {
@@ -37,6 +38,12 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     const [showImageGallery, setShowImageGallery] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [activeNavTab, setActiveNavTab] = useState('most-popular');
+    const [isVisible, setIsVisible] = useState({
+        header: false,
+        recentBookings: false,
+        navigationTabs: false,
+        hotelCards: false
+    });
     const [formData, setFormData] = useState({
         hotel_name: '',
         location: '',
@@ -88,6 +95,44 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         { name: "Laganu Hotel", country: "Japan", price: 38, image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=150&h=100&fit=crop" },
         { name: "Ibis Hotel", country: "Indonesia", price: 45, image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=150&h=100&fit=crop" }
     ];
+
+    // Intersection Observer for animations
+    useEffect(() => {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const section = entry.target.dataset.section;
+                    if (section) {
+                        console.log('Section visible:', section);
+                        setIsVisible(prev => ({ ...prev, [section]: true }));
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        const sections = document.querySelectorAll('[data-section]');
+        console.log('Found sections:', sections.length);
+        sections.forEach(section => {
+            console.log('Observing section:', section.dataset.section);
+            observer.observe(section);
+        });
+
+        // Trigger header animation immediately
+        setIsVisible(prev => ({ ...prev, header: true }));
+
+        return () => observer.disconnect();
+    }, []);
+
+    // Debug log for state changes
+    useEffect(() => {
+        console.log('Animation state:', isVisible);
+    }, [isVisible]);
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -210,22 +255,37 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 <Head title="Dashboard" />
 
                 {/* Header */}
-                <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 p-8 shadow-sm">
+                <div
+                    data-section="header"
+                    className={`bg-white/80 backdrop-blur-sm border-b border-gray-200/50 p-8 shadow-sm transition-all duration-1000 ease-out ${
+                        isVisible.header
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-8'
+                    }`}
+                >
                     <div className="flex items-center justify-between">
-                        <div className="flex-1 max-w-md">
+                        <div className={`flex-1 max-w-md transition-all duration-1000 delay-200 ${
+                            isVisible.header
+                                ? 'opacity-100 translate-x-0'
+                                : 'opacity-0 -translate-x-8'
+                        }`}>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
                                     placeholder="Search hotels..."
-                                    className="pl-10 bg-white/90 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-xl shadow-sm"
+                                    className="pl-10 bg-white/90 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md"
                                 />
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
+                        <div className={`flex items-center space-x-4 transition-all duration-1000 delay-400 ${
+                            isVisible.header
+                                ? 'opacity-100 translate-x-0'
+                                : 'opacity-0 translate-x-8'
+                        }`}>
                             <Dialog open={showAddBooking} onOpenChange={setShowAddBooking}>
                                 <DialogTrigger asChild>
                                 <Button
-                                        className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                                        className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 btn-hover-effect"
                                         onClick={handleAddBookingClick}
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
@@ -348,7 +408,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
                                 </div>
                                 <DialogFooter>
-                                    <Button variant="outline" onClick={() => setShowAddBooking(false)} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-lg">
+                                    <Button variant="outline" onClick={() => setShowAddBooking(false)} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105">
                                         Cancel
                                     </Button>
                                     <Button onClick={handleSubmit} className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
@@ -365,23 +425,46 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                     {/* Main Content */}
                     <div className="flex-1 overflow-y-auto p-8 space-y-10">
                         {/* Recent Bookings */}
-                        <div>
-                            <div className="flex items-center justify-between mb-6">
+                        <div
+                            data-section="recentBookings"
+                            className={`transition-all duration-1000 ease-out ${
+                                isVisible.recentBookings
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-8'
+                            }`}
+                        >
+                            <div className={`flex items-center justify-between mb-6 transition-all duration-1000 delay-200 ${
+                                isVisible.recentBookings
+                                    ? 'opacity-100 translate-x-0'
+                                    : 'opacity-0 -translate-x-8'
+                            }`}>
                                 <h2 className="text-2xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Recent Bookings</h2>
                                 <Link href="/bookings">
-                                    <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-lg">View All →</Button>
+                                    <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-lg transition-all duration-300 hover:scale-105">View All →</Button>
                                 </Link>
                             </div>
                             <div className="flex space-x-6 overflow-x-auto pb-6 scrollbar-hide">
                                 {hotel_bookings && hotel_bookings.length > 0 ? (
                                     hotel_bookings.slice(0, 4).map((booking, index) => (
-                                        <Card key={booking.id} className="min-w-[320px] cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0 bg-white/90 backdrop-blur-sm" onClick={() => handleBookingClick(booking)}>
-                                            <div className="relative">
+                                        <Card
+                                            key={booking.id}
+                                            className={`min-w-[320px] cursor-pointer hover:shadow-xl transition-all duration-500 transform hover:scale-105 border-0 bg-white/90 backdrop-blur-sm hover-lift ${
+                                                isVisible.recentBookings
+                                                    ? 'opacity-100 translate-y-0'
+                                                    : 'opacity-0 translate-y-8'
+                                            }`}
+                                            style={{
+                                                transitionDelay: `${index * 100}ms`,
+                                                animationDelay: `${index * 100}ms`
+                                            }}
+                                            onClick={() => handleBookingClick(booking)}
+                                        >
+                                            <div className="relative image-hover">
                                                 {booking.enriched_data?.overview?.screenshots && booking.enriched_data.overview.screenshots.length > 0 ? (
                                                     <img
                                                         src={booking.enriched_data.overview.screenshots[0]}
                                                         alt={booking.hotel_name}
-                                                        className="w-full h-48 object-cover rounded-t-lg"
+                                                        className="w-full h-48 object-cover rounded-t-lg transition-transform duration-500"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-t-lg">
@@ -412,14 +495,18 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         </Card>
                                     ))
                                 ) : (
-                                    <div className="flex items-center justify-center w-full py-16">
-                                        <div className="text-center bg-white/60 rounded-2xl border-2 border-dashed border-gray-300 p-12 max-w-md">
-                                            <div className="mx-auto w-24 h-24 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center mb-6">
+                                    <div className={`flex items-center justify-center w-full py-16 transition-all duration-1000 delay-300 ${
+                                        isVisible.recentBookings
+                                            ? 'opacity-100 translate-y-0'
+                                            : 'opacity-0 translate-y-8'
+                                    }`}>
+                                        <div className="text-center bg-white/60 rounded-2xl border-2 border-dashed border-gray-300 p-12 max-w-md hover-lift transition-all duration-500">
+                                            <div className="mx-auto w-24 h-24 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center mb-6 animate-float">
                                                 <Building className="w-12 h-12 text-yellow-600" />
                                             </div>
                                             <h3 className="text-xl font-bold text-gray-900 mb-3">No Bookings Yet</h3>
                                             <p className="text-gray-600 mb-6">Start tracking your hotel bookings to monitor price pulses and save money on every trip.</p>
-                                            <Button onClick={handleAddBookingClick} className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                            <Button onClick={handleAddBookingClick} className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 btn-hover-effect">
                                                 <Plus className="w-5 h-5 mr-2" />
                                                 Add Your First Booking
                                             </Button>
@@ -430,13 +517,24 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         </div>
 
                         {/* Navigation Tabs */}
-                        <div>
-                            <div className="flex items-center justify-between mb-6">
+                        <div
+                            data-section="navigationTabs"
+                            className={`transition-all duration-1000 ease-out ${
+                                isVisible.navigationTabs
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-8'
+                            }`}
+                        >
+                            <div className={`flex items-center justify-between mb-6 transition-all duration-1000 delay-200 ${
+                                isVisible.navigationTabs
+                                    ? 'opacity-100 translate-x-0'
+                                    : 'opacity-0 -translate-x-8'
+                            }`}>
                                 <div className="flex items-center space-x-8">
                                     <div className="flex items-center space-x-6">
                                         <button
                                             onClick={() => setActiveNavTab('most-popular')}
-                                            className={`font-bold pb-2 transition-all duration-200 ${
+                                            className={`font-bold pb-2 transition-all duration-300 hover:scale-105 ${
                                                 activeNavTab === 'most-popular'
                                                     ? 'text-2xl text-gray-900 border-b-2 border-yellow-500'
                                                     : 'text-lg text-gray-600 hover:text-gray-900 hover:text-xl'
@@ -446,7 +544,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         </button>
                                         <button
                                             onClick={() => setActiveNavTab('special-offers')}
-                                            className={`font-bold pb-2 transition-all duration-200 ${
+                                            className={`font-bold pb-2 transition-all duration-300 hover:scale-105 ${
                                                 activeNavTab === 'special-offers'
                                                     ? 'text-2xl text-gray-900 border-b-2 border-yellow-500'
                                                     : 'text-lg text-gray-600 hover:text-gray-900 hover:text-xl'
@@ -456,7 +554,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         </button>
                                         <button
                                             onClick={() => setActiveNavTab('near-me')}
-                                            className={`font-bold pb-2 transition-all duration-200 ${
+                                            className={`font-bold pb-2 transition-all duration-300 hover:scale-105 ${
                                                 activeNavTab === 'near-me'
                                                     ? 'text-2xl text-gray-900 border-b-2 border-yellow-500'
                                                     : 'text-lg text-gray-600 hover:text-gray-900 hover:text-xl'
@@ -466,13 +564,27 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         </button>
                                     </div>
                                 </div>
-                                <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-lg">View All →</Button>
+                                <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-lg transition-all duration-300 hover:scale-105">View All →</Button>
                             </div>
                             {/* Tab Content */}
                             {activeNavTab === 'most-popular' && (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <div
+                                    className="grid grid-cols-2 md:grid-cols-4 gap-6"
+                                    data-section="hotelCards"
+                                >
                                     {popularHotels.map((hotel, index) => (
-                                        <Card key={index} className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0 bg-white/90 backdrop-blur-sm">
+                                        <Card
+                                            key={index}
+                                            className={`cursor-pointer hover:shadow-xl transition-all duration-500 transform hover:scale-105 border-0 bg-white/90 backdrop-blur-sm hover-lift ${
+                                                isVisible.hotelCards
+                                                    ? 'opacity-100 translate-y-0'
+                                                    : 'opacity-0 translate-y-8'
+                                            }`}
+                                            style={{
+                                                transitionDelay: `${index * 100}ms`,
+                                                animationDelay: `${index * 100}ms`
+                                            }}
+                                        >
                                             <div className="relative">
                                                 <img
                                                     src={hotel.image}
@@ -496,15 +608,26 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             {activeNavTab === 'special-offers' && (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                     {popularHotels.slice(0, 2).map((hotel, index) => (
-                                        <Card key={index} className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-orange-200 bg-white/90 backdrop-blur-sm">
-                                            <div className="relative">
+                                        <Card
+                                            key={index}
+                                            className={`cursor-pointer hover:shadow-xl transition-all duration-500 transform hover:scale-105 border-2 border-orange-200 bg-white/90 backdrop-blur-sm hover-lift ${
+                                                isVisible.hotelCards
+                                                    ? 'opacity-100 translate-y-0'
+                                                    : 'opacity-0 translate-y-8'
+                                            }`}
+                                            style={{
+                                                transitionDelay: `${index * 100}ms`,
+                                                animationDelay: `${index * 100}ms`
+                                            }}
+                                        >
+                                            <div className="relative image-hover">
                                                 <img
                                                     src={hotel.image}
                                                     alt={hotel.name}
-                                                    className="w-full h-24 object-cover rounded-t-lg"
+                                                    className="w-full h-24 object-cover rounded-t-lg transition-transform duration-500"
                                                 />
                                                 <div className="absolute top-2 right-2">
-                                                    <Badge className="bg-orange-500 text-white text-xs">Special Offer</Badge>
+                                                    <Badge className="bg-orange-500 text-white text-xs animate-pulse">Special Offer</Badge>
                                                 </div>
                                             </div>
                                             <CardContent className="p-4">
@@ -526,15 +649,26 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             {activeNavTab === 'near-me' && (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                     {popularHotels.slice(0, 3).map((hotel, index) => (
-                                        <Card key={index} className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-green-200 bg-white/90 backdrop-blur-sm">
-                                            <div className="relative">
+                                        <Card
+                                            key={index}
+                                            className={`cursor-pointer hover:shadow-xl transition-all duration-500 transform hover:scale-105 border-2 border-green-200 bg-white/90 backdrop-blur-sm hover-lift ${
+                                                isVisible.hotelCards
+                                                    ? 'opacity-100 translate-y-0'
+                                                    : 'opacity-0 translate-y-8'
+                                            }`}
+                                            style={{
+                                                transitionDelay: `${index * 100}ms`,
+                                                animationDelay: `${index * 100}ms`
+                                            }}
+                                        >
+                                            <div className="relative image-hover">
                                                 <img
                                                     src={hotel.image}
                                                     alt={hotel.name}
-                                                    className="w-full h-24 object-cover rounded-t-lg"
+                                                    className="w-full h-24 object-cover rounded-t-lg transition-transform duration-500"
                                                 />
                                                 <div className="absolute top-2 right-2">
-                                                    <Badge className="bg-green-500 text-white text-xs">Nearby</Badge>
+                                                    <Badge className="bg-green-500 text-white text-xs animate-pulse">Nearby</Badge>
                                                 </div>
                                             </div>
                                             <CardContent className="p-4">
@@ -557,7 +691,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
                     {/* Right Detail Panel - Booking Details */}
                     {selectedBooking && (
-                        <div className="fixed top-0 right-0 w-80 h-screen bg-white border-l border-gray-200 flex flex-col z-50">
+                        <div className="fixed top-0 right-0 w-80 h-screen bg-white border-l border-gray-200 flex flex-col z-50 animate-in slide-in-from-right duration-500">
                             {/* Header with close button */}
                             <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
                                 <h3 className="text-lg font-semibold text-gray-900">Booking Details</h3>
@@ -565,7 +699,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleCloseBookingPanel}
-                                    className="h-8 w-8 p-0"
+                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-110 hover:bg-red-50"
                                 >
                                     <X className="h-4 w-4" />
                                 </Button>
@@ -574,7 +708,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             {/* Booking Content */}
                             <div className="flex-1 overflow-y-auto">
                                 <div className="p-6">
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-4">{selectedBooking.hotel_name}</h2>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-4 animate-fade-in-up">{selectedBooking.hotel_name}</h2>
 
                                     {/* Hotel Images */}
                                     {selectedBooking.enriched_data?.overview?.screenshots && selectedBooking.enriched_data.overview.screenshots.length > 0 ? (
@@ -582,7 +716,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             <img
                                                 src={selectedBooking.enriched_data.overview.screenshots[selectedImageIndex]}
                                                 alt="Main hotel"
-                                                className="col-span-3 w-full h-48 object-cover rounded-lg cursor-pointer"
+                                                className="col-span-3 w-full h-48 object-cover rounded-lg cursor-pointer transition-all duration-300 hover:scale-105"
                                                 onClick={handleOpenGallery}
                                                 onError={(e) => {
                                                     console.error('Failed to load image:', e.target.src);
@@ -594,7 +728,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     key={index}
                                                     src={image}
                                                     alt={`Hotel ${index + 1}`}
-                                                    className={`w-full h-20 object-cover rounded-lg cursor-pointer transition-opacity ${
+                                                    className={`w-full h-20 object-cover rounded-lg cursor-pointer transition-all duration-300 hover:scale-110 ${
                                                         index === selectedImageIndex ? 'opacity-100 ring-2 ring-yellow-500' : 'opacity-70 hover:opacity-100'
                                                     }`}
                                                     onClick={() => handleImageClick(index)}
@@ -605,7 +739,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 />
                                             ))}
                                             {selectedBooking.enriched_data.overview.screenshots.length > 3 && (
-                                                <div className="relative cursor-pointer" onClick={handleOpenGallery}>
+                                                <div className="relative cursor-pointer transition-all duration-300 hover:scale-110" onClick={handleOpenGallery}>
                                                     <img
                                                         src={selectedBooking.enriched_data.overview.screenshots[3]}
                                                         alt="Hotel"
@@ -887,7 +1021,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     {/* View Full Details Button */}
                                     <div className="mt-6">
                                         <Link href={`/bookings/${selectedBooking.id}`}>
-                                            <Button className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 py-3 text-lg font-semibold">
+                                            <Button className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 py-3 text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl btn-hover-effect">
                                                 View Full Details
                                             </Button>
                                         </Link>
