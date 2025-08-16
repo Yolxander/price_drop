@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { toast, Toaster } from 'sonner';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Sidebar from '@/components/ui/sidebar';
@@ -39,7 +40,40 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
     const [favoriteToRemove, setFavoriteToRemove] = useState(null);
+    const [isRemoving, setIsRemoving] = useState(false);
+    const [isVisible, setIsVisible] = useState({
+        header: false,
+        searchBar: false,
+        favoritesGrid: false,
+        pagination: false
+    });
     const itemsPerPage = 8;
+
+    // Intersection Observer for scroll-triggered animations
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const section = entry.target.getAttribute('data-section');
+                        if (section && isVisible.hasOwnProperty(section)) {
+                            setIsVisible(prev => ({
+                                ...prev,
+                                [section]: true
+                            }));
+                        }
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        // Observe all sections with data-section attributes
+        const sections = document.querySelectorAll('[data-section]');
+        sections.forEach(section => observer.observe(section));
+
+        return () => observer.disconnect();
+    }, []);
 
     const formatCurrency = (amount, currency) => {
         return new Intl.NumberFormat('en-US', {
@@ -61,12 +95,39 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
         setRemoveDialogOpen(true);
     };
 
-    const handleRemoveConfirm = () => {
+    const handleRemoveConfirm = async () => {
         if (favoriteToRemove) {
-            // In a real app, this would make an API call to remove from favorites
-            console.log('Removing from favorites:', favoriteToRemove.id);
+            setIsRemoving(true);
             setRemoveDialogOpen(false);
-            setFavoriteToRemove(null);
+
+            // Show loading toast
+            const loadingToast = toast.loading('Removing from favorites...', {
+                duration: Infinity,
+            });
+
+            try {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // In a real app, this would make an API call to remove from favorites
+                console.log('Removing from favorites:', favoriteToRemove.id);
+
+                // Close loading toast and show success
+                toast.dismiss(loadingToast);
+                toast.success('Removed from favorites successfully!', {
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+
+                setFavoriteToRemove(null);
+            } catch (error) {
+                // Close loading toast and show error
+                toast.dismiss(loadingToast);
+                toast.error('Failed to remove from favorites. Please try again.', {
+                    icon: <AlertCircle className="h-4 w-4" />,
+                });
+            } finally {
+                setIsRemoving(false);
+            }
         }
     };
 
@@ -150,7 +211,14 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                 <Head title="Favorites" />
 
                 {/* Header */}
-                <div className="bg-white border-b border-gray-200 p-6">
+                <div
+                    data-section="header"
+                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                        isVisible.header
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-8'
+                    }`}
+                >
                     <div className="flex items-center justify-between">
                         <div className="flex-1 max-w-md">
                             <div className="relative">
@@ -159,12 +227,15 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                     placeholder="Search favorites..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10"
+                                    className="pl-10 form-input-focus transition-all duration-300"
                                 />
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <Button variant="outline" className="flex items-center space-x-2">
+                            <Button
+                                variant="outline"
+                                className="flex items-center space-x-2 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                            >
                                 <Filter className="h-4 w-4" />
                                 <span>Filter</span>
                             </Button>
@@ -173,7 +244,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                                     size="sm"
                                     onClick={() => setViewMode('grid')}
-                                    className="h-8 w-8 p-0"
+                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105"
                                 >
                                     <LayoutGrid className="h-4 w-4" />
                                 </Button>
@@ -181,7 +252,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                                     size="sm"
                                     onClick={() => setViewMode('list')}
-                                    className="h-8 w-8 p-0"
+                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105"
                                 >
                                     <List className="h-4 w-4" />
                                 </Button>
@@ -196,30 +267,48 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                     {/* Properties Grid - Scrollable Content */}
                     <div className="flex-1 overflow-y-auto p-6">
                         {currentProperties.length === 0 ? (
-                            <div className="text-center py-12">
-                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div
+                                data-section="favoritesGrid"
+                                className={`text-center py-12 transition-all duration-1000 ease-out ${
+                                    isVisible.favoritesGrid
+                                        ? 'opacity-100 translate-y-0'
+                                        : 'opacity-0 translate-y-8'
+                                }`}
+                            >
+                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
                                     <Heart className="h-12 w-12 text-gray-400" />
                                 </div>
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
                                 <p className="text-gray-500 mb-6">Start adding hotels to your favorites to track them here</p>
                                 <Link href="/bookings">
-                                    <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold">
+                                    <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">
                                         <Plus className="h-4 w-4 mr-2" />
                                         Browse Hotels
                                     </Button>
                                 </Link>
                             </div>
                         ) : (
-                            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}>
-                                {currentProperties.map((property) => (
-                                    <div key={property.id} className="relative">
+                            <div
+                                data-section="favoritesGrid"
+                                className={`grid gap-6 transition-all duration-1000 ease-out ${
+                                    isVisible.favoritesGrid
+                                        ? 'opacity-100 translate-y-0'
+                                        : 'opacity-0 translate-y-8'
+                                } ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}
+                            >
+                                {currentProperties.map((property, index) => (
+                                    <div
+                                        key={property.id}
+                                        className="relative transition-all duration-500 ease-out hover-lift"
+                                        style={{ transitionDelay: `${index * 100}ms` }}
+                                    >
                                         <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02]">
                                             <div className="relative">
                                                 {property.image ? (
                                                     <img
                                                         src={property.image}
                                                         alt={property.name}
-                                                        className="w-full h-48 object-cover"
+                                                        className="w-full h-48 object-cover image-hover transition-all duration-500"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
@@ -227,13 +316,13 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                     </div>
                                                 )}
                                                 <div className="absolute top-3 left-3">
-                                                    <Badge variant="default" className="bg-primary text-primary-foreground font-medium">
+                                                    <Badge variant="default" className="bg-primary text-primary-foreground font-medium animate-pulse-glow transition-all duration-300 hover:scale-105">
                                                         {formatCurrency(property.currentPrice)}
                                                     </Badge>
                                                 </div>
                                                 {property.priceDropDetected && (
                                                     <div className="absolute top-3 left-32">
-                                                        <Badge variant="default" className="bg-green-600 text-white">
+                                                        <Badge variant="default" className="bg-green-600 text-white animate-pulse transition-all duration-300 hover:scale-105">
                                                             <TrendingDown className="h-3 w-3 mr-1" />
                                                             Price Pulse
                                                         </Badge>
@@ -241,13 +330,13 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 )}
                                                 {property.status && (
                                                     <div className="absolute bottom-3 left-3">
-                                                        <Badge variant={getStatusBadgeVariant(property.status)}>
+                                                        <Badge variant={getStatusBadgeVariant(property.status)} className="transition-all duration-300 hover:scale-105">
                                                             {property.status}
                                                         </Badge>
                                                     </div>
                                                 )}
                                                 <div className="absolute top-12 left-3">
-                                                    <div className="flex items-center space-x-1 bg-white bg-opacity-90 rounded-full px-2 py-1">
+                                                    <div className="flex items-center space-x-1 bg-white bg-opacity-90 rounded-full px-2 py-1 animate-pulse">
                                                         <Star className="h-3 w-3 text-yellow-500 fill-current" />
                                                         <span className="text-xs font-medium text-gray-700">{property.starRating}</span>
                                                     </div>
@@ -311,7 +400,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                             <Button
                                                 variant="secondary"
                                                 size="sm"
-                                                className="h-10 w-10 p-0 bg-white hover:bg-red-50 shadow-lg border border-gray-300 rounded-full text-red-600 hover:text-red-700"
+                                                className="h-10 w-10 p-0 bg-white hover:bg-red-50 shadow-lg border border-gray-300 rounded-full text-red-600 hover:text-red-700 transition-all duration-300 hover:scale-110 hover:shadow-xl"
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -330,7 +419,14 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
 
                     {/* Pagination - Fixed at Bottom */}
                     {currentProperties.length > 0 && (
-                        <div className="bg-white border-t border-gray-200 p-6">
+                        <div
+                            data-section="pagination"
+                            className={`bg-white border-t border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                                isVisible.pagination
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-8'
+                            }`}
+                        >
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-gray-600">
                                     Showing {startIndex + 1} to {Math.min(endIndex, filteredProperties.length)} of {filteredProperties.length} entries
@@ -341,7 +437,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                         size="sm"
                                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                                         disabled={currentPage === 1}
-                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
                                     >
                                         <ChevronLeft className="h-4 w-4" />
                                         Prev
@@ -354,7 +450,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 variant={currentPage === pageNum ? 'default' : 'outline'}
                                                 size="sm"
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-8 h-8 p-0 ${
+                                                className={`w-8 h-8 p-0 transition-all duration-300 hover:scale-105 ${
                                                     currentPage === pageNum
                                                         ? 'bg-yellow-300 hover:bg-yellow-400 text-gray-900'
                                                         : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
@@ -371,7 +467,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setCurrentPage(totalPages - 1)}
-                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
                                             >
                                                 {totalPages - 1}
                                             </Button>
@@ -379,7 +475,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setCurrentPage(totalPages)}
-                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
                                             >
                                                 {totalPages}
                                             </Button>
@@ -390,7 +486,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                         size="sm"
                                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                                         disabled={currentPage === totalPages}
-                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
                                     >
                                         Next
                                         <ChevronRight className="h-4 w-4" />
@@ -404,7 +500,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
 
             {/* Remove Confirmation Dialog */}
             <Dialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
-                <DialogContent>
+                <DialogContent className="animate-in slide-in-from-bottom-4">
                     <DialogHeader>
                         <DialogTitle>Remove from Favorites</DialogTitle>
                         <DialogDescription>
@@ -415,20 +511,24 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                         <Button
                             variant="outline"
                             onClick={() => setRemoveDialogOpen(false)}
-                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
                         >
                             Cancel
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleRemoveConfirm}
-                            className="bg-red-600 hover:bg-red-700"
+                            disabled={isRemoving}
+                            className={`bg-red-600 hover:bg-red-700 transition-all duration-300 hover:scale-105 ${isRemoving ? 'btn-loading' : ''}`}
                         >
-                            Remove from Favorites
+                            {isRemoving ? 'Removing...' : 'Remove from Favorites'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Toast Notifications */}
+            <Toaster />
         </div>
     );
 }

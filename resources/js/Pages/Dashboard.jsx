@@ -337,7 +337,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-gray-50 to-yellow-50">
+        <div className="flex h-screen bg-gray-50">
             {/* Left Sidebar */}
             <Sidebar activePage="dashboard" />
 

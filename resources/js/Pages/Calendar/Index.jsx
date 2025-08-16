@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { toast, Toaster } from 'sonner';
 import Sidebar from '@/components/ui/sidebar';
 import {
     ChevronLeft,
@@ -31,6 +32,14 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
     const safeUpcomingBookings = Array.isArray(upcomingBookings) ? upcomingBookings : [];
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
+    const [isVisible, setIsVisible] = useState({
+        header: false,
+        searchBar: false,
+        monthSummary: false,
+        calendarNavigation: false,
+        selectedDateBookings: false,
+        upcomingBookings: false
+    });
 
     // Initialize showMonthSummary from localStorage, default to false (hidden)
     const [showMonthSummary, setShowMonthSummary] = useState(() => {
@@ -42,6 +51,32 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
             return false;
         }
     });
+
+    // Intersection Observer for scroll-triggered animations
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const section = entry.target.getAttribute('data-section');
+                        if (section && isVisible.hasOwnProperty(section)) {
+                            setIsVisible(prev => ({
+                                ...prev,
+                                [section]: true
+                            }));
+                        }
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        // Observe all sections with data-section attributes
+        const sections = document.querySelectorAll('[data-section]');
+        sections.forEach(section => observer.observe(section));
+
+        return () => observer.disconnect();
+    }, []);
 
     const getDaysInMonth = (date) => {
         const year = date.getFullYear();
@@ -114,6 +149,13 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
             newDate.setMonth(newDate.getMonth() + 1);
         }
         setCurrentDate(newDate);
+
+        // Show toast notification for month navigation
+        const monthName = newDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        toast.success(`Navigated to ${monthName}`, {
+            icon: <CalendarIcon className="h-4 w-4" />,
+            duration: 2000,
+        });
     };
 
     const formatDate = (date) => {
@@ -137,11 +179,52 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
     const handleToggleSummary = () => {
         const newState = !showMonthSummary;
         setShowMonthSummary(newState);
+
+        // Show toast notification for summary toggle
+        toast.success(
+            newState ? 'Month summary shown' : 'Month summary hidden',
+            {
+                icon: newState ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />,
+                duration: 2000,
+            }
+        );
+
         try {
             localStorage.setItem('calendar-show-summary', JSON.stringify(newState));
         } catch (error) {
             // Silently fail if localStorage is not available
             console.warn('Could not save calendar preference to localStorage');
+        }
+    };
+
+    const handleGoToToday = () => {
+        setCurrentDate(new Date());
+        setSelectedDate(new Date());
+
+        // Show toast notification for going to today
+        toast.success('Returned to today', {
+            icon: <CalendarIcon className="h-4 w-4" />,
+            duration: 2000,
+        });
+    };
+
+    const handleDateSelection = (date) => {
+        if (date) {
+            setSelectedDate(date);
+            const bookings = getBookingsForDate(date);
+
+            // Show toast notification for date selection
+            if (bookings.length > 0) {
+                toast.success(`${bookings.length} booking${bookings.length > 1 ? 's' : ''} found for ${date.toLocaleDateString()}`, {
+                    icon: <Building2 className="h-4 w-4" />,
+                    duration: 3000,
+                });
+            } else {
+                toast.info(`No bookings for ${date.toLocaleDateString()}`, {
+                    icon: <CalendarIcon className="h-4 w-4" />,
+                    duration: 2000,
+                });
+            }
         }
     };
 
@@ -171,14 +254,21 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 <Head title="Calendar" />
 
                 {/* Header */}
-                <div className="bg-white border-b border-gray-200 p-6">
+                <div
+                    data-section="header"
+                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                        isVisible.header
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-8'
+                    }`}
+                >
                     <div className="flex items-center justify-between">
                         <div className="flex-1 max-w-md">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
                                     placeholder="Search calendar..."
-                                    className="pl-10"
+                                    className="pl-10 form-input-focus transition-all duration-300"
                                 />
                             </div>
                         </div>
@@ -186,17 +276,22 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             <Button
                                 variant="outline"
                                 onClick={handleToggleSummary}
+                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
                             >
                                 {showMonthSummary ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
                                 {showMonthSummary ? 'Hide' : 'Show'} Summary
                             </Button>
                             <Link href="/bookings/create">
-                                <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8">
+                                <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 transition-all duration-300 hover:scale-105 hover:shadow-lg">
                                     <Plus className="w-4 h-4 mr-2" />
                                     Add Booking
                                 </Button>
                             </Link>
-                            <Button onClick={() => setCurrentDate(new Date())} variant="outline">
+                            <Button
+                                onClick={handleGoToToday}
+                                variant="outline"
+                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
+                            >
                                 <CalendarIcon className="w-4 h-4 mr-2" />
                                 Today
                             </Button>
@@ -209,12 +304,21 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                     <div className="space-y-6">
 
                 {/* Month Summary */}
-                <div className={`transition-all duration-300 ease-in-out ${showMonthSummary ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'}`}>
-                    <Card className="bg-white border border-gray-200">
+                <div
+                    data-section="monthSummary"
+                    className={`transition-all duration-1000 ease-out ${
+                        showMonthSummary ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'
+                    } ${
+                        isVisible.monthSummary && showMonthSummary
+                            ? 'translate-y-0'
+                            : 'translate-y-8'
+                    }`}
+                >
+                    <Card className="bg-white border border-gray-200 transition-all duration-500 ease-out hover-lift">
                         <CardContent className="p-4">
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-                                <div>
-                                    <div className="text-2xl font-bold text-foreground">
+                                <div className="transition-all duration-500 ease-out hover:scale-105" style={{ transitionDelay: '0ms' }}>
+                                    <div className="text-2xl font-bold text-foreground animate-pulse">
                                         {safeBookings.filter(b => {
                                             const checkIn = new Date(b.check_in_date);
                                             return checkIn.getMonth() === currentDate.getMonth() && checkIn.getFullYear() === currentDate.getFullYear();
@@ -222,8 +326,8 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     </div>
                                     <div className="text-sm text-muted-foreground">Total Bookings</div>
                                 </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-yellow-600">
+                                <div className="transition-all duration-500 ease-out hover:scale-105" style={{ transitionDelay: '100ms' }}>
+                                    <div className="text-2xl font-bold text-yellow-600 animate-pulse">
                                         {safeBookings.filter(b => {
                                             const checkIn = new Date(b.check_in_date);
                                             return checkIn.getMonth() === currentDate.getMonth() && checkIn.getFullYear() === currentDate.getFullYear() && b.status === 'active';
@@ -231,8 +335,8 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     </div>
                                     <div className="text-sm text-muted-foreground">Active</div>
                                 </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-orange-600">
+                                <div className="transition-all duration-500 ease-out hover:scale-105" style={{ transitionDelay: '200ms' }}>
+                                    <div className="text-2xl font-bold text-orange-600 animate-pulse">
                                         {safeBookings.filter(b => {
                                             const checkIn = new Date(b.check_in_date);
                                             return checkIn.getMonth() === currentDate.getMonth() && checkIn.getFullYear() === currentDate.getFullYear() && b.status === 'pending';
@@ -240,8 +344,8 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     </div>
                                     <div className="text-sm text-muted-foreground">Pending</div>
                                 </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-green-600">
+                                <div className="transition-all duration-500 ease-out hover:scale-105" style={{ transitionDelay: '300ms' }}>
+                                    <div className="text-2xl font-bold text-green-600 animate-pulse">
                                         {safeBookings.filter(b => b.price_drop_detected).length}
                                     </div>
                                     <div className="text-sm text-muted-foreground">Price Pulses</div>
@@ -252,18 +356,25 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 </div>
 
                 {/* Calendar Navigation */}
-                <Card className="bg-white border border-gray-200">
+                <Card
+                    data-section="calendarNavigation"
+                    className={`bg-white border border-gray-200 transition-all duration-1000 ease-out hover-lift ${
+                        isVisible.calendarNavigation
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-8'
+                    }`}
+                >
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => navigateMonth('prev')}
-                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-                            >
-                                <ChevronLeft className="w-4 h-4" />
-                            </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => navigateMonth('prev')}
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </Button>
                                 <h2 className="text-xl font-semibold text-gray-900">
                                     {formatDate(currentDate)}
                                 </h2>
@@ -271,7 +382,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     variant="outline"
                                     size="icon"
                                     onClick={() => navigateMonth('next')}
-                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
                                 >
                                     <ChevronRight className="w-4 h-4" />
                                 </Button>
@@ -279,15 +390,15 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             <div className="flex items-center space-x-4">
                                 {/* Legend */}
                                 <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                    <div className="flex items-center space-x-1">
+                                    <div className="flex items-center space-x-1 transition-all duration-300 hover:scale-105">
                                         <Building2 className="w-3 h-3" />
                                         <span>Hotels</span>
                                     </div>
-                                    <div className="flex items-center space-x-1">
+                                    <div className="flex items-center space-x-1 transition-all duration-300 hover:scale-105">
                                         <CheckCircle className="w-3 h-3 text-green-600" />
                                         <span>Active</span>
                                     </div>
-                                    <div className="flex items-center space-x-1">
+                                    <div className="flex items-center space-x-1 transition-all duration-300 hover:scale-105">
                                         <Clock className="w-3 h-3 text-yellow-600" />
                                         <span>Pending</span>
                                     </div>
@@ -309,14 +420,14 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             {days.map((date, index) => (
                                 <div
                                     key={index}
-                                    className={`min-h-[100px] p-2 border border-gray-200 transition-colors ${
-                                        date ? 'hover:bg-gray-50 cursor-pointer' : ''
+                                    className={`min-h-[100px] p-2 border border-gray-200 transition-all duration-300 ease-out hover:scale-105 ${
+                                        date ? 'hover:bg-gray-50 cursor-pointer hover:shadow-md' : ''
                                     } ${
-                                        isToday(date) ? 'bg-yellow-50 border-yellow-500' : ''
+                                        isToday(date) ? 'bg-yellow-50 border-yellow-500 animate-pulse' : ''
                                     } ${
-                                        isSelected(date) ? 'ring-2 ring-yellow-500' : ''
+                                        isSelected(date) ? 'ring-2 ring-yellow-500 shadow-lg' : ''
                                     }`}
-                                    onClick={() => date && setSelectedDate(date)}
+                                    onClick={() => date && handleDateSelection(date)}
                                 >
                                     {date ? (
                                         <>
@@ -327,7 +438,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                 {getBookingsForDate(date).slice(0, 2).map(booking => (
                                                     <div
                                                         key={booking.id}
-                                                        className="flex items-center space-x-1 p-1 rounded text-xs bg-gray-100"
+                                                        className="flex items-center space-x-1 p-1 rounded text-xs bg-gray-100 transition-all duration-300 hover:scale-105 hover:bg-gray-200"
                                                     >
                                                         <Building2 className="w-3 h-3" />
                                                         <span className="truncate">{booking.hotel_name}</span>
@@ -353,7 +464,14 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
 
                 {/* Selected Date Bookings */}
                 {selectedDate && (
-                    <Card className="bg-white border border-gray-200">
+                    <Card
+                        data-section="selectedDateBookings"
+                        className={`bg-white border border-gray-200 transition-all duration-1000 ease-out hover-lift ${
+                            isVisible.selectedDateBookings
+                                ? 'opacity-100 translate-y-0'
+                                : 'opacity-0 translate-y-8'
+                        }`}
+                    >
                         <CardHeader>
                             <CardTitle className="text-gray-900">
                                 Bookings for {selectedDate.toLocaleDateString('en-US', {
@@ -370,15 +488,19 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                         <CardContent>
                             {selectedDateBookings.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
+                                    <CalendarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4 animate-float" />
                                     No bookings scheduled for this date
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {selectedDateBookings.map(booking => (
+                                    {selectedDateBookings.map((booking, index) => (
                                         <Link key={booking.id} href={`/bookings/${booking.id}`}>
-                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                                            <div
+                                                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 ease-out hover-lift cursor-pointer"
+                                                style={{ transitionDelay: `${index * 100}ms` }}
+                                            >
                                                 <div className="flex items-center space-x-3">
-                                                    <Building2 className="w-5 h-5 text-yellow-600" />
+                                                    <Building2 className="w-5 h-5 text-yellow-600 transition-all duration-300 hover:scale-110" />
                                                     <div>
                                                         <h3 className="font-medium text-gray-900">{booking.hotel_name}</h3>
                                                         <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -397,16 +519,16 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <Badge className={getStatusColor(booking.status)} size="sm">
+                                                    <Badge className={`${getStatusColor(booking.status)} transition-all duration-300 hover:scale-105`} size="sm">
                                                         {booking.status}
                                                     </Badge>
                                                     {getStatusIcon(booking.status)}
                                                     {booking.price_drop_detected && (
-                                                        <Badge className="bg-green-100 text-green-800" size="sm">
+                                                        <Badge className="bg-green-100 text-green-800 animate-pulse transition-all duration-300 hover:scale-105" size="sm">
                                                             Price Pulse
                                                         </Badge>
                                                     )}
-                                                    <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50">
+                                                    <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md">
                                                         View
                                                     </Button>
                                                 </div>
@@ -420,7 +542,14 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 )}
 
                 {/* Upcoming Bookings */}
-                <Card className="bg-white border border-gray-200">
+                <Card
+                    data-section="upcomingBookings"
+                    className={`bg-white border border-gray-200 transition-all duration-1000 ease-out hover-lift ${
+                        isVisible.upcomingBookings
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-8'
+                    }`}
+                >
                     <CardHeader>
                         <CardTitle className="text-gray-900">Upcoming Bookings</CardTitle>
                         <CardDescription className="text-gray-600">
@@ -430,15 +559,19 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                     <CardContent>
                         {safeUpcomingBookings.length === 0 ? (
                             <div className="text-center py-8 text-gray-500">
+                                <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4 animate-float" />
                                 No upcoming bookings in the next 7 days
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {safeUpcomingBookings.map(booking => (
+                                {safeUpcomingBookings.map((booking, index) => (
                                     <Link key={booking.id} href={`/bookings/${booking.id}`}>
-                                        <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                                        <div
+                                            className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 ease-out hover-lift cursor-pointer"
+                                            style={{ transitionDelay: `${index * 100}ms` }}
+                                        >
                                             <div className="flex items-center space-x-3">
-                                                <Building2 className="w-5 h-5 text-yellow-600" />
+                                                <Building2 className="w-5 h-5 text-yellow-600 transition-all duration-300 hover:scale-110" />
                                                 <div>
                                                     <h3 className="font-medium text-gray-900">{booking.hotel_name}</h3>
                                                     <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -457,12 +590,12 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <Badge className={getStatusColor(booking.status)} size="sm">
+                                                <Badge className={`${getStatusColor(booking.status)} transition-all duration-300 hover:scale-105`} size="sm">
                                                     {booking.status}
                                                 </Badge>
                                                 {getStatusIcon(booking.status)}
                                                 {booking.price_drop_detected && (
-                                                    <Badge className="bg-green-100 text-green-800" size="sm">
+                                                    <Badge className="bg-green-100 text-green-800 animate-pulse transition-all duration-300 hover:scale-105" size="sm">
                                                         Price Pulse
                                                     </Badge>
                                                 )}
@@ -477,6 +610,9 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notifications */}
+            <Toaster />
         </div>
     );
 }

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast, Toaster } from 'sonner';
 import Sidebar from '@/components/ui/sidebar';
 import {
     TrendingDown,
@@ -39,6 +40,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [isVisible, setIsVisible] = useState({
+        header: false,
+        searchBar: false,
+        statsCards: false,
+        alertsList: false
+    });
     const [alertSettings, setAlertSettings] = useState({
         min_price_drop_amount: 10.00,
         min_price_drop_percent: 5.00,
@@ -51,6 +58,32 @@ export default function AlertsIndex({ auth, alerts, stats }) {
         excluded_providers: [],
         included_locations: []
     });
+
+    // Intersection Observer for scroll-triggered animations
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const section = entry.target.getAttribute('data-section');
+                        if (section && isVisible.hasOwnProperty(section)) {
+                            setIsVisible(prev => ({
+                                ...prev,
+                                [section]: true
+                            }));
+                        }
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        // Observe all sections with data-section attributes
+        const sections = document.querySelectorAll('[data-section]');
+        sections.forEach(section => observer.observe(section));
+
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         loadAlertSettings();
@@ -70,6 +103,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
 
     const saveAlertSettings = async () => {
         setIsLoading(true);
+
+        // Show loading toast
+        const loadingToast = toast.loading('Saving alert settings...', {
+            duration: Infinity,
+        });
+
         try {
             const response = await fetch('/price-alerts/settings', {
                 method: 'POST',
@@ -82,9 +121,21 @@ export default function AlertsIndex({ auth, alerts, stats }) {
             const data = await response.json();
             if (data.success) {
                 setShowSettings(false);
-                // Show success message
+
+                // Close loading toast and show success
+                toast.dismiss(loadingToast);
+                toast.success('Alert settings saved successfully!', {
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+            } else {
+                throw new Error(data.message || 'Failed to save settings');
             }
         } catch (error) {
+            // Close loading toast and show error
+            toast.dismiss(loadingToast);
+            toast.error('Failed to save alert settings. Please try again.', {
+                icon: <AlertTriangle className="h-4 w-4" />,
+            });
             console.error('Error saving alert settings:', error);
         } finally {
             setIsLoading(false);
@@ -160,6 +211,13 @@ export default function AlertsIndex({ auth, alerts, stats }) {
 
     const handleAlertAction = async (alertId, action) => {
         setIsLoading(true);
+
+        // Show loading toast
+        const actionText = action === 'action' ? 'marking as actioned' : 'dismissing';
+        const loadingToast = toast.loading(`${actionText} alert...`, {
+            duration: Infinity,
+        });
+
         try {
             let endpoint = '';
             if (action === 'action') {
@@ -177,10 +235,23 @@ export default function AlertsIndex({ auth, alerts, stats }) {
             });
 
             if (response.ok) {
+                // Close loading toast and show success
+                toast.dismiss(loadingToast);
+                toast.success(`Alert ${action === 'action' ? 'marked as actioned' : 'dismissed'} successfully!`, {
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+
                 // Refresh the page to show updated data
-                window.location.reload();
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                throw new Error('Failed to update alert');
             }
         } catch (error) {
+            // Close loading toast and show error
+            toast.dismiss(loadingToast);
+            toast.error(`Failed to ${actionText} alert. Please try again.`, {
+                icon: <AlertTriangle className="h-4 w-4" />,
+            });
             console.error(`Error ${action} alert:`, error);
         } finally {
             setIsLoading(false);
@@ -189,6 +260,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
 
     const handleMarkAllAsRead = async () => {
         setIsLoading(true);
+
+        // Show loading toast
+        const loadingToast = toast.loading('Marking all alerts as read...', {
+            duration: Infinity,
+        });
+
         try {
             const response = await fetch('/price-alerts/mark-all-read', {
                 method: 'POST',
@@ -199,10 +276,23 @@ export default function AlertsIndex({ auth, alerts, stats }) {
             });
 
             if (response.ok) {
+                // Close loading toast and show success
+                toast.dismiss(loadingToast);
+                toast.success('All alerts marked as read successfully!', {
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+
                 // Refresh the page to show updated data
-                window.location.reload();
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                throw new Error('Failed to mark all as read');
             }
         } catch (error) {
+            // Close loading toast and show error
+            toast.dismiss(loadingToast);
+            toast.error('Failed to mark all alerts as read. Please try again.', {
+                icon: <AlertTriangle className="h-4 w-4" />,
+            });
             console.error('Error marking all as read:', error);
         } finally {
             setIsLoading(false);
@@ -211,6 +301,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
 
     const handleCheckPrices = async () => {
         setIsLoading(true);
+
+        // Show loading toast
+        const loadingToast = toast.loading('Checking prices for all bookings...', {
+            duration: Infinity,
+        });
+
         try {
             const response = await fetch('/price-alerts/check-prices', {
                 method: 'POST',
@@ -222,15 +318,24 @@ export default function AlertsIndex({ auth, alerts, stats }) {
 
             const data = await response.json();
             if (data.success) {
-                // Show success message and refresh the page
-                alert(data.message);
-                window.location.reload();
+                // Close loading toast and show success
+                toast.dismiss(loadingToast);
+                toast.success(data.message || 'Price check completed successfully!', {
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+
+                // Refresh the page to show updated data
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                alert('Error: ' + data.message);
+                throw new Error(data.message || 'Price check failed');
             }
         } catch (error) {
+            // Close loading toast and show error
+            toast.dismiss(loadingToast);
+            toast.error('Error checking prices. Please try again.', {
+                icon: <AlertTriangle className="h-4 w-4" />,
+            });
             console.error('Error checking prices:', error);
-            alert('Error checking prices. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -255,14 +360,21 @@ export default function AlertsIndex({ auth, alerts, stats }) {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Header */}
-                <div className="bg-white border-b border-gray-200 p-6">
+                <div
+                    data-section="header"
+                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                        isVisible.header
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-8'
+                    }`}
+                >
                     <div className="flex items-center justify-between">
                         <div className="flex-1 max-w-md">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
                                     placeholder="Search alerts..."
-                                    className="pl-10"
+                                    className="pl-10 form-input-focus transition-all duration-300"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
@@ -271,12 +383,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                         <div className="flex items-center space-x-4">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm">
+                                    <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md">
                                         <Filter className="w-4 h-4 mr-2" />
                                         Status: {statusFilter === 'all' ? 'All' : statusFilter}
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent>
+                                <DropdownMenuContent className="animate-in slide-in-from-top-2">
                                     <DropdownMenuItem onClick={() => setStatusFilter('all')}>
                                         All Status
                                     </DropdownMenuItem>
@@ -293,12 +405,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             </DropdownMenu>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm">
+                                    <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md">
                                         <Filter className="w-4 h-4 mr-2" />
                                         Severity: {severityFilter === 'all' ? 'All' : severityFilter}
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent>
+                                <DropdownMenuContent className="animate-in slide-in-from-top-2">
                                     <DropdownMenuItem onClick={() => setSeverityFilter('all')}>
                                         All Severity
                                     </DropdownMenuItem>
@@ -318,6 +430,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                 size="sm"
                                 onClick={handleMarkAllAsRead}
                                 disabled={isLoading}
+                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -331,6 +444,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                 size="sm"
                                 onClick={handleCheckPrices}
                                 disabled={isLoading}
+                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -341,12 +455,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             </Button>
                             <Dialog open={showSettings} onOpenChange={setShowSettings}>
                                 <DialogTrigger asChild>
-                                    <Button size="sm">
+                                    <Button size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md">
                                         <Settings className="w-4 h-4 mr-2" />
                                         Alert Settings
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
+                                <DialogContent className="max-w-2xl animate-in slide-in-from-bottom-4">
                                     <DialogHeader>
                                         <DialogTitle>Alert Settings</DialogTitle>
                                         <DialogDescription>
@@ -366,6 +480,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                         ...alertSettings,
                                                         min_price_drop_amount: parseFloat(e.target.value)
                                                     })}
+                                                    className="form-input-focus transition-all duration-300"
                                                 />
                                             </div>
                                             <div>
@@ -379,6 +494,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                         ...alertSettings,
                                                         min_price_drop_percent: parseFloat(e.target.value)
                                                     })}
+                                                    className="form-input-focus transition-all duration-300"
                                                 />
                                             </div>
                                         </div>
@@ -431,7 +547,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                     notification_frequency: value
                                                 })}
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger className="form-input-focus transition-all duration-300">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -446,14 +562,14 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                             <Button
                                                 variant="outline"
                                                 onClick={() => setShowSettings(false)}
-                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
                                             >
                                                 Cancel
                                             </Button>
                                             <Button
                                                 onClick={saveAlertSettings}
                                                 disabled={isLoading}
-                                                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold"
+                                                className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg ${isLoading ? 'btn-loading' : ''}`}
                                             >
                                                 {isLoading ? (
                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -476,11 +592,18 @@ export default function AlertsIndex({ auth, alerts, stats }) {
 
                     <div className="space-y-6">
                         {/* Stats Cards */}
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                            <Card>
+                        <div
+                            data-section="statsCards"
+                            className={`grid gap-4 md:grid-cols-2 lg:grid-cols-4 transition-all duration-1000 ease-out ${
+                                isVisible.statsCards
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-8'
+                            }`}
+                        >
+                            <Card className="transition-all duration-500 ease-out hover-lift">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Total Alerts</CardTitle>
-                                    <Bell className="h-4 w-4 text-muted-foreground" />
+                                    <Bell className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">{stats?.total_alerts || 0}</div>
@@ -489,10 +612,10 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     </p>
                                 </CardContent>
                             </Card>
-                            <Card>
+                            <Card className="transition-all duration-500 ease-out hover-lift" style={{ transitionDelay: '100ms' }}>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">New Alerts</CardTitle>
-                                    <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                                    <AlertTriangle className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">{stats?.new_alerts || 0}</div>
@@ -501,10 +624,10 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     </p>
                                 </CardContent>
                             </Card>
-                            <Card>
+                            <Card className="transition-all duration-500 ease-out hover-lift" style={{ transitionDelay: '200ms' }}>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Actioned</CardTitle>
-                                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                                    <CheckCircle className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">{stats?.actioned_alerts || 0}</div>
@@ -513,10 +636,10 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     </p>
                                 </CardContent>
                             </Card>
-                            <Card>
+                            <Card className="transition-all duration-500 ease-out hover-lift" style={{ transitionDelay: '300ms' }}>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
-                                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                                    <DollarSign className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">
@@ -530,11 +653,18 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                         </div>
 
                         {/* Alerts List */}
-                        <div className="space-y-4">
+                        <div
+                            data-section="alertsList"
+                            className={`space-y-4 transition-all duration-1000 ease-out ${
+                                isVisible.alertsList
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-8'
+                            }`}
+                        >
                             {filteredAlerts.length === 0 ? (
-                                <Card>
+                                <Card className="transition-all duration-500 ease-out hover-lift">
                                     <CardContent className="p-8 text-center">
-                                        <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                        <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-float" />
                                         <h3 className="text-lg font-semibold mb-2">No alerts found</h3>
                                         <p className="text-muted-foreground mb-4">
                                             {statusFilter !== 'all' || severityFilter !== 'all' || searchQuery
@@ -550,6 +680,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                     setSeverityFilter('all');
                                                     setSearchQuery('');
                                                 }}
+                                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
                                             >
                                                 Clear Filters
                                             </Button>
@@ -557,8 +688,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     </CardContent>
                                 </Card>
                             ) : (
-                                filteredAlerts.map((alert) => (
-                                    <Card key={alert.id} className="hover:shadow-md transition-shadow">
+                                filteredAlerts.map((alert, index) => (
+                                    <Card
+                                        key={alert.id}
+                                        className="hover:shadow-md transition-all duration-500 ease-out hover-lift"
+                                        style={{ transitionDelay: `${index * 100}ms` }}
+                                    >
                                         <CardContent className="p-6">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
@@ -566,21 +701,21 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                         <div className="flex items-center space-x-3">
                                                             <div className="flex items-center space-x-2">
                                                                 {getStatusIcon(alert.status)}
-                                                                <Badge variant={getStatusBadgeVariant(alert.status)}>
+                                                                <Badge variant={getStatusBadgeVariant(alert.status)} className="transition-all duration-300 hover:scale-105">
                                                                     {alert.status}
                                                                 </Badge>
-                                                                <Badge variant={getSeverityBadgeVariant(alert.severity)}>
+                                                                <Badge variant={getSeverityBadgeVariant(alert.severity)} className="transition-all duration-300 hover:scale-105">
                                                                     {alert.severity}
                                                                 </Badge>
                                                             </div>
                                                         </div>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="sm">
+                                                                <Button variant="ghost" size="sm" className="transition-all duration-300 hover:scale-105">
                                                                     <MoreHorizontal className="h-4 w-4" />
                                                                 </Button>
                                                             </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
+                                                            <DropdownMenuContent align="end" className="animate-in slide-in-from-top-2">
                                                                 <DropdownMenuItem onClick={() => handleAlertAction(alert.id, 'view')}>
                                                                     <Eye className="w-4 h-4 mr-2" />
                                                                     View Booking
@@ -638,11 +773,11 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                     <div>
                                                                         <p className="text-sm text-muted-foreground mb-1">Savings</p>
                                                                         <div className="flex items-center space-x-2">
-                                                                            <TrendingDown className="w-4 h-4 text-green-600" />
+                                                                            <TrendingDown className="w-4 h-4 text-green-600 animate-pulse" />
                                                                             <span className="text-lg font-semibold text-green-600">
                                                                                 {formatCurrency(Math.abs(alert.delta_amount), alert.currency)}
                                                                             </span>
-                                                                            <Badge variant="secondary" className="text-green-700">
+                                                                            <Badge variant="secondary" className="text-green-700 transition-all duration-300 hover:scale-105">
                                                                                 {alert.delta_percent}%
                                                                             </Badge>
                                                                         </div>
@@ -662,7 +797,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                             <div className="flex items-center justify-between mt-4 pt-4 border-t">
                                                 <div className="flex items-center space-x-2">
                                                     <Link href={`/bookings/${alert.booking_id}`}>
-                                                        <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50">
+                                                        <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md">
                                                             View Booking
                                                             <ArrowRight className="w-4 h-4 ml-2" />
                                                         </Button>
@@ -675,7 +810,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                 size="sm"
                                                                 onClick={() => handleAlertAction(alert.id, 'action')}
                                                                 disabled={isLoading}
-                                                                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold"
+                                                                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
                                                             >
                                                                 {isLoading ? (
                                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -689,7 +824,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                 size="sm"
                                                                 onClick={() => handleAlertAction(alert.id, 'dismiss')}
                                                                 disabled={isLoading}
-                                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
                                                             >
                                                                 {isLoading ? (
                                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -710,6 +845,9 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notifications */}
+            <Toaster />
         </div>
     );
 }
