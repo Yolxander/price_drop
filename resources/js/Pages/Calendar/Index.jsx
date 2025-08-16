@@ -23,7 +23,15 @@ import {
     Building2,
     MapPin,
     Star,
-    Search
+    Search,
+    Menu,
+    X,
+    Home,
+    Grid3X3,
+    Bell,
+    Heart,
+    Settings,
+    LogOut
 } from 'lucide-react';
 
 export default function Calendar({ auth, bookings, upcomingBookings }) {
@@ -32,6 +40,8 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
     const safeUpcomingBookings = Array.isArray(upcomingBookings) ? upcomingBookings : [];
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showMobileActions, setShowMobileActions] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         searchBar: false,
@@ -51,6 +61,48 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
             return false;
         }
     });
+
+    // Mobile navigation items
+    const mobileNavigationItems = [
+        {
+            href: '/dashboard',
+            icon: Home,
+            label: 'Dashboard',
+            page: 'dashboard'
+        },
+        {
+            href: '/bookings',
+            icon: Grid3X3,
+            label: 'All Bookings',
+            page: 'bookings'
+        },
+        {
+            href: '/calendar',
+            icon: CalendarIcon,
+            label: 'Calendar',
+            page: 'calendar'
+        },
+        {
+            href: '/price-alerts',
+            icon: Bell,
+            label: 'Price Pulses',
+            page: 'alerts',
+            hasNotification: true,
+            notificationCount: 2
+        },
+        {
+            href: '/favorites',
+            icon: Heart,
+            label: 'Favorites',
+            page: 'favorites'
+        },
+        {
+            href: '/settings',
+            icon: Settings,
+            label: 'Settings',
+            page: 'settings'
+        }
+    ];
 
     // Intersection Observer for scroll-triggered animations
     useEffect(() => {
@@ -77,6 +129,41 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
 
         return () => observer.disconnect();
     }, []);
+
+    // Handle clicking outside mobile actions dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showMobileActions && !event.target.closest('.mobile-actions-container')) {
+                setShowMobileActions(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [showMobileActions]);
+
+    // Handle clicking outside mobile menu
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isMobileMenuOpen && !event.target.closest('.mobile-menu-container')) {
+                setIsMobileMenuOpen(false);
+                setShowMobileActions(false); // Reset action buttons when closing mobile menu
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [isMobileMenuOpen]);
 
     const getDaysInMonth = (date) => {
         const year = date.getFullYear();
@@ -245,44 +332,211 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
     const selectedDateBookings = selectedDate ? getBookingsForDate(selectedDate) : [];
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Left Sidebar */}
-            <Sidebar activePage="calendar" />
+        <div className="flex h-screen bg-gray-50 overflow-hidden">
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 lg:hidden">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setShowMobileActions(false); // Reset action buttons when closing mobile menu
+                    }} />
+                    <div className="mobile-menu-container fixed inset-y-0 left-0 flex w-80 flex-col bg-white border-r border-gray-200 animate-in slide-in-from-left duration-300">
+                        {/* Mobile Menu Header */}
+                        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <img
+                                    src="/logo/price-pulse-logo.png"
+                                    alt="Price Pulse"
+                                    className="w-8 h-8"
+                                />
+                                <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    setShowMobileActions(false); // Reset action buttons to hidden state
+                                }}
+                                className="h-8 w-8"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Mobile Navigation */}
+                        <nav className="flex-1 p-4 space-y-2">
+                            {mobileNavigationItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = item.page === 'calendar';
+
+                                return (
+                                    <Link key={item.href} href={item.href} className="block">
+                                        <div className={`flex items-center space-x-3 p-4 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 ${
+                                            isActive
+                                                ? 'bg-yellow-50 border border-yellow-200'
+                                                : 'hover:bg-gray-50 active:bg-gray-100'
+                                        }`}>
+                                            {item.hasNotification ? (
+                                                <div className="relative">
+                                                    <Icon className={`h-6 w-6 ${
+                                                        isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                    }`} />
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <Icon className={`h-6 w-6 ${
+                                                    isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                }`} />
+                                            )}
+                                            <span className={`text-lg ${
+                                                isActive
+                                                    ? 'font-semibold text-gray-900'
+                                                    : 'text-gray-700'
+                                            }`}>
+                                                {item.label}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Mobile User Profile */}
+                        <div className="p-4 border-t border-gray-200">
+                            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
+                                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-semibold text-lg">
+                                        {auth?.user?.name?.charAt(0) || 'U'}
+                                    </span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold text-gray-900">{auth?.user?.name || 'User'}</p>
+                                    <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
+                                </div>
+                            </div>
+                            <Link href="/" className="block mt-3">
+                                <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
+                                    <LogOut className="h-5 w-5 text-gray-600" />
+                                    <span className="text-gray-700 font-medium">Log Out</span>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Sidebar - Hidden on mobile */}
+            <div className="hidden lg:block">
+                <Sidebar activePage="calendar" />
+            </div>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Head title="Calendar" />
 
+                {/* Mobile Header */}
+                <div className="lg:hidden bg-white border-b border-gray-200 p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                                setIsMobileMenuOpen(true);
+                                setShowMobileActions(false); // Reset action buttons to hidden state
+                            }}
+                            className="h-10 w-10 active:scale-95 transition-transform"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                        <div className="flex items-center space-x-3">
+                            <img
+                                src="/logo/price-pulse-logo.png"
+                                alt="Price Pulse"
+                                className="w-8 h-8"
+                            />
+                            <span className="text-xl font-bold text-yellow-600">Calendar</span>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setShowMobileActions(!showMobileActions)}
+                            className={`h-10 w-10 active:scale-95 transition-all duration-200 relative ${
+                                showMobileActions
+                                    ? 'bg-yellow-50 text-yellow-600 border border-yellow-200'
+                                    : 'hover:bg-gray-50'
+                            }`}
+                            title={showMobileActions ? "Hide Actions" : "Show Actions"}
+                        >
+                            <Plus className={`h-6 w-6 transition-transform duration-200 ${
+                                showMobileActions ? 'rotate-45' : 'rotate-0'
+                            }`} />
+                        </Button>
+                    </div>
+
+                    {/* Mobile Actions Dropdown */}
+                    {showMobileActions && (
+                        <div className="mobile-actions-container mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 animate-in slide-in-from-top-2 duration-200">
+                            <div className="space-y-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={handleToggleSummary}
+                                    className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 w-full h-10"
+                                >
+                                    {showMonthSummary ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                                    {showMonthSummary ? 'Hide' : 'Show'} Summary
+                                </Button>
+                                <Link href="/bookings/create" className="w-full">
+                                    <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 w-full h-10">
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Add Booking
+                                    </Button>
+                                </Link>
+                                <Button
+                                    onClick={handleGoToToday}
+                                    variant="outline"
+                                    className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 w-full h-10"
+                                >
+                                    <CalendarIcon className="w-4 h-4 mr-2" />
+                                    Today
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {/* Header */}
                 <div
                     data-section="header"
-                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                    className={`bg-white border-b border-gray-200 p-4 lg:p-6 transition-all duration-1000 ease-out ${
                         isVisible.header
                             ? 'opacity-100 translate-y-0'
                             : 'opacity-0 translate-y-8'
                     }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="flex-1 max-w-md">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                        <div className="w-full lg:max-w-md">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
                                     placeholder="Search calendar..."
-                                    className="pl-10 form-input-focus transition-all duration-300"
+                                    className="pl-10 form-input-focus transition-all duration-300 w-full h-12 text-base"
                                 />
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end space-y-3 sm:space-y-0 sm:space-x-4">
                             <Button
                                 variant="outline"
                                 onClick={handleToggleSummary}
-                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 w-full sm:w-auto h-10 hidden lg:flex"
                             >
                                 {showMonthSummary ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
                                 {showMonthSummary ? 'Hide' : 'Show'} Summary
                             </Button>
-                            <Link href="/bookings/create">
-                                <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                            <Link href="/bookings/create" className="w-full sm:w-auto hidden lg:block">
+                                <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 lg:px-8 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 w-full h-10">
                                     <Plus className="w-4 h-4 mr-2" />
                                     Add Booking
                                 </Button>
@@ -290,7 +544,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             <Button
                                 onClick={handleGoToToday}
                                 variant="outline"
-                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 w-full sm:w-auto h-10 hidden lg:flex"
                             >
                                 <CalendarIcon className="w-4 h-4 mr-2" />
                                 Today
@@ -300,8 +554,8 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-auto p-6">
-                    <div className="space-y-6">
+                <div className="flex-1 overflow-auto p-4 lg:p-6 pb-20 lg:pb-6">
+                    <div className="space-y-4 lg:space-y-6">
 
                 {/* Month Summary */}
                 <div
@@ -316,39 +570,39 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 >
                     <Card className="bg-white border border-gray-200 transition-all duration-500 ease-out hover-lift">
                         <CardContent className="p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
                                 <div className="transition-all duration-500 ease-out hover:scale-105" style={{ transitionDelay: '0ms' }}>
-                                    <div className="text-2xl font-bold text-foreground animate-pulse">
+                                    <div className="text-xl lg:text-2xl font-bold text-foreground animate-pulse">
                                         {safeBookings.filter(b => {
                                             const checkIn = new Date(b.check_in_date);
                                             return checkIn.getMonth() === currentDate.getMonth() && checkIn.getFullYear() === currentDate.getFullYear();
                                         }).length}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">Total Bookings</div>
+                                    <div className="text-xs lg:text-sm text-muted-foreground">Total Bookings</div>
                                 </div>
                                 <div className="transition-all duration-500 ease-out hover:scale-105" style={{ transitionDelay: '100ms' }}>
-                                    <div className="text-2xl font-bold text-yellow-600 animate-pulse">
+                                    <div className="text-xl lg:text-2xl font-bold text-yellow-600 animate-pulse">
                                         {safeBookings.filter(b => {
                                             const checkIn = new Date(b.check_in_date);
                                             return checkIn.getMonth() === currentDate.getMonth() && checkIn.getFullYear() === currentDate.getFullYear() && b.status === 'active';
                                         }).length}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">Active</div>
+                                    <div className="text-xs lg:text-sm text-muted-foreground">Active</div>
                                 </div>
                                 <div className="transition-all duration-500 ease-out hover:scale-105" style={{ transitionDelay: '200ms' }}>
-                                    <div className="text-2xl font-bold text-orange-600 animate-pulse">
+                                    <div className="text-xl lg:text-2xl font-bold text-orange-600 animate-pulse">
                                         {safeBookings.filter(b => {
                                             const checkIn = new Date(b.check_in_date);
                                             return checkIn.getMonth() === currentDate.getMonth() && checkIn.getFullYear() === currentDate.getFullYear() && b.status === 'pending';
                                         }).length}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">Pending</div>
+                                    <div className="text-xs lg:text-sm text-muted-foreground">Pending</div>
                                 </div>
                                 <div className="transition-all duration-500 ease-out hover:scale-105" style={{ transitionDelay: '300ms' }}>
-                                    <div className="text-2xl font-bold text-green-600 animate-pulse">
+                                    <div className="text-xl lg:text-2xl font-bold text-green-600 animate-pulse">
                                         {safeBookings.filter(b => b.price_drop_detected).length}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">Price Pulses</div>
+                                    <div className="text-xs lg:text-sm text-muted-foreground">Price Pulses</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -364,32 +618,32 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             : 'opacity-0 translate-y-8'
                     }`}
                 >
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
+                    <CardHeader className="p-4 lg:p-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                            <div className="flex items-center justify-center lg:justify-start space-x-2 lg:space-x-4">
                                 <Button
                                     variant="outline"
                                     size="icon"
                                     onClick={() => navigateMonth('prev')}
-                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-8 w-8 lg:h-10 lg:w-10"
                                 >
                                     <ChevronLeft className="w-4 h-4" />
                                 </Button>
-                                <h2 className="text-xl font-semibold text-gray-900">
+                                <h2 className="text-lg lg:text-xl font-semibold text-gray-900 text-center lg:text-left">
                                     {formatDate(currentDate)}
                                 </h2>
                                 <Button
                                     variant="outline"
                                     size="icon"
                                     onClick={() => navigateMonth('next')}
-                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-8 w-8 lg:h-10 lg:w-10"
                                 >
                                     <ChevronRight className="w-4 h-4" />
                                 </Button>
                             </div>
-                            <div className="flex items-center space-x-4">
+                            <div className="flex items-center justify-center lg:justify-end space-x-2 lg:space-x-4">
                                 {/* Legend */}
-                                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                                <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs lg:text-sm text-gray-600">
                                     <div className="flex items-center space-x-1 transition-all duration-300 hover:scale-105">
                                         <Building2 className="w-3 h-3" />
                                         <span>Hotels</span>
@@ -406,12 +660,12 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-4 lg:p-6">
                         {/* Calendar Grid */}
                         <div className="grid grid-cols-7 gap-1">
                             {/* Day headers */}
                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                <div key={day} className="p-2 text-center text-sm font-medium text-gray-600">
+                                <div key={day} className="p-1 lg:p-2 text-center text-xs lg:text-sm font-medium text-gray-600">
                                     {day}
                                 </div>
                             ))}
@@ -420,8 +674,8 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             {days.map((date, index) => (
                                 <div
                                     key={index}
-                                    className={`min-h-[100px] p-2 border border-gray-200 transition-all duration-300 ease-out hover:scale-105 ${
-                                        date ? 'hover:bg-gray-50 cursor-pointer hover:shadow-md' : ''
+                                    className={`min-h-[80px] lg:min-h-[100px] p-1 lg:p-2 border border-gray-200 transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${
+                                        date ? 'hover:bg-gray-50 cursor-pointer hover:shadow-md touch-manipulation' : ''
                                     } ${
                                         isToday(date) ? 'bg-yellow-50 border-yellow-500 animate-pulse' : ''
                                     } ${
@@ -431,7 +685,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                 >
                                     {date ? (
                                         <>
-                                            <div className="text-sm font-medium text-gray-900 mb-1">
+                                            <div className="text-xs lg:text-sm font-medium text-gray-900 mb-1">
                                                 {date.getDate()}
                                             </div>
                                             <div className="space-y-1">
@@ -441,7 +695,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                         className="flex items-center space-x-1 p-1 rounded text-xs bg-gray-100 transition-all duration-300 hover:scale-105 hover:bg-gray-200"
                                                     >
                                                         <Building2 className="w-3 h-3" />
-                                                        <span className="truncate">{booking.hotel_name}</span>
+                                                        <span className="truncate text-xs">{booking.hotel_name}</span>
                                                     </div>
                                                 ))}
                                                 {getBookingsForDate(date).length > 2 && (
@@ -452,7 +706,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="text-sm text-gray-300">
+                                        <div className="text-xs lg:text-sm text-gray-300">
                                             {/* Empty cell */}
                                         </div>
                                     )}
@@ -472,8 +726,8 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                 : 'opacity-0 translate-y-8'
                         }`}
                     >
-                        <CardHeader>
-                            <CardTitle className="text-gray-900">
+                        <CardHeader className="p-4 lg:p-6">
+                            <CardTitle className="text-gray-900 text-lg lg:text-xl">
                                 Bookings for {selectedDate.toLocaleDateString('en-US', {
                                     weekday: 'long',
                                     year: 'numeric',
@@ -481,29 +735,29 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     day: 'numeric'
                                 })}
                             </CardTitle>
-                            <CardDescription className="text-gray-600">
+                            <CardDescription className="text-gray-600 text-sm lg:text-base">
                                 {selectedDateBookings.length} bookings scheduled
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 lg:p-6">
                             {selectedDateBookings.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">
-                                    <CalendarIcon className="h-12 w-12 text-gray-300 mx-auto mb-4 animate-float" />
-                                    No bookings scheduled for this date
+                                <div className="text-center py-6 lg:py-8 text-gray-500">
+                                    <CalendarIcon className="h-10 w-10 lg:h-12 lg:w-12 text-gray-300 mx-auto mb-4 animate-float" />
+                                    <p className="text-sm lg:text-base">No bookings scheduled for this date</p>
                                 </div>
                             ) : (
-                                <div className="space-y-4">
+                                <div className="space-y-3 lg:space-y-4">
                                     {selectedDateBookings.map((booking, index) => (
                                         <Link key={booking.id} href={`/bookings/${booking.id}`}>
                                             <div
-                                                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 ease-out hover-lift cursor-pointer"
+                                                className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 lg:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 ease-out hover-lift cursor-pointer space-y-3 lg:space-y-0"
                                                 style={{ transitionDelay: `${index * 100}ms` }}
                                             >
                                                 <div className="flex items-center space-x-3">
                                                     <Building2 className="w-5 h-5 text-yellow-600 transition-all duration-300 hover:scale-110" />
                                                     <div>
-                                                        <h3 className="font-medium text-gray-900">{booking.hotel_name}</h3>
-                                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                        <h3 className="font-medium text-gray-900 text-sm lg:text-base">{booking.hotel_name}</h3>
+                                                        <div className="flex items-center space-x-2 text-xs lg:text-sm text-gray-600">
                                                             <MapPin className="w-3 h-3" />
                                                             <span>{booking.location}</span>
                                                             {booking.star_rating && (
@@ -518,17 +772,19 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <Badge className={`${getStatusColor(booking.status)} transition-all duration-300 hover:scale-105`} size="sm">
-                                                        {booking.status}
-                                                    </Badge>
-                                                    {getStatusIcon(booking.status)}
-                                                    {booking.price_drop_detected && (
-                                                        <Badge className="bg-green-100 text-green-800 animate-pulse transition-all duration-300 hover:scale-105" size="sm">
-                                                            Price Pulse
+                                                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Badge className={`${getStatusColor(booking.status)} transition-all duration-300 hover:scale-105`} size="sm">
+                                                            {booking.status}
                                                         </Badge>
-                                                    )}
-                                                    <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md">
+                                                        {getStatusIcon(booking.status)}
+                                                        {booking.price_drop_detected && (
+                                                            <Badge className="bg-green-100 text-green-800 animate-pulse transition-all duration-300 hover:scale-105" size="sm">
+                                                                Price Pulse
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 w-full sm:w-auto h-8 lg:h-9">
                                                         View
                                                     </Button>
                                                 </div>
@@ -550,31 +806,31 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                             : 'opacity-0 translate-y-8'
                     }`}
                 >
-                    <CardHeader>
-                        <CardTitle className="text-gray-900">Upcoming Bookings</CardTitle>
-                        <CardDescription className="text-gray-600">
+                    <CardHeader className="p-4 lg:p-6">
+                        <CardTitle className="text-gray-900 text-lg lg:text-xl">Upcoming Bookings</CardTitle>
+                        <CardDescription className="text-gray-600 text-sm lg:text-base">
                             Next 7 days
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-4 lg:p-6">
                         {safeUpcomingBookings.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500">
-                                <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4 animate-float" />
-                                No upcoming bookings in the next 7 days
+                            <div className="text-center py-6 lg:py-8 text-gray-500">
+                                <Clock className="h-10 w-10 lg:h-12 lg:w-12 text-gray-300 mx-auto mb-4 animate-float" />
+                                <p className="text-sm lg:text-base">No upcoming bookings in the next 7 days</p>
                             </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-3 lg:space-y-4">
                                 {safeUpcomingBookings.map((booking, index) => (
                                     <Link key={booking.id} href={`/bookings/${booking.id}`}>
                                         <div
-                                            className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 ease-out hover-lift cursor-pointer"
+                                            className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 lg:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 ease-out hover-lift cursor-pointer space-y-3 lg:space-y-0"
                                             style={{ transitionDelay: `${index * 100}ms` }}
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <Building2 className="w-5 h-5 text-yellow-600 transition-all duration-300 hover:scale-110" />
                                                 <div>
-                                                    <h3 className="font-medium text-gray-900">{booking.hotel_name}</h3>
-                                                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                    <h3 className="font-medium text-gray-900 text-sm lg:text-base">{booking.hotel_name}</h3>
+                                                    <div className="flex items-center space-x-2 text-xs lg:text-sm text-gray-600">
                                                         <MapPin className="w-3 h-3" />
                                                         <span>{booking.location}</span>
                                                         {booking.star_rating && (
@@ -613,6 +869,42 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
 
             {/* Toast Notifications */}
             <Toaster />
+
+            {/* Mobile Bottom Navigation */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 shadow-lg">
+                <div className="flex items-center justify-around py-3">
+                    {mobileNavigationItems.slice(0, 4).map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.page === 'calendar';
+
+                        return (
+                            <Link key={item.href} href={item.href} className="flex flex-col items-center p-2 active:scale-95 transition-transform">
+                                <div className="relative">
+                                    {item.hasNotification ? (
+                                        <div className="relative">
+                                            <Icon className={`h-6 w-6 ${
+                                                isActive ? 'text-yellow-600' : 'text-gray-600'
+                                            }`} />
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                                <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Icon className={`h-6 w-6 ${
+                                            isActive ? 'text-yellow-600' : 'text-gray-600'
+                                        }`} />
+                                    )}
+                                </div>
+                                <span className={`text-xs mt-1 ${
+                                    isActive ? 'font-semibold text-yellow-600' : 'text-gray-600'
+                                }`}>
+                                    {item.label}
+                                </span>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
     );
 }

@@ -31,7 +31,14 @@ import {
     Bell,
     Settings,
     Save,
-    Loader2
+    Loader2,
+    Menu,
+    X,
+    Home,
+    Grid3X3,
+    Calendar as CalendarIcon,
+    Heart,
+    LogOut
 } from 'lucide-react';
 
 export default function AlertsIndex({ auth, alerts, stats }) {
@@ -40,6 +47,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         searchBar: false,
@@ -58,6 +66,48 @@ export default function AlertsIndex({ auth, alerts, stats }) {
         excluded_providers: [],
         included_locations: []
     });
+
+    // Mobile navigation items
+    const mobileNavigationItems = [
+        {
+            href: '/dashboard',
+            icon: Home,
+            label: 'Dashboard',
+            page: 'dashboard'
+        },
+        {
+            href: '/bookings',
+            icon: Grid3X3,
+            label: 'All Bookings',
+            page: 'bookings'
+        },
+        {
+            href: '/calendar',
+            icon: CalendarIcon,
+            label: 'Calendar',
+            page: 'calendar'
+        },
+        {
+            href: '/price-alerts',
+            icon: Bell,
+            label: 'Price Pulses',
+            page: 'alerts',
+            hasNotification: true,
+            notificationCount: 2
+        },
+        {
+            href: '/favorites',
+            icon: Heart,
+            label: 'Favorites',
+            page: 'favorites'
+        },
+        {
+            href: '/settings',
+            icon: Settings,
+            label: 'Settings',
+            page: 'settings'
+        }
+    ];
 
     // Intersection Observer for scroll-triggered animations
     useEffect(() => {
@@ -353,37 +403,157 @@ export default function AlertsIndex({ auth, alerts, stats }) {
     }) || [];
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Left Sidebar */}
-            <Sidebar activePage="alerts" />
+        <div className="flex h-screen bg-gray-50 overflow-hidden">
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 lg:hidden">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => {
+                        setIsMobileMenuOpen(false);
+                    }} />
+                    <div className="mobile-menu-container fixed inset-y-0 left-0 flex w-80 flex-col bg-white border-r border-gray-200 animate-in slide-in-from-left duration-300">
+                        {/* Mobile Menu Header */}
+                        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <img
+                                    src="/logo/price-pulse-logo.png"
+                                    alt="Price Pulse"
+                                    className="w-8 h-8"
+                                />
+                                <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="h-8 w-8"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Mobile Navigation */}
+                        <nav className="flex-1 p-4 space-y-2">
+                            {mobileNavigationItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = item.page === 'alerts';
+
+                                return (
+                                    <Link key={item.href} href={item.href} className="block">
+                                        <div className={`flex items-center space-x-3 p-4 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 ${
+                                            isActive
+                                                ? 'bg-yellow-50 border border-yellow-200'
+                                                : 'hover:bg-gray-50 active:bg-gray-100'
+                                        }`}>
+                                            {item.hasNotification ? (
+                                                <div className="relative">
+                                                    <Icon className={`h-6 w-6 ${
+                                                        isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                    }`} />
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <Icon className={`h-6 w-6 ${
+                                                    isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                }`} />
+                                            )}
+                                            <span className={`text-lg ${
+                                                isActive
+                                                    ? 'font-semibold text-gray-900'
+                                                    : 'text-gray-700'
+                                            }`}>
+                                                {item.label}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Mobile User Profile */}
+                        <div className="p-4 border-t border-gray-200">
+                            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
+                                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-semibold text-lg">
+                                        {auth?.user?.name?.charAt(0) || 'U'}
+                                    </span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold text-gray-900">{auth?.user?.name || 'User'}</p>
+                                    <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
+                                </div>
+                            </div>
+                            <Link href="/" className="block mt-3">
+                                <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
+                                    <LogOut className="h-5 w-5 text-gray-600" />
+                                    <span className="text-gray-700 font-medium">Log Out</span>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Sidebar - Hidden on mobile */}
+            <div className="hidden lg:block">
+                <Sidebar activePage="alerts" />
+            </div>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
+                <Head title="Price Alerts" />
+
+                {/* Mobile Header */}
+                <div className="lg:hidden bg-white border-b border-gray-200 p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="h-10 w-10 active:scale-95 transition-transform"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                        <div className="flex items-center space-x-3">
+                            <img
+                                src="/logo/price-pulse-logo.png"
+                                alt="Price Pulse"
+                                className="w-8 h-8"
+                            />
+                            <span className="text-xl font-bold text-yellow-600">Price Alerts</span>
+                        </div>
+                        <div className="w-10" /> {/* Spacer for centering */}
+                    </div>
+                </div>
+
                 {/* Header */}
                 <div
                     data-section="header"
-                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                    className={`bg-white border-b border-gray-200 p-4 lg:p-6 transition-all duration-1000 ease-out ${
                         isVisible.header
                             ? 'opacity-100 translate-y-0'
                             : 'opacity-0 translate-y-8'
                     }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="flex-1 max-w-md">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                        <div className="w-full lg:max-w-md">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
                                     placeholder="Search alerts..."
-                                    className="pl-10 form-input-focus transition-all duration-300"
+                                    className="pl-10 form-input-focus transition-all duration-300 w-full h-12 text-base"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end space-y-3 sm:space-y-0 sm:space-x-4">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md">
+                                    <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto">
                                         <Filter className="w-4 h-4 mr-2" />
                                         Status: {statusFilter === 'all' ? 'All' : statusFilter}
                                     </Button>
@@ -405,7 +575,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             </DropdownMenu>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md">
+                                    <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto">
                                         <Filter className="w-4 h-4 mr-2" />
                                         Severity: {severityFilter === 'all' ? 'All' : severityFilter}
                                     </Button>
@@ -430,7 +600,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                 size="sm"
                                 onClick={handleMarkAllAsRead}
                                 disabled={isLoading}
-                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto"
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -444,7 +614,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                 size="sm"
                                 onClick={handleCheckPrices}
                                 disabled={isLoading}
-                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto"
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -455,12 +625,12 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             </Button>
                             <Dialog open={showSettings} onOpenChange={setShowSettings}>
                                 <DialogTrigger asChild>
-                                    <Button size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md">
+                                    <Button size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto">
                                         <Settings className="w-4 h-4 mr-2" />
                                         Alert Settings
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-2xl animate-in slide-in-from-bottom-4">
+                                <DialogContent className="max-w-[95vw] max-h-[90vh] lg:max-w-2xl animate-in slide-in-from-bottom-4">
                                     <DialogHeader>
                                         <DialogTitle>Alert Settings</DialogTitle>
                                         <DialogDescription>
@@ -468,7 +638,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-6">
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="min_amount">Minimum Price Pulse Amount ($)</Label>
                                                 <Input
@@ -480,7 +650,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                         ...alertSettings,
                                                         min_price_drop_amount: parseFloat(e.target.value)
                                                     })}
-                                                    className="form-input-focus transition-all duration-300"
+                                                    className="form-input-focus transition-all duration-300 h-12 text-base"
                                                 />
                                             </div>
                                             <div>
@@ -494,7 +664,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                         ...alertSettings,
                                                         min_price_drop_percent: parseFloat(e.target.value)
                                                     })}
-                                                    className="form-input-focus transition-all duration-300"
+                                                    className="form-input-focus transition-all duration-300 h-12 text-base"
                                                 />
                                             </div>
                                         </div>
@@ -547,7 +717,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                     notification_frequency: value
                                                 })}
                                             >
-                                                <SelectTrigger className="form-input-focus transition-all duration-300">
+                                                <SelectTrigger className="form-input-focus transition-all duration-300 h-12 text-base">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -558,18 +728,18 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                             </Select>
                                         </div>
 
-                                        <div className="flex justify-end space-x-2">
+                                        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
                                             <Button
                                                 variant="outline"
                                                 onClick={() => setShowSettings(false)}
-                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation w-full sm:w-auto h-12 text-base"
                                             >
                                                 Cancel
                                             </Button>
                                             <Button
                                                 onClick={saveAlertSettings}
                                                 disabled={isLoading}
-                                                className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg ${isLoading ? 'btn-loading' : ''}`}
+                                                className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 touch-manipulation w-full sm:w-auto h-12 text-base ${isLoading ? 'btn-loading' : ''}`}
                                             >
                                                 {isLoading ? (
                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -587,62 +757,60 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
-                    <Head title="Price Alerts" />
-
+                <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">
                     <div className="space-y-6">
                         {/* Stats Cards */}
                         <div
                             data-section="statsCards"
-                            className={`grid gap-4 md:grid-cols-2 lg:grid-cols-4 transition-all duration-1000 ease-out ${
+                            className={`grid gap-4 grid-cols-2 lg:grid-cols-4 transition-all duration-1000 ease-out ${
                                 isVisible.statsCards
                                     ? 'opacity-100 translate-y-0'
                                     : 'opacity-0 translate-y-8'
                             }`}
                         >
-                            <Card className="transition-all duration-500 ease-out hover-lift">
+                            <Card className="transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Total Alerts</CardTitle>
                                     <Bell className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{stats?.total_alerts || 0}</div>
+                                    <div className="text-xl lg:text-2xl font-bold">{stats?.total_alerts || 0}</div>
                                     <p className="text-xs text-muted-foreground">
                                         Across all bookings
                                     </p>
                                 </CardContent>
                             </Card>
-                            <Card className="transition-all duration-500 ease-out hover-lift" style={{ transitionDelay: '100ms' }}>
+                            <Card className="transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation" style={{ transitionDelay: '100ms' }}>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">New Alerts</CardTitle>
                                     <AlertTriangle className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{stats?.new_alerts || 0}</div>
+                                    <div className="text-xl lg:text-2xl font-bold">{stats?.new_alerts || 0}</div>
                                     <p className="text-xs text-muted-foreground">
                                         Require attention
                                     </p>
                                 </CardContent>
                             </Card>
-                            <Card className="transition-all duration-500 ease-out hover-lift" style={{ transitionDelay: '200ms' }}>
+                            <Card className="transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation" style={{ transitionDelay: '200ms' }}>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Actioned</CardTitle>
                                     <CheckCircle className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">{stats?.actioned_alerts || 0}</div>
+                                    <div className="text-xl lg:text-2xl font-bold">{stats?.actioned_alerts || 0}</div>
                                     <p className="text-xs text-muted-foreground">
                                         Already handled
                                     </p>
                                 </CardContent>
                             </Card>
-                            <Card className="transition-all duration-500 ease-out hover-lift" style={{ transitionDelay: '300ms' }}>
+                            <Card className="transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation" style={{ transitionDelay: '300ms' }}>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
                                     <DollarSign className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-2xl font-bold">
+                                    <div className="text-xl lg:text-2xl font-bold">
                                         {formatCurrency(stats?.total_savings || 0)}
                                     </div>
                                     <p className="text-xs text-muted-foreground">
@@ -662,8 +830,8 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             }`}
                         >
                             {filteredAlerts.length === 0 ? (
-                                <Card className="transition-all duration-500 ease-out hover-lift">
-                                    <CardContent className="p-8 text-center">
+                                <Card className="transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
+                                    <CardContent className="p-6 lg:p-8 text-center">
                                         <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-float" />
                                         <h3 className="text-lg font-semibold mb-2">No alerts found</h3>
                                         <p className="text-muted-foreground mb-4">
@@ -680,7 +848,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                     setSeverityFilter('all');
                                                     setSearchQuery('');
                                                 }}
-                                                className="transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                                className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation"
                                             >
                                                 Clear Filters
                                             </Button>
@@ -691,27 +859,27 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                 filteredAlerts.map((alert, index) => (
                                     <Card
                                         key={alert.id}
-                                        className="hover:shadow-md transition-all duration-500 ease-out hover-lift"
+                                        className="hover:shadow-md transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation"
                                         style={{ transitionDelay: `${index * 100}ms` }}
                                     >
-                                        <CardContent className="p-6">
+                                        <CardContent className="p-4 lg:p-6">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
-                                                    <div className="flex items-start justify-between mb-3">
+                                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 space-y-2 sm:space-y-0">
                                                         <div className="flex items-center space-x-3">
                                                             <div className="flex items-center space-x-2">
                                                                 {getStatusIcon(alert.status)}
-                                                                <Badge variant={getStatusBadgeVariant(alert.status)} className="transition-all duration-300 hover:scale-105">
+                                                                <Badge variant={getStatusBadgeVariant(alert.status)} className="transition-all duration-300 hover:scale-105 active:scale-95">
                                                                     {alert.status}
                                                                 </Badge>
-                                                                <Badge variant={getSeverityBadgeVariant(alert.severity)} className="transition-all duration-300 hover:scale-105">
+                                                                <Badge variant={getSeverityBadgeVariant(alert.severity)} className="transition-all duration-300 hover:scale-105 active:scale-95">
                                                                     {alert.severity}
                                                                 </Badge>
                                                             </div>
                                                         </div>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="sm" className="transition-all duration-300 hover:scale-105">
+                                                                <Button variant="ghost" size="sm" className="transition-all duration-300 hover:scale-105 active:scale-95">
                                                                     <MoreHorizontal className="h-4 w-4" />
                                                                 </Button>
                                                             </DropdownMenuTrigger>
@@ -736,7 +904,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                 {alert.location}
                                                             </div>
 
-                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                            <div className="grid grid-cols-1 gap-3 mb-4">
                                                                 <div className="flex items-center space-x-2">
                                                                     <Calendar className="w-4 h-4 text-muted-foreground" />
                                                                     <span className="text-sm">
@@ -758,7 +926,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                             </div>
 
                                                             <div className="bg-muted/50 rounded-lg p-4">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div className="grid grid-cols-1 gap-4">
                                                                     <div>
                                                                         <p className="text-sm text-muted-foreground mb-1">Price Change</p>
                                                                         <div className="flex items-center space-x-2">
@@ -777,7 +945,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                             <span className="text-lg font-semibold text-green-600">
                                                                                 {formatCurrency(Math.abs(alert.delta_amount), alert.currency)}
                                                                             </span>
-                                                                            <Badge variant="secondary" className="text-green-700 transition-all duration-300 hover:scale-105">
+                                                                            <Badge variant="secondary" className="text-green-700 transition-all duration-300 hover:scale-105 active:scale-95">
                                                                                 {alert.delta_percent}%
                                                                             </Badge>
                                                                         </div>
@@ -794,23 +962,23 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 pt-4 border-t space-y-3 sm:space-y-0">
                                                 <div className="flex items-center space-x-2">
                                                     <Link href={`/bookings/${alert.booking_id}`}>
-                                                        <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md">
+                                                        <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation w-full sm:w-auto">
                                                             View Booking
                                                             <ArrowRight className="w-4 h-4 ml-2" />
                                                         </Button>
                                                     </Link>
                                                 </div>
-                                                <div className="flex items-center space-x-2">
+                                                <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
                                                     {alert.status === 'new' && (
                                                         <>
                                                             <Button
                                                                 size="sm"
                                                                 onClick={() => handleAlertAction(alert.id, 'action')}
                                                                 disabled={isLoading}
-                                                                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                                                                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 touch-manipulation w-full sm:w-auto"
                                                             >
                                                                 {isLoading ? (
                                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -824,7 +992,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                 size="sm"
                                                                 onClick={() => handleAlertAction(alert.id, 'dismiss')}
                                                                 disabled={isLoading}
-                                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation w-full sm:w-auto"
                                                             >
                                                                 {isLoading ? (
                                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -842,6 +1010,40 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                 ))
                             )}
                         </div>
+                    </div>
+                </div>
+
+                {/* Mobile Bottom Navigation */}
+                <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 z-40">
+                    <div className="flex items-center justify-around">
+                        {mobileNavigationItems.slice(0, 5).map((item) => {
+                            const Icon = item.icon;
+                            const isActive = item.page === 'alerts';
+
+                            return (
+                                <Link key={item.href} href={item.href} className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200 active:scale-95">
+                                    {item.hasNotification ? (
+                                        <div className="relative">
+                                            <Icon className={`h-6 w-6 ${
+                                                isActive ? 'text-yellow-600' : 'text-gray-600'
+                                            }`} />
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                                <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Icon className={`h-6 w-6 ${
+                                            isActive ? 'text-yellow-600' : 'text-gray-600'
+                                        }`} />
+                                    )}
+                                    <span className={`text-xs ${
+                                        isActive ? 'font-semibold text-yellow-600' : 'text-gray-600'
+                                    }`}>
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

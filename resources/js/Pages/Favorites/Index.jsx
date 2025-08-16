@@ -31,7 +31,15 @@ import {
     Clock,
     AlertCircle,
     CheckCircle,
-    Heart
+    Heart,
+    Menu,
+    X,
+    Home,
+    Grid3X3,
+    Calendar as CalendarIcon,
+    Bell,
+    Settings,
+    LogOut
 } from 'lucide-react';
 
 export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
@@ -41,6 +49,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
     const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
     const [favoriteToRemove, setFavoriteToRemove] = useState(null);
     const [isRemoving, setIsRemoving] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         searchBar: false,
@@ -48,6 +57,48 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
         pagination: false
     });
     const itemsPerPage = 8;
+
+    // Mobile navigation items
+    const mobileNavigationItems = [
+        {
+            href: '/dashboard',
+            icon: Home,
+            label: 'Dashboard',
+            page: 'dashboard'
+        },
+        {
+            href: '/bookings',
+            icon: Grid3X3,
+            label: 'All Bookings',
+            page: 'bookings'
+        },
+        {
+            href: '/calendar',
+            icon: CalendarIcon,
+            label: 'Calendar',
+            page: 'calendar'
+        },
+        {
+            href: '/price-alerts',
+            icon: Bell,
+            label: 'Price Pulses',
+            page: 'alerts',
+            hasNotification: true,
+            notificationCount: 2
+        },
+        {
+            href: '/favorites',
+            icon: Heart,
+            label: 'Favorites',
+            page: 'favorites'
+        },
+        {
+            href: '/settings',
+            icon: Settings,
+            label: 'Settings',
+            page: 'settings'
+        }
+    ];
 
     // Intersection Observer for scroll-triggered animations
     useEffect(() => {
@@ -202,39 +253,157 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Left Sidebar */}
-            <Sidebar activePage="favorites" />
+        <div className="flex h-screen bg-gray-50 overflow-hidden">
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 lg:hidden">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => {
+                        setIsMobileMenuOpen(false);
+                    }} />
+                    <div className="mobile-menu-container fixed inset-y-0 left-0 flex w-80 flex-col bg-white border-r border-gray-200 animate-in slide-in-from-left duration-300">
+                        {/* Mobile Menu Header */}
+                        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <img
+                                    src="/logo/price-pulse-logo.png"
+                                    alt="Price Pulse"
+                                    className="w-8 h-8"
+                                />
+                                <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="h-8 w-8"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Mobile Navigation */}
+                        <nav className="flex-1 p-4 space-y-2">
+                            {mobileNavigationItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = item.page === 'favorites';
+
+                                return (
+                                    <Link key={item.href} href={item.href} className="block">
+                                        <div className={`flex items-center space-x-3 p-4 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 ${
+                                            isActive
+                                                ? 'bg-yellow-50 border border-yellow-200'
+                                                : 'hover:bg-gray-50 active:bg-gray-100'
+                                        }`}>
+                                            {item.hasNotification ? (
+                                                <div className="relative">
+                                                    <Icon className={`h-6 w-6 ${
+                                                        isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                    }`} />
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <Icon className={`h-6 w-6 ${
+                                                    isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                }`} />
+                                            )}
+                                            <span className={`text-lg ${
+                                                isActive
+                                                    ? 'font-semibold text-gray-900'
+                                                    : 'text-gray-700'
+                                            }`}>
+                                                {item.label}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Mobile User Profile */}
+                        <div className="p-4 border-t border-gray-200">
+                            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
+                                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-semibold text-lg">
+                                        {auth?.user?.name?.charAt(0) || 'U'}
+                                    </span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold text-gray-900">{auth?.user?.name || 'User'}</p>
+                                    <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
+                                </div>
+                            </div>
+                            <Link href="/" className="block mt-3">
+                                <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
+                                    <LogOut className="h-5 w-5 text-gray-600" />
+                                    <span className="text-gray-700 font-medium">Log Out</span>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Sidebar - Hidden on mobile */}
+            <div className="hidden lg:block">
+                <Sidebar activePage="favorites" />
+            </div>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Head title="Favorites" />
 
+                {/* Mobile Header */}
+                <div className="lg:hidden bg-white border-b border-gray-200 p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="h-10 w-10 active:scale-95 transition-transform"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                        <div className="flex items-center space-x-3">
+                            <img
+                                src="/logo/price-pulse-logo.png"
+                                alt="Price Pulse"
+                                className="w-8 h-8"
+                            />
+                            <span className="text-xl font-bold text-yellow-600">Favorites</span>
+                        </div>
+                        <div className="w-10" /> {/* Spacer for centering */}
+                    </div>
+                </div>
+
                 {/* Header */}
                 <div
                     data-section="header"
-                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                    className={`bg-white border-b border-gray-200 p-4 lg:p-6 transition-all duration-1000 ease-out ${
                         isVisible.header
                             ? 'opacity-100 translate-y-0'
                             : 'opacity-0 translate-y-8'
                     }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="flex-1 max-w-md">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                        <div className="w-full lg:max-w-md">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
                                     placeholder="Search favorites..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 form-input-focus transition-all duration-300"
+                                    className="pl-10 form-input-focus transition-all duration-300 w-full h-12 text-base"
                                 />
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end space-y-3 sm:space-y-0 sm:space-x-4">
                             <Button
                                 variant="outline"
-                                className="flex items-center space-x-2 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                className="flex items-center space-x-2 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto"
                             >
                                 <Filter className="h-4 w-4" />
                                 <span>Filter</span>
@@ -244,7 +413,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                                     size="sm"
                                     onClick={() => setViewMode('grid')}
-                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105"
+                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105 active:scale-95"
                                 >
                                     <LayoutGrid className="h-4 w-4" />
                                 </Button>
@@ -252,7 +421,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                                     size="sm"
                                     onClick={() => setViewMode('list')}
-                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105"
+                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105 active:scale-95"
                                 >
                                     <List className="h-4 w-4" />
                                 </Button>
@@ -265,7 +434,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                 <div className="flex-1 flex flex-col overflow-hidden">
 
                     {/* Properties Grid - Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">
                         {currentProperties.length === 0 ? (
                             <div
                                 data-section="favoritesGrid"
@@ -281,7 +450,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
                                 <p className="text-gray-500 mb-6">Start adding hotels to your favorites to track them here</p>
                                 <Link href="/bookings">
-                                    <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                                    <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 touch-manipulation w-full sm:w-auto h-12 text-base">
                                         <Plus className="h-4 w-4 mr-2" />
                                         Browse Hotels
                                     </Button>
@@ -290,16 +459,16 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                         ) : (
                             <div
                                 data-section="favoritesGrid"
-                                className={`grid gap-6 transition-all duration-1000 ease-out ${
+                                className={`grid gap-4 lg:gap-6 transition-all duration-1000 ease-out ${
                                     isVisible.favoritesGrid
                                         ? 'opacity-100 translate-y-0'
                                         : 'opacity-0 translate-y-8'
-                                } ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}
+                                } ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}
                             >
                                 {currentProperties.map((property, index) => (
                                     <div
                                         key={property.id}
-                                        className="relative transition-all duration-500 ease-out hover-lift"
+                                        className="relative transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation"
                                         style={{ transitionDelay: `${index * 100}ms` }}
                                     >
                                         <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02]">
@@ -316,13 +485,13 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                     </div>
                                                 )}
                                                 <div className="absolute top-3 left-3">
-                                                    <Badge variant="default" className="bg-primary text-primary-foreground font-medium animate-pulse-glow transition-all duration-300 hover:scale-105">
+                                                    <Badge variant="default" className="bg-primary text-primary-foreground font-medium animate-pulse-glow transition-all duration-300 hover:scale-105 active:scale-95">
                                                         {formatCurrency(property.currentPrice)}
                                                     </Badge>
                                                 </div>
                                                 {property.priceDropDetected && (
                                                     <div className="absolute top-3 left-32">
-                                                        <Badge variant="default" className="bg-green-600 text-white animate-pulse transition-all duration-300 hover:scale-105">
+                                                        <Badge variant="default" className="bg-green-600 text-white animate-pulse transition-all duration-300 hover:scale-105 active:scale-95">
                                                             <TrendingDown className="h-3 w-3 mr-1" />
                                                             Price Pulse
                                                         </Badge>
@@ -330,7 +499,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 )}
                                                 {property.status && (
                                                     <div className="absolute bottom-3 left-3">
-                                                        <Badge variant={getStatusBadgeVariant(property.status)} className="transition-all duration-300 hover:scale-105">
+                                                        <Badge variant={getStatusBadgeVariant(property.status)} className="transition-all duration-300 hover:scale-105 active:scale-95">
                                                             {property.status}
                                                         </Badge>
                                                     </div>
@@ -342,7 +511,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <CardContent className="p-6">
+                                            <CardContent className="p-4 lg:p-6">
                                                 <Link href={`/bookings/${property.id}`} className="block">
                                                     <div className="space-y-3">
                                                         <div>
@@ -355,7 +524,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                             </div>
                                                         </div>
 
-                                                        <div className="grid grid-cols-3 gap-3 text-sm">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                                                             <div className="flex items-center text-muted-foreground">
                                                                 <Bed className="h-4 w-4 mr-2 flex-shrink-0" />
                                                                 <span>{property.beds} room{property.beds > 1 ? 's' : ''}</span>
@@ -400,7 +569,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                             <Button
                                                 variant="secondary"
                                                 size="sm"
-                                                className="h-10 w-10 p-0 bg-white hover:bg-red-50 shadow-lg border border-gray-300 rounded-full text-red-600 hover:text-red-700 transition-all duration-300 hover:scale-110 hover:shadow-xl"
+                                                className="h-10 w-10 p-0 bg-white hover:bg-red-50 shadow-lg border border-gray-300 rounded-full text-red-600 hover:text-red-700 transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95 touch-manipulation"
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -421,23 +590,23 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                     {currentProperties.length > 0 && (
                         <div
                             data-section="pagination"
-                            className={`bg-white border-t border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                            className={`bg-white border-t border-gray-200 p-4 lg:p-6 transition-all duration-1000 ease-out ${
                                 isVisible.pagination
                                     ? 'opacity-100 translate-y-0'
                                     : 'opacity-0 translate-y-8'
                             }`}
                         >
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-600">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                                <div className="text-sm text-gray-600 text-center sm:text-left">
                                     Showing {startIndex + 1} to {Math.min(endIndex, filteredProperties.length)} of {filteredProperties.length} entries
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center justify-center sm:justify-end space-x-2">
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                                         disabled={currentPage === 1}
-                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation"
                                     >
                                         <ChevronLeft className="h-4 w-4" />
                                         Prev
@@ -450,7 +619,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 variant={currentPage === pageNum ? 'default' : 'outline'}
                                                 size="sm"
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-8 h-8 p-0 transition-all duration-300 hover:scale-105 ${
+                                                className={`w-8 h-8 p-0 transition-all duration-300 hover:scale-105 active:scale-95 ${
                                                     currentPage === pageNum
                                                         ? 'bg-yellow-300 hover:bg-yellow-400 text-gray-900'
                                                         : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
@@ -467,7 +636,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setCurrentPage(totalPages - 1)}
-                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95"
                                             >
                                                 {totalPages - 1}
                                             </Button>
@@ -475,7 +644,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setCurrentPage(totalPages)}
-                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95"
                                             >
                                                 {totalPages}
                                             </Button>
@@ -486,7 +655,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                         size="sm"
                                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                                         disabled={currentPage === totalPages}
-                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation"
                                     >
                                         Next
                                         <ChevronRight className="h-4 w-4" />
@@ -496,22 +665,56 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                         </div>
                     )}
                 </div>
+
+                {/* Mobile Bottom Navigation */}
+                <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 z-40">
+                    <div className="flex items-center justify-around">
+                        {mobileNavigationItems.filter(item => item.page !== 'favorites').slice(0, 5).map((item) => {
+                            const Icon = item.icon;
+                            const isActive = item.page === 'favorites';
+
+                            return (
+                                <Link key={item.href} href={item.href} className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200 active:scale-95">
+                                    {item.hasNotification ? (
+                                        <div className="relative">
+                                            <Icon className={`h-6 w-6 ${
+                                                isActive ? 'text-yellow-600' : 'text-gray-600'
+                                            }`} />
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                                <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Icon className={`h-6 w-6 ${
+                                            isActive ? 'text-yellow-600' : 'text-gray-600'
+                                        }`} />
+                                    )}
+                                    <span className={`text-xs ${
+                                        isActive ? 'font-semibold text-yellow-600' : 'text-gray-600'
+                                    }`}>
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
 
             {/* Remove Confirmation Dialog */}
             <Dialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
-                <DialogContent className="animate-in slide-in-from-bottom-4">
+                <DialogContent className="max-w-[95vw] max-h-[90vh] lg:max-w-md animate-in slide-in-from-bottom-4">
                     <DialogHeader>
                         <DialogTitle>Remove from Favorites</DialogTitle>
                         <DialogDescription>
                             Are you sure you want to remove "{favoriteToRemove?.name}" from your favorites? This action can be undone.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
+                    <DialogFooter className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                         <Button
                             variant="outline"
                             onClick={() => setRemoveDialogOpen(false)}
-                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation w-full sm:w-auto h-12 text-base"
                         >
                             Cancel
                         </Button>
@@ -519,7 +722,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                             variant="destructive"
                             onClick={handleRemoveConfirm}
                             disabled={isRemoving}
-                            className={`bg-red-600 hover:bg-red-700 transition-all duration-300 hover:scale-105 ${isRemoving ? 'btn-loading' : ''}`}
+                            className={`bg-red-600 hover:bg-red-700 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation w-full sm:w-auto h-12 text-base ${isRemoving ? 'btn-loading' : ''}`}
                         >
                             {isRemoving ? 'Removing...' : 'Remove from Favorites'}
                         </Button>

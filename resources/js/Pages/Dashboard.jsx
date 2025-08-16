@@ -396,9 +396,11 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         {/* Mobile Menu Header */}
                         <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
                             <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-lg">T</span>
-                                </div>
+                                <img
+                                    src="/logo/price-pulse-logo.png"
+                                    alt="Price Pulse"
+                                    className="w-8 h-8"
+                                />
                                 <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
                             </div>
                             <Button
@@ -496,9 +498,11 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             <Menu className="h-6 w-6" />
                         </Button>
                         <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">T</span>
-                            </div>
+                            <img
+                                src="/logo/price-pulse-logo.png"
+                                alt="Price Pulse"
+                                className="w-8 h-8"
+                            />
                             <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
                         </div>
                         <Button

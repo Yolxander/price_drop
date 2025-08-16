@@ -28,7 +28,13 @@ import {
     Menu,
     Settings,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    X,
+    Home,
+    Grid3X3,
+    Bell,
+    Heart,
+    LogOut
 } from 'lucide-react';
 
 export default function BookingsIndex({ auth, bookings, stats }) {
@@ -38,6 +44,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [bookingToDelete, setBookingToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         searchBar: false,
@@ -45,6 +52,48 @@ export default function BookingsIndex({ auth, bookings, stats }) {
         pagination: false
     });
     const itemsPerPage = 8;
+
+    // Mobile navigation items
+    const mobileNavigationItems = [
+        {
+            href: '/dashboard',
+            icon: Home,
+            label: 'Dashboard',
+            page: 'dashboard'
+        },
+        {
+            href: '/bookings',
+            icon: Grid3X3,
+            label: 'All Bookings',
+            page: 'bookings'
+        },
+        {
+            href: '/calendar',
+            icon: Calendar,
+            label: 'Calendar',
+            page: 'calendar'
+        },
+        {
+            href: '/price-alerts',
+            icon: Bell,
+            label: 'Price Pulses',
+            page: 'alerts',
+            hasNotification: true,
+            notificationCount: 2
+        },
+        {
+            href: '/favorites',
+            icon: Heart,
+            label: 'Favorites',
+            page: 'favorites'
+        },
+        {
+            href: '/settings',
+            icon: Settings,
+            label: 'Settings',
+            page: 'settings'
+        }
+    ];
 
     // Intersection Observer for animations
     useEffect(() => {
@@ -234,25 +283,139 @@ export default function BookingsIndex({ auth, bookings, stats }) {
     const currentProperties = filteredProperties.slice(startIndex, endIndex);
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Left Sidebar */}
-            <Sidebar activePage="bookings" />
+        <div className="flex h-screen bg-gray-50 overflow-hidden">
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 lg:hidden">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+                    <div className="fixed inset-y-0 left-0 flex w-80 flex-col bg-white border-r border-gray-200 animate-in slide-in-from-left duration-300">
+                        {/* Mobile Menu Header */}
+                        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <img
+                                    src="/logo/price-pulse-logo.png"
+                                    alt="Price Pulse"
+                                    className="w-8 h-8"
+                                />
+                                <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="h-8 w-8"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Mobile Navigation */}
+                        <nav className="flex-1 p-4 space-y-2">
+                            {mobileNavigationItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = item.page === 'bookings';
+
+                                return (
+                                    <Link key={item.href} href={item.href} className="block">
+                                        <div className={`flex items-center space-x-3 p-4 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 ${
+                                            isActive
+                                                ? 'bg-yellow-50 border border-yellow-200'
+                                                : 'hover:bg-gray-50 active:bg-gray-100'
+                                        }`}>
+                                            {item.hasNotification ? (
+                                                <div className="relative">
+                                                    <Icon className={`h-6 w-6 ${
+                                                        isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                    }`} />
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <Icon className={`h-6 w-6 ${
+                                                    isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                }`} />
+                                            )}
+                                            <span className={`text-lg ${
+                                                isActive
+                                                    ? 'font-semibold text-gray-900'
+                                                    : 'text-gray-700'
+                                            }`}>
+                                                {item.label}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Mobile User Profile */}
+                        <div className="p-4 border-t border-gray-200">
+                            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarFallback className="bg-yellow-500 text-white font-semibold">
+                                        {auth?.user?.name?.charAt(0) || 'U'}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                    <p className="font-semibold text-gray-900">{auth?.user?.name || 'User'}</p>
+                                    <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
+                                </div>
+                            </div>
+                            <Link href="/" className="block mt-3">
+                                <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
+                                    <LogOut className="h-5 w-5 text-gray-600" />
+                                    <span className="text-gray-700 font-medium">Log Out</span>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Sidebar - Hidden on mobile */}
+            <div className="hidden lg:block">
+                <Sidebar activePage="bookings" />
+            </div>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Head title="Bookings" />
 
+                {/* Mobile Header */}
+                <div className="lg:hidden bg-white border-b border-gray-200 p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="h-10 w-10 active:scale-95 transition-transform"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                        <div className="flex items-center space-x-3">
+                            <img
+                                src="/logo/price-pulse-logo.png"
+                                alt="Price Pulse"
+                                className="w-8 h-8"
+                            />
+                            <span className="text-xl font-bold text-yellow-600">Bookings</span>
+                        </div>
+                        <div className="w-10" /> {/* Spacer for centering */}
+                    </div>
+                </div>
+
                 {/* Header */}
                 <div
                     data-section="header"
-                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                    className={`bg-white border-b border-gray-200 p-4 lg:p-6 transition-all duration-1000 ease-out ${
                         isVisible.header
                             ? 'opacity-100 translate-y-0'
                             : 'opacity-0 translate-y-8'
                     }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className={`flex-1 max-w-md transition-all duration-1000 delay-200 ${
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                        <div className={`w-full lg:max-w-md transition-all duration-1000 delay-200 ${
                             isVisible.header
                                 ? 'opacity-100 translate-x-0'
                                 : 'opacity-0 -translate-x-8'
@@ -263,25 +426,25 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                     placeholder="Search bookings..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 transition-all duration-300 hover:shadow-md focus:shadow-lg form-input-focus"
+                                    className="pl-10 transition-all duration-300 hover:shadow-md focus:shadow-lg form-input-focus w-full h-12 text-base"
                                 />
                             </div>
                         </div>
-                        <div className={`flex items-center space-x-4 transition-all duration-1000 delay-400 ${
+                        <div className={`flex items-center justify-center lg:justify-end space-x-2 lg:space-x-4 transition-all duration-1000 delay-400 ${
                             isVisible.header
                                 ? 'opacity-100 translate-x-0'
                                 : 'opacity-0 translate-x-8'
                         }`}>
-                            <Button variant="outline" className="flex items-center space-x-2 transition-all duration-300 hover:scale-105">
+                            <Button variant="outline" className="flex items-center space-x-2 transition-all duration-300 hover:scale-105 active:scale-95 h-10">
                                 <Filter className="h-4 w-4" />
-                                <span>Filter</span>
+                                <span className="hidden sm:inline">Filter</span>
                             </Button>
                             <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                                 <Button
                                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                                     size="sm"
                                     onClick={() => setViewMode('grid')}
-                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105"
+                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105 active:scale-95"
                                 >
                                     <LayoutGrid className="h-4 w-4" />
                                 </Button>
@@ -289,7 +452,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                                     size="sm"
                                     onClick={() => setViewMode('list')}
-                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105"
+                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-105 active:scale-95"
                                 >
                                     <List className="h-4 w-4" />
                                 </Button>
@@ -302,10 +465,10 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                 <div className="flex-1 flex flex-col overflow-hidden">
                     {/* Properties Grid - Scrollable Content */}
                     <div
-                        className="flex-1 overflow-y-auto p-6"
+                        className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6"
                         data-section="bookingsGrid"
                     >
-                        <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}>
+                        <div className={`grid gap-4 lg:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}>
                             {currentProperties.map((property, index) => (
                                 <div
                                     key={property.id}
@@ -319,37 +482,37 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                         animationDelay: `${index * 100}ms`
                                     }}
                                 >
-                                    <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer hover:scale-[1.02] hover-lift">
+                                    <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer hover:scale-[1.02] active:scale-95 hover-lift touch-manipulation">
                                         <div className="relative image-hover">
                                             {property.image ? (
                                                 <img
                                                     src={property.image}
                                                     alt={property.name}
-                                                    className="w-full h-48 object-cover transition-transform duration-500"
+                                                    className="w-full h-40 lg:h-48 object-cover transition-transform duration-500"
                                                 />
                                             ) : (
-                                                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                                                <div className="w-full h-40 lg:h-48 bg-gray-200 flex items-center justify-center">
                                                     <span className="text-gray-500 text-sm">No image available</span>
                                                 </div>
                                             )}
                                             <div className="absolute top-3 left-3">
-                                                <Badge variant="default" className="bg-primary text-primary-foreground font-medium animate-pulse">
+                                                <Badge variant="default" className="bg-primary text-primary-foreground font-medium animate-pulse text-xs lg:text-sm">
                                                     ${property.price}
                                                 </Badge>
                                             </div>
                                             {property.status && (
                                                 <div className="absolute top-3 left-20">
-                                                    <Badge variant={getStatusBadgeVariant(property.status)}>
+                                                    <Badge variant={getStatusBadgeVariant(property.status)} className="text-xs">
                                                         {property.status}
                                                     </Badge>
                                                 </div>
                                             )}
                                         </div>
-                                        <CardContent className="p-6">
+                                        <CardContent className="p-4 lg:p-6">
                                             <Link href={`/bookings/${property.id}`} className="block">
                                                 <div className="space-y-3">
                                                     <div>
-                                                        <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 group-hover:text-yellow-600 transition-colors duration-300">
+                                                        <h3 className="font-semibold text-foreground text-base lg:text-lg leading-tight mb-1 group-hover:text-yellow-600 transition-colors duration-300">
                                                             {property.name}
                                                         </h3>
                                                         <div className="flex items-center text-sm text-muted-foreground">
@@ -358,18 +521,21 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                                         </div>
                                                     </div>
 
-                                                    <div className="grid grid-cols-3 gap-3 text-sm">
+                                                    <div className="grid grid-cols-3 gap-2 lg:gap-3 text-xs lg:text-sm">
                                                         <div className="flex items-center text-muted-foreground">
-                                                            <Bed className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                            <span>{property.beds} room{property.beds > 1 ? 's' : ''}</span>
+                                                            <Bed className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                                                            <span className="hidden sm:inline">{property.beds} room{property.beds > 1 ? 's' : ''}</span>
+                                                            <span className="sm:hidden">{property.beds}</span>
                                                         </div>
                                                         <div className="flex items-center text-muted-foreground">
-                                                            <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                            <span>{property.nights} night{property.nights > 1 ? 's' : ''}</span>
+                                                            <Calendar className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                                                            <span className="hidden sm:inline">{property.nights} night{property.nights > 1 ? 's' : ''}</span>
+                                                            <span className="sm:hidden">{property.nights}</span>
                                                         </div>
                                                         <div className="flex items-center text-muted-foreground">
-                                                            <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                            <span>{property.guests} guest{property.guests > 1 ? 's' : ''}</span>
+                                                            <MapPin className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                                                            <span className="hidden sm:inline">{property.guests} guest{property.guests > 1 ? 's' : ''}</span>
+                                                            <span className="sm:hidden">{property.guests}</span>
                                                         </div>
                                                     </div>
 
@@ -392,7 +558,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                                 <Button
                                                     variant="secondary"
                                                     size="sm"
-                                                    className="h-10 w-10 p-0 bg-white hover:bg-gray-50 shadow-lg border border-gray-300 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-xl"
+                                                    className="h-8 w-8 lg:h-10 lg:w-10 p-0 bg-white hover:bg-gray-50 shadow-lg border border-gray-300 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 hover:shadow-xl"
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.preventDefault();
@@ -400,7 +566,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                                         console.log('Dropdown button clicked!');
                                                     }}
                                                 >
-                                                    <MoreHorizontal className="h-5 w-5" />
+                                                    <MoreHorizontal className="h-4 w-4 lg:h-5 lg:w-5" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent
@@ -441,27 +607,27 @@ export default function BookingsIndex({ auth, bookings, stats }) {
 
                     {/* Pagination - Fixed at Bottom */}
                     <div
-                        className="bg-white border-t border-gray-200 p-6"
+                        className="bg-white border-t border-gray-200 p-4 lg:p-6"
                         data-section="pagination"
                     >
-                        <div className={`flex items-center justify-between transition-all duration-1000 delay-300 ${
+                        <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 transition-all duration-1000 delay-300 ${
                             isVisible.pagination
                                 ? 'opacity-100 translate-y-0'
                                 : 'opacity-0 translate-y-8'
                         }`}>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-gray-600 text-center lg:text-left">
                                 Showing {startIndex + 1} to {Math.min(endIndex, filteredProperties.length)} of {filteredProperties.length} entries
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center justify-center lg:justify-end space-x-2">
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                                     disabled={currentPage === 1}
-                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 h-8 lg:h-9"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
-                                    Prev
+                                    <span className="hidden sm:inline">Prev</span>
                                 </Button>
                                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                     const pageNum = i + 1;
@@ -471,7 +637,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             variant={currentPage === pageNum ? 'default' : 'outline'}
                                             size="sm"
                                             onClick={() => setCurrentPage(pageNum)}
-                                            className={`w-8 h-8 p-0 transition-all duration-300 hover:scale-105 ${
+                                            className={`w-8 h-8 lg:w-9 lg:h-9 p-0 transition-all duration-300 hover:scale-105 active:scale-95 ${
                                                 currentPage === pageNum
                                                     ? 'bg-yellow-300 hover:bg-yellow-400 text-gray-900'
                                                     : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
@@ -483,12 +649,12 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                 })}
                                 {totalPages > 5 && (
                                     <>
-                                        <span className="text-gray-500">...</span>
+                                        <span className="text-gray-500 hidden lg:inline">...</span>
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => setCurrentPage(totalPages - 1)}
-                                            className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                                            className="w-8 h-8 lg:w-9 lg:h-9 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 hidden lg:flex"
                                         >
                                             {totalPages - 1}
                                         </Button>
@@ -496,7 +662,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => setCurrentPage(totalPages)}
-                                            className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                                            className="w-8 h-8 lg:w-9 lg:h-9 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 hidden lg:flex"
                                         >
                                             {totalPages}
                                         </Button>
@@ -507,9 +673,9 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                     size="sm"
                                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 h-8 lg:h-9"
                                 >
-                                    Next
+                                    <span className="hidden sm:inline">Next</span>
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -520,25 +686,25 @@ export default function BookingsIndex({ auth, bookings, stats }) {
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <DialogContent className="animate-in slide-in-from-bottom-4 duration-300">
+                <DialogContent className="animate-in slide-in-from-bottom-4 duration-300 max-w-[95vw] sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Delete Booking</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="text-lg lg:text-xl">Delete Booking</DialogTitle>
+                        <DialogDescription className="text-sm lg:text-base">
                             Are you sure you want to delete "{bookingToDelete?.name}"? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
                         <Button
                             variant="outline"
                             onClick={() => setDeleteDialogOpen(false)}
-                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105"
+                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 w-full sm:w-auto h-12 text-base"
                         >
                             Cancel
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleDeleteConfirm}
-                            className={`bg-red-600 hover:bg-red-700 transition-all duration-300 hover:scale-105 ${isDeleting ? 'btn-loading' : ''}`}
+                            className={`bg-red-600 hover:bg-red-700 transition-all duration-300 hover:scale-105 active:scale-95 w-full sm:w-auto h-12 text-base ${isDeleting ? 'btn-loading' : ''}`}
                             disabled={isDeleting}
                         >
                             {isDeleting ? 'Deleting...' : 'Delete Booking'}
@@ -549,6 +715,42 @@ export default function BookingsIndex({ auth, bookings, stats }) {
 
             {/* Toaster for notifications */}
             <Toaster />
+
+            {/* Mobile Bottom Navigation */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 shadow-lg">
+                <div className="flex items-center justify-around py-3">
+                    {mobileNavigationItems.slice(0, 4).map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.page === 'bookings';
+
+                        return (
+                            <Link key={item.href} href={item.href} className="flex flex-col items-center p-2 active:scale-95 transition-transform">
+                                <div className="relative">
+                                    {item.hasNotification ? (
+                                        <div className="relative">
+                                            <Icon className={`h-6 w-6 ${
+                                                isActive ? 'text-yellow-600' : 'text-gray-600'
+                                            }`} />
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                                <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Icon className={`h-6 w-6 ${
+                                            isActive ? 'text-yellow-600' : 'text-gray-600'
+                                        }`} />
+                                    )}
+                                </div>
+                                <span className={`text-xs mt-1 ${
+                                    isActive ? 'font-semibold text-yellow-600' : 'text-gray-600'
+                                }`}>
+                                    {item.label}
+                                </span>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
     );
 }

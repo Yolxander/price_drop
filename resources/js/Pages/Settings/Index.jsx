@@ -29,12 +29,22 @@ import {
     Zap,
     Download,
     Upload,
-    Search
+    Search,
+    Menu,
+    X,
+    Home,
+    Grid3X3,
+    Calendar as CalendarIcon,
+    Heart,
+    Bell,
+    Settings as SettingsIcon,
+    LogOut
 } from 'lucide-react';
 
 export default function SettingsIndex({ auth, settings, stats }) {
     const [activeTab, setActiveTab] = useState('providers');
     const [isSaving, setIsSaving] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         searchBar: false,
@@ -50,6 +60,48 @@ export default function SettingsIndex({ auth, settings, stats }) {
         check_frequency: settings.check_frequency,
         currency: settings.currency
     });
+
+    // Mobile navigation items
+    const mobileNavigationItems = [
+        {
+            href: '/dashboard',
+            icon: Home,
+            label: 'Dashboard',
+            page: 'dashboard'
+        },
+        {
+            href: '/bookings',
+            icon: Grid3X3,
+            label: 'All Bookings',
+            page: 'bookings'
+        },
+        {
+            href: '/calendar',
+            icon: CalendarIcon,
+            label: 'Calendar',
+            page: 'calendar'
+        },
+        {
+            href: '/price-alerts',
+            icon: Bell,
+            label: 'Price Pulses',
+            page: 'alerts',
+            hasNotification: true,
+            notificationCount: 2
+        },
+        {
+            href: '/favorites',
+            icon: Heart,
+            label: 'Favorites',
+            page: 'favorites'
+        },
+        {
+            href: '/settings',
+            icon: SettingsIcon,
+            label: 'Settings',
+            page: 'settings'
+        }
+    ];
 
     // Intersection Observer for scroll-triggered animations
     useEffect(() => {
@@ -155,37 +207,155 @@ export default function SettingsIndex({ auth, settings, stats }) {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Left Sidebar */}
-            <Sidebar activePage="settings" />
+        <div className="flex h-screen bg-gray-50 overflow-hidden">
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 lg:hidden">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => {
+                        setIsMobileMenuOpen(false);
+                    }} />
+                    <div className="mobile-menu-container fixed inset-y-0 left-0 flex w-80 flex-col bg-white border-r border-gray-200 animate-in slide-in-from-left duration-300">
+                        {/* Mobile Menu Header */}
+                        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <img
+                                    src="/logo/price-pulse-logo.png"
+                                    alt="Price Pulse"
+                                    className="w-8 h-8"
+                                />
+                                <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="h-8 w-8"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Mobile Navigation */}
+                        <nav className="flex-1 p-4 space-y-2">
+                            {mobileNavigationItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = item.page === 'settings';
+
+                                return (
+                                    <Link key={item.href} href={item.href} className="block">
+                                        <div className={`flex items-center space-x-3 p-4 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 ${
+                                            isActive
+                                                ? 'bg-yellow-50 border border-yellow-200'
+                                                : 'hover:bg-gray-50 active:bg-gray-100'
+                                        }`}>
+                                            {item.hasNotification ? (
+                                                <div className="relative">
+                                                    <Icon className={`h-6 w-6 ${
+                                                        isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                    }`} />
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <Icon className={`h-6 w-6 ${
+                                                    isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                }`} />
+                                            )}
+                                            <span className={`text-lg ${
+                                                isActive
+                                                    ? 'font-semibold text-gray-900'
+                                                    : 'text-gray-700'
+                                            }`}>
+                                                {item.label}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Mobile User Profile */}
+                        <div className="p-4 border-t border-gray-200">
+                            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
+                                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-semibold text-lg">
+                                        {auth?.user?.name?.charAt(0) || 'U'}
+                                    </span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold text-gray-900">{auth?.user?.name || 'User'}</p>
+                                    <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
+                                </div>
+                            </div>
+                            <Link href="/" className="block mt-3">
+                                <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
+                                    <LogOut className="h-5 w-5 text-gray-600" />
+                                    <span className="text-gray-700 font-medium">Log Out</span>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Sidebar - Hidden on mobile */}
+            <div className="hidden lg:block">
+                <Sidebar activePage="settings" />
+            </div>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Head title="Settings" />
 
+                {/* Mobile Header */}
+                <div className="lg:hidden bg-white border-b border-gray-200 p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="h-10 w-10 active:scale-95 transition-transform"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                        <div className="flex items-center space-x-3">
+                            <img
+                                src="/logo/price-pulse-logo.png"
+                                alt="Price Pulse"
+                                className="w-8 h-8"
+                            />
+                            <span className="text-xl font-bold text-yellow-600">Settings</span>
+                        </div>
+                        <div className="w-10" /> {/* Spacer for centering */}
+                    </div>
+                </div>
+
                 {/* Header */}
                 <div
                     data-section="header"
-                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                    className={`bg-white border-b border-gray-200 p-4 lg:p-6 transition-all duration-1000 ease-out ${
                         isVisible.header
                             ? 'opacity-100 translate-y-0'
                             : 'opacity-0 translate-y-8'
                     }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="flex-1 max-w-md">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                        <div className="w-full lg:max-w-md">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
                                     placeholder="Search settings..."
-                                    className="pl-10 form-input-focus transition-all duration-300"
+                                    className="pl-10 form-input-focus transition-all duration-300 w-full h-12 text-base"
                                 />
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end space-y-3 sm:space-y-0 sm:space-x-4">
                             <Button
                                 variant="outline"
-                                className="flex items-center space-x-2 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                className="flex items-center space-x-2 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto"
                             >
                                 <RefreshCw className="h-4 w-4" />
                                 <span>Refresh</span>
@@ -193,7 +363,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                             <Button
                                 onClick={handleSaveChanges}
                                 disabled={isSaving}
-                                className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg ${isSaving ? 'btn-loading' : ''}`}
+                                className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 touch-manipulation w-full sm:w-auto h-12 text-base ${isSaving ? 'btn-loading' : ''}`}
                             >
                                 <Save className="h-4 w-4 mr-2" />
                                 {isSaving ? 'Saving...' : 'Save Changes'}
@@ -203,12 +373,12 @@ export default function SettingsIndex({ auth, settings, stats }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-auto p-6">
+                <div className="flex-1 overflow-auto p-4 lg:p-6 pb-20 lg:pb-6">
                     <div className="max-w-6xl mx-auto">
                         {/* Settings Tabs */}
                         <Card
                             data-section="settingsTabs"
-                            className={`h-full transition-all duration-1000 ease-out ${
+                            className={`h-full transition-all duration-1000 ease-out active:scale-95 touch-manipulation ${
                                 isVisible.settingsTabs
                                     ? 'opacity-100 translate-y-0'
                                     : 'opacity-0 translate-y-8'
@@ -222,39 +392,83 @@ export default function SettingsIndex({ auth, settings, stats }) {
                             </CardHeader>
                             <CardContent>
                                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                    <TabsList className="grid w-full grid-cols-4">
+                                    <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 p-1 bg-gray-100 rounded-xl">
                                         <TabsTrigger
                                             value="providers"
-                                            className="flex items-center space-x-2 transition-all duration-300 hover:scale-105"
+                                            className={`flex flex-col items-center space-y-2 p-4 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-2 data-[state=active]:border-yellow-200 ${
+                                                activeTab === 'providers'
+                                                    ? 'bg-white shadow-md border-2 border-yellow-200 text-yellow-700'
+                                                    : 'hover:bg-gray-50 text-gray-600'
+                                            }`}
                                         >
-                                            <Building2 className="h-4 w-4" />
-                                            <span>Providers</span>
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                                                activeTab === 'providers'
+                                                    ? 'bg-yellow-100 text-yellow-600'
+                                                    : 'bg-gray-100 text-gray-500'
+                                            }`}>
+                                                <Building2 className="h-5 w-5" />
+                                            </div>
+                                            <span className="text-xs font-medium hidden sm:block">Providers</span>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="alerts"
-                                            className="flex items-center space-x-2 transition-all duration-300 hover:scale-105"
+                                            className={`flex flex-col items-center space-y-2 p-4 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-2 data-[state=active]:border-yellow-200 ${
+                                                activeTab === 'alerts'
+                                                    ? 'bg-white shadow-md border-2 border-yellow-200 text-yellow-700'
+                                                    : 'hover:bg-gray-50 text-gray-600'
+                                            }`}
                                         >
-                                            <BellIcon className="h-4 w-4" />
-                                            <span>Alerts</span>
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                                                activeTab === 'alerts'
+                                                    ? 'bg-yellow-100 text-yellow-600'
+                                                    : 'bg-gray-100 text-gray-500'
+                                            }`}>
+                                                <BellIcon className="h-5 w-5" />
+                                            </div>
+                                            <span className="text-xs font-medium hidden sm:block">Alerts</span>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="data"
-                                            className="flex items-center space-x-2 transition-all duration-300 hover:scale-105"
+                                            className={`flex flex-col items-center space-y-2 p-4 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-2 data-[state=active]:border-yellow-200 ${
+                                                activeTab === 'data'
+                                                    ? 'bg-white shadow-md border-2 border-yellow-200 text-yellow-700'
+                                                    : 'hover:bg-gray-50 text-gray-600'
+                                            }`}
                                         >
-                                            <Database className="h-4 w-4" />
-                                            <span>Data</span>
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                                                activeTab === 'data'
+                                                    ? 'bg-yellow-100 text-yellow-600'
+                                                    : 'bg-gray-100 text-gray-500'
+                                            }`}>
+                                                <Database className="h-5 w-5" />
+                                            </div>
+                                            <span className="text-xs font-medium hidden sm:block">Data</span>
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="security"
-                                            className="flex items-center space-x-2 transition-all duration-300 hover:scale-105"
+                                            className={`flex flex-col items-center space-y-2 p-4 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-2 data-[state=active]:border-yellow-200 ${
+                                                activeTab === 'security'
+                                                    ? 'bg-white shadow-md border-2 border-yellow-200 text-yellow-700'
+                                                    : 'hover:bg-gray-50 text-gray-600'
+                                            }`}
                                         >
-                                            <Shield className="h-4 w-4" />
-                                            <span>Security</span>
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                                                activeTab === 'security'
+                                                    ? 'bg-yellow-100 text-yellow-600'
+                                                    : 'bg-gray-100 text-gray-500'
+                                            }`}>
+                                                <Shield className="h-5 w-5" />
+                                            </div>
+                                            <span className="text-xs font-medium hidden sm:block">Security</span>
                                         </TabsTrigger>
                                     </TabsList>
 
                                     {/* Providers Tab */}
-                                    <TabsContent value="providers" className="space-y-6 mt-6">
+                                    <TabsContent value="providers" className="space-y-4 lg:space-y-6 mt-6 lg:mt-8">
+                                        <div className="mb-6">
+                                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Provider Integrations</h2>
+                                            <p className="text-gray-600">Manage your hotel booking provider connections and API settings</p>
+                                        </div>
                                         <div
                                             data-section="providersSection"
                                             className={`space-y-4 transition-all duration-1000 ease-out ${
@@ -266,19 +480,19 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                             {Object.entries(formData.providers).map(([key, provider], index) => (
                                                 <Card
                                                     key={key}
-                                                    className="border-l-4 border-l-yellow-500 transition-all duration-500 ease-out hover-lift"
+                                                    className="border-l-4 border-l-yellow-500 transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation"
                                                     style={{ transitionDelay: `${index * 100}ms` }}
                                                 >
-                                                    <CardContent className="p-6">
-                                                        <div className="flex items-center justify-between">
+                                                    <CardContent className="p-4 lg:p-6">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                                                             <div className="flex items-center space-x-4">
-                                                                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110">
+                                                                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
                                                                     <Building2 className="h-6 w-6 text-yellow-600" />
                                                                 </div>
                                                                 <div>
                                                                     <h3 className="font-semibold text-gray-900">{provider.name}</h3>
-                                                                    <div className="flex items-center space-x-2 mt-1">
-                                                                        <Badge className={`${getProviderStatusColor(provider)} transition-all duration-300 hover:scale-105`}>
+                                                                    <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mt-1">
+                                                                        <Badge className={`${getProviderStatusColor(provider)} transition-all duration-300 hover:scale-105 active:scale-95`}>
                                                                             {getProviderStatusText(provider)}
                                                                         </Badge>
                                                                         {provider.last_updated && (
@@ -303,20 +517,24 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     </TabsContent>
 
                                     {/* Alerts Tab */}
-                                    <TabsContent value="alerts" className="space-y-6 mt-6">
+                                    <TabsContent value="alerts" className="space-y-4 lg:space-y-6 mt-6 lg:mt-8">
+                                        <div className="mb-6">
+                                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Alert Configuration</h2>
+                                            <p className="text-gray-600">Configure price pulse alerts, notifications, and delivery preferences</p>
+                                        </div>
                                         <div
                                             data-section="alertsSection"
-                                            className={`grid grid-cols-1 lg:grid-cols-3 gap-6 transition-all duration-1000 ease-out ${
+                                            className={`grid grid-cols-1 gap-4 lg:gap-6 transition-all duration-1000 ease-out ${
                                                 isVisible.alertsSection
                                                     ? 'opacity-100 translate-y-0'
                                                     : 'opacity-0 translate-y-8'
                                             }`}
                                         >
                                             {/* Price Alert Rules */}
-                                            <Card className="lg:col-span-2 border-l-4 border-l-yellow-500 transition-all duration-500 ease-out hover-lift">
+                                            <Card className="border-l-4 border-l-yellow-500 transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
                                                 <CardHeader className="pb-4">
-                                                    <CardTitle className="flex items-center space-x-3 text-lg">
-                                                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110">
+                                                    <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
                                                             <DollarSign className="h-5 w-5 text-yellow-600" />
                                                         </div>
                                                         <div>
@@ -325,8 +543,8 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                         </div>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-6">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <CardContent className="space-y-4 lg:space-y-6">
+                                                    <div className="grid grid-cols-1 gap-4">
                                                         <div className="space-y-2">
                                                             <Label htmlFor="global-threshold" className="text-sm font-medium">Global Threshold ($)</Label>
                                                             <Input
@@ -335,7 +553,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                 value={formData.alert_rules.global_threshold}
                                                                 onChange={(e) => handleAlertRuleChange('global_threshold', parseFloat(e.target.value))}
                                                                 placeholder="50.00"
-                                                                className="h-10 form-input-focus transition-all duration-300"
+                                                                className="h-12 form-input-focus transition-all duration-300 text-base"
                                                             />
                                                         </div>
                                                         <div className="space-y-2">
@@ -346,13 +564,13 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                 value={formData.alert_rules.global_percentage}
                                                                 onChange={(e) => handleAlertRuleChange('global_percentage', parseFloat(e.target.value))}
                                                                 placeholder="5.0"
-                                                                className="h-10 form-input-focus transition-all duration-300"
+                                                                className="h-12 form-input-focus transition-all duration-300 text-base"
                                                             />
                                                         </div>
                                                     </div>
                                                     <div className="space-y-3">
                                                         <Label className="text-sm font-medium">Quiet Hours</Label>
-                                                        <div className="grid grid-cols-2 gap-4">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <div className="space-y-2">
                                                                 <Label htmlFor="quiet-start" className="text-xs text-gray-500">Start Time</Label>
                                                                 <Input
@@ -360,7 +578,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                     type="time"
                                                                     value={formData.alert_rules.quiet_hours_start}
                                                                     onChange={(e) => handleAlertRuleChange('quiet_hours_start', e.target.value)}
-                                                                    className="h-10 form-input-focus transition-all duration-300"
+                                                                    className="h-12 form-input-focus transition-all duration-300 text-base"
                                                                 />
                                                             </div>
                                                             <div className="space-y-2">
@@ -370,7 +588,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                     type="time"
                                                                     value={formData.alert_rules.quiet_hours_end}
                                                                     onChange={(e) => handleAlertRuleChange('quiet_hours_end', e.target.value)}
-                                                                    className="h-10 form-input-focus transition-all duration-300"
+                                                                    className="h-12 form-input-focus transition-all duration-300 text-base"
                                                                 />
                                                             </div>
                                                         </div>
@@ -379,10 +597,10 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                             </Card>
 
                                             {/* Notifications */}
-                                            <Card className="border-l-4 border-l-green-500 transition-all duration-500 ease-out hover-lift">
+                                            <Card className="border-l-4 border-l-green-500 transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
                                                 <CardHeader className="pb-4">
-                                                    <CardTitle className="flex items-center space-x-3 text-lg">
-                                                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110">
+                                                    <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
                                                             <BellIcon className="h-5 w-5 text-green-600" />
                                                         </div>
                                                         <div>
@@ -391,7 +609,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                         </div>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-6">
+                                                <CardContent className="space-y-4 lg:space-y-6">
                                                     <div className="space-y-4">
                                                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                                             <div className="space-y-1">
@@ -412,7 +630,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             value={formData.alert_rules.webhook_url}
                                                             onChange={(e) => handleAlertRuleChange('webhook_url', e.target.value)}
                                                             placeholder="https://hooks.slack.com/..."
-                                                            className="h-10 form-input-focus transition-all duration-300"
+                                                            className="h-12 form-input-focus transition-all duration-300 text-base"
                                                         />
                                                     </div>
                                                     <div className="space-y-3">
@@ -422,7 +640,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             value={formData.alert_rules.slack_channel}
                                                             onChange={(e) => handleAlertRuleChange('slack_channel', e.target.value)}
                                                             placeholder="#hotel-alerts"
-                                                            className="h-10 form-input-focus transition-all duration-300"
+                                                            className="h-12 form-input-focus transition-all duration-300 text-base"
                                                         />
                                                     </div>
                                                 </CardContent>
@@ -431,20 +649,24 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     </TabsContent>
 
                                     {/* Data Tab */}
-                                    <TabsContent value="data" className="space-y-6 mt-6">
+                                    <TabsContent value="data" className="space-y-4 lg:space-y-6 mt-6 lg:mt-8">
+                                        <div className="mb-6">
+                                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Data Management</h2>
+                                            <p className="text-gray-600">Manage data retention, export settings, and currency preferences</p>
+                                        </div>
                                         <div
                                             data-section="dataSection"
-                                            className={`grid grid-cols-1 lg:grid-cols-3 gap-6 transition-all duration-1000 ease-out ${
+                                            className={`grid grid-cols-1 gap-4 lg:gap-6 transition-all duration-1000 ease-out ${
                                                 isVisible.dataSection
                                                     ? 'opacity-100 translate-y-0'
                                                     : 'opacity-0 translate-y-8'
                                             }`}
                                         >
                                             {/* Data Retention */}
-                                            <Card className="lg:col-span-2 border-l-4 border-l-purple-500 transition-all duration-500 ease-out hover-lift">
+                                            <Card className="border-l-4 border-l-purple-500 transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
                                                 <CardHeader className="pb-4">
-                                                    <CardTitle className="flex items-center space-x-3 text-lg">
-                                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110">
+                                                    <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
                                                             <Database className="h-5 w-5 text-purple-600" />
                                                         </div>
                                                         <div>
@@ -453,8 +675,8 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                         </div>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-6">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <CardContent className="space-y-4 lg:space-y-6">
+                                                    <div className="grid grid-cols-1 gap-4">
                                                         <div className="space-y-2">
                                                             <Label htmlFor="retention-window" className="text-sm font-medium">Retention Window (days)</Label>
                                                             <Input
@@ -462,13 +684,13 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                 type="number"
                                                                 value={settings.data_retention.retention_window}
                                                                 placeholder="90"
-                                                                className="h-10 form-input-focus transition-all duration-300"
+                                                                className="h-12 form-input-focus transition-all duration-300 text-base"
                                                             />
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label htmlFor="export-frequency" className="text-sm font-medium">Export Frequency</Label>
                                                             <Select value={settings.data_retention.export_frequency}>
-                                                                <SelectTrigger className="h-10 form-input-focus transition-all duration-300">
+                                                                <SelectTrigger className="h-12 form-input-focus transition-all duration-300 text-base">
                                                                     <SelectValue />
                                                                 </SelectTrigger>
                                                                 <SelectContent>
@@ -495,10 +717,10 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                             </Card>
 
                                             {/* Currency Settings */}
-                                            <Card className="border-l-4 border-l-orange-500 transition-all duration-500 ease-out hover-lift">
+                                            <Card className="border-l-4 border-l-orange-500 transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
                                                 <CardHeader className="pb-4">
-                                                    <CardTitle className="flex items-center space-x-3 text-lg">
-                                                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110">
+                                                    <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
                                                             <Globe className="h-5 w-5 text-orange-600" />
                                                         </div>
                                                         <div>
@@ -507,11 +729,11 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                         </div>
                                                     </CardTitle>
                                                 </CardHeader>
-                                                <CardContent className="space-y-6">
+                                                <CardContent className="space-y-4 lg:space-y-6">
                                                     <div className="space-y-3">
                                                         <Label htmlFor="default-currency" className="text-sm font-medium">Default Currency</Label>
                                                         <Select value={settings.currency.default_currency}>
-                                                            <SelectTrigger className="h-10 form-input-focus transition-all duration-300">
+                                                            <SelectTrigger className="h-12 form-input-focus transition-all duration-300 text-base">
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent>
@@ -541,20 +763,24 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     </TabsContent>
 
                                     {/* Security Tab */}
-                                    <TabsContent value="security" className="space-y-6 mt-6">
+                                    <TabsContent value="security" className="space-y-4 lg:space-y-6 mt-6 lg:mt-8">
+                                        <div className="mb-6">
+                                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Security Settings</h2>
+                                            <p className="text-gray-600">Manage password, two-factor authentication, and active sessions</p>
+                                        </div>
                                         <div
                                             data-section="securitySection"
-                                            className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-1000 ease-out ${
+                                            className={`grid grid-cols-1 gap-4 lg:gap-6 transition-all duration-1000 ease-out ${
                                                 isVisible.securitySection
                                                     ? 'opacity-100 translate-y-0'
                                                     : 'opacity-0 translate-y-8'
                                             }`}
                                         >
                                             {/* Password Management */}
-                                            <Card className="border-l-4 border-l-red-500 transition-all duration-500 ease-out hover-lift">
+                                            <Card className="border-l-4 border-l-red-500 transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
                                                 <CardHeader className="pb-4">
-                                                    <CardTitle className="flex items-center space-x-3 text-lg">
-                                                        <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110">
+                                                    <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
                                                             <Shield className="h-5 w-5 text-red-600" />
                                                         </div>
                                                         <div>
@@ -570,7 +796,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             id="current-password"
                                                             type="password"
                                                             placeholder="Enter current password"
-                                                            className="h-10 form-input-focus transition-all duration-300"
+                                                            className="h-12 form-input-focus transition-all duration-300 text-base"
                                                         />
                                                     </div>
                                                     <div className="space-y-3">
@@ -579,7 +805,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             id="new-password"
                                                             type="password"
                                                             placeholder="Enter new password"
-                                                            className="h-10 form-input-focus transition-all duration-300"
+                                                            className="h-12 form-input-focus transition-all duration-300 text-base"
                                                         />
                                                     </div>
                                                     <div className="space-y-3">
@@ -588,10 +814,10 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             id="confirm-password"
                                                             type="password"
                                                             placeholder="Confirm new password"
-                                                            className="h-10 form-input-focus transition-all duration-300"
+                                                            className="h-12 form-input-focus transition-all duration-300 text-base"
                                                         />
                                                     </div>
-                                                    <Button className="w-full h-10 bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                                                    <Button className="w-full h-12 bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 touch-manipulation text-base">
                                                         <Shield className="h-4 w-4 mr-2" />
                                                         Update Password
                                                     </Button>
@@ -599,10 +825,10 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                             </Card>
 
                                             {/* Two-Factor Authentication */}
-                                            <Card className="border-l-4 border-l-indigo-500 transition-all duration-500 ease-out hover-lift">
+                                            <Card className="border-l-4 border-l-indigo-500 transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
                                                 <CardHeader className="pb-4">
-                                                    <CardTitle className="flex items-center space-x-3 text-lg">
-                                                        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110">
+                                                    <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-lg">
+                                                        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
                                                             <Shield className="h-5 w-5 text-indigo-600" />
                                                         </div>
                                                         <div>
@@ -612,12 +838,12 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                     </CardTitle>
                                                 </CardHeader>
                                                 <CardContent className="space-y-4">
-                                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg space-y-3 sm:space-y-0">
                                                         <div className="space-y-1">
                                                             <p className="font-medium text-gray-900">Enable 2FA</p>
                                                             <p className="text-sm text-gray-500">Protect your account with two-factor authentication</p>
                                                         </div>
-                                                        <Button variant="outline" className="h-10 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md">
+                                                        <Button variant="outline" className="h-12 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation w-full sm:w-auto text-base">
                                                             <Shield className="h-4 w-4 mr-2" />
                                                             Setup 2FA
                                                         </Button>
@@ -627,10 +853,10 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                         </div>
 
                                         {/* Active Sessions */}
-                                        <Card className="border-l-4 border-l-yellow-500 transition-all duration-500 ease-out hover-lift">
+                                        <Card className="border-l-4 border-l-yellow-500 transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation">
                                             <CardHeader className="pb-4">
-                                                <CardTitle className="flex items-center space-x-3 text-lg">
-                                                    <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110">
+                                                <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-lg">
+                                                    <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95">
                                                         <Clock className="h-5 w-5 text-yellow-600" />
                                                     </div>
                                                     <div>
@@ -641,7 +867,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                             </CardHeader>
                                             <CardContent>
                                                 <div className="space-y-3">
-                                                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-green-50">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-200 rounded-lg bg-green-50 space-y-3 sm:space-y-0">
                                                         <div className="flex items-center space-x-3">
                                                             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                                                             <div>
@@ -649,9 +875,9 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                 <p className="text-sm text-gray-500">macOS • Chrome • San Francisco, CA</p>
                                                             </div>
                                                         </div>
-                                                        <Badge variant="default" className="bg-green-100 text-green-800 transition-all duration-300 hover:scale-105">Active</Badge>
+                                                        <Badge variant="default" className="bg-green-100 text-green-800 transition-all duration-300 hover:scale-105 active:scale-95">Active</Badge>
                                                     </div>
-                                                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-200 rounded-lg space-y-3 sm:space-y-0">
                                                         <div className="flex items-center space-x-3">
                                                             <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
                                                             <div>
@@ -659,7 +885,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                 <p className="text-sm text-gray-500">Windows • Firefox • New York, NY</p>
                                                             </div>
                                                         </div>
-                                                        <Button variant="outline" size="sm" className="h-8 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md">
+                                                        <Button variant="outline" size="sm" className="h-10 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation w-full sm:w-auto">
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     </div>
@@ -670,6 +896,40 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                 </Tabs>
                             </CardContent>
                         </Card>
+                    </div>
+                </div>
+
+                {/* Mobile Bottom Navigation */}
+                <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 z-40">
+                    <div className="flex items-center justify-around">
+                        {mobileNavigationItems.filter(item => item.page !== 'settings' && item.page !== 'favorites').slice(0, 5).map((item) => {
+                            const Icon = item.icon;
+                            const isActive = item.page === 'settings';
+
+                            return (
+                                <Link key={item.href} href={item.href} className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200 active:scale-95">
+                                    {item.hasNotification ? (
+                                        <div className="relative">
+                                            <Icon className={`h-6 w-6 ${
+                                                isActive ? 'text-yellow-600' : 'text-gray-600'
+                                            }`} />
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                                <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Icon className={`h-6 w-6 ${
+                                            isActive ? 'text-yellow-600' : 'text-gray-600'
+                                        }`} />
+                                    )}
+                                    <span className={`text-xs ${
+                                        isActive ? 'font-semibold text-yellow-600' : 'text-gray-600'
+                                    }`}>
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
