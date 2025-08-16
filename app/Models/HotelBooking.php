@@ -73,6 +73,11 @@ class HotelBooking extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function priceAlerts()
+    {
+        return $this->hasMany(PriceAlert::class);
+    }
+
     /**
      * Get enriched hotel data for display
      */

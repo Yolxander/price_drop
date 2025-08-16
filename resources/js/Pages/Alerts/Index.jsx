@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Sidebar from '@/components/ui/sidebar';
 import {
     TrendingDown,
@@ -23,12 +27,69 @@ import {
     Building2,
     Star,
     Search,
-    Bell
+    Bell,
+    Settings,
+    Save,
+    Loader2
 } from 'lucide-react';
 
 export default function AlertsIndex({ auth, alerts, stats }) {
     const [statusFilter, setStatusFilter] = useState('all');
     const [severityFilter, setSeverityFilter] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+    const [alertSettings, setAlertSettings] = useState({
+        min_price_drop_amount: 10.00,
+        min_price_drop_percent: 5.00,
+        email_notifications: true,
+        push_notifications: true,
+        sms_notifications: false,
+        notification_frequency: 'immediate',
+        quiet_hours_start: null,
+        quiet_hours_end: null,
+        excluded_providers: [],
+        included_locations: []
+    });
+
+    useEffect(() => {
+        loadAlertSettings();
+    }, []);
+
+    const loadAlertSettings = async () => {
+        try {
+            const response = await fetch('/price-alerts/settings');
+            const data = await response.json();
+            if (data.success) {
+                setAlertSettings(data.settings);
+            }
+        } catch (error) {
+            console.error('Error loading alert settings:', error);
+        }
+    };
+
+    const saveAlertSettings = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('/price-alerts/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify(alertSettings)
+            });
+            const data = await response.json();
+            if (data.success) {
+                setShowSettings(false);
+                // Show success message
+            }
+        } catch (error) {
+            console.error('Error saving alert settings:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const formatCurrency = (amount, currency) => {
         return new Intl.NumberFormat('en-US', {
@@ -97,17 +158,94 @@ export default function AlertsIndex({ auth, alerts, stats }) {
         }
     };
 
+    const handleAlertAction = async (alertId, action) => {
+        setIsLoading(true);
+        try {
+            let endpoint = '';
+            if (action === 'action') {
+                endpoint = `/price-alerts/${alertId}/action`;
+            } else if (action === 'dismiss') {
+                endpoint = `/price-alerts/${alertId}/dismiss`;
+            }
+
+            const response = await fetch(endpoint, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            if (response.ok) {
+                // Refresh the page to show updated data
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error(`Error ${action} alert:`, error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('/price-alerts/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            if (response.ok) {
+                // Refresh the page to show updated data
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleCheckPrices = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('/price-alerts/check-prices', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Show success message and refresh the page
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error checking prices:', error);
+            alert('Error checking prices. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const filteredAlerts = alerts?.filter(alert => {
         const matchesStatus = statusFilter === 'all' || alert.status === statusFilter;
         const matchesSeverity = severityFilter === 'all' || alert.severity === severityFilter;
+        const matchesSearch = !searchQuery ||
+            alert.hotel_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            alert.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            alert.provider.toLowerCase().includes(searchQuery.toLowerCase());
 
-        return matchesStatus && matchesSeverity;
+        return matchesStatus && matchesSeverity && matchesSearch;
     }) || [];
-
-    const handleAlertAction = (alertId, action) => {
-        // TODO: Implement alert actions
-        console.log(`Alert ${alertId}: ${action}`);
-    };
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -125,6 +263,8 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                 <Input
                                     placeholder="Search alerts..."
                                     className="pl-10"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -173,14 +313,157 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <Button variant="outline" size="sm">
-                                <Eye className="w-4 h-4 mr-2" />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleMarkAllAsRead}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Eye className="w-4 h-4 mr-2" />
+                                )}
                                 Mark All Read
                             </Button>
-                            <Button size="sm">
-                                <Bell className="w-4 h-4 mr-2" />
-                                Alert Settings
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCheckPrices}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <TrendingDown className="w-4 h-4 mr-2" />
+                                )}
+                                Check Prices Now
                             </Button>
+                            <Dialog open={showSettings} onOpenChange={setShowSettings}>
+                                <DialogTrigger asChild>
+                                    <Button size="sm">
+                                        <Settings className="w-4 h-4 mr-2" />
+                                        Alert Settings
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                        <DialogTitle>Alert Settings</DialogTitle>
+                                        <DialogDescription>
+                                            Configure your price drop alert preferences
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="min_amount">Minimum Price Drop Amount ($)</Label>
+                                                <Input
+                                                    id="min_amount"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={alertSettings.min_price_drop_amount}
+                                                    onChange={(e) => setAlertSettings({
+                                                        ...alertSettings,
+                                                        min_price_drop_amount: parseFloat(e.target.value)
+                                                    })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="min_percent">Minimum Price Drop Percent (%)</Label>
+                                                <Input
+                                                    id="min_percent"
+                                                    type="number"
+                                                    step="0.1"
+                                                    value={alertSettings.min_price_drop_percent}
+                                                    onChange={(e) => setAlertSettings({
+                                                        ...alertSettings,
+                                                        min_price_drop_percent: parseFloat(e.target.value)
+                                                    })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <Label>Notification Methods</Label>
+                                            <div className="space-y-3 mt-2">
+                                                <div className="flex items-center space-x-2">
+                                                    <Switch
+                                                        id="email"
+                                                        checked={alertSettings.email_notifications}
+                                                        onCheckedChange={(checked) => setAlertSettings({
+                                                            ...alertSettings,
+                                                            email_notifications: checked
+                                                        })}
+                                                    />
+                                                    <Label htmlFor="email">Email Notifications</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <Switch
+                                                        id="push"
+                                                        checked={alertSettings.push_notifications}
+                                                        onCheckedChange={(checked) => setAlertSettings({
+                                                            ...alertSettings,
+                                                            push_notifications: checked
+                                                        })}
+                                                    />
+                                                    <Label htmlFor="push">Push Notifications</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <Switch
+                                                        id="sms"
+                                                        checked={alertSettings.sms_notifications}
+                                                        onCheckedChange={(checked) => setAlertSettings({
+                                                            ...alertSettings,
+                                                            sms_notifications: checked
+                                                        })}
+                                                    />
+                                                    <Label htmlFor="sms">SMS Notifications</Label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="frequency">Notification Frequency</Label>
+                                            <Select
+                                                value={alertSettings.notification_frequency}
+                                                onValueChange={(value) => setAlertSettings({
+                                                    ...alertSettings,
+                                                    notification_frequency: value
+                                                })}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="immediate">Immediate</SelectItem>
+                                                    <SelectItem value="daily">Daily Digest</SelectItem>
+                                                    <SelectItem value="weekly">Weekly Summary</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="flex justify-end space-x-2">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setShowSettings(false)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={saveAlertSettings}
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading ? (
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                ) : (
+                                                    <Save className="w-4 h-4 mr-2" />
+                                                )}
+                                                Save Settings
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     </div>
                 </div>
@@ -240,11 +523,9 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     <p className="text-xs text-muted-foreground">
                                         Potential savings detected
                                     </p>
-                        </CardContent>
-                    </Card>
+                                </CardContent>
+                            </Card>
                         </div>
-
-
 
                         {/* Alerts List */}
                         <div className="space-y-4">
@@ -254,17 +535,18 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                         <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                                         <h3 className="text-lg font-semibold mb-2">No alerts found</h3>
                                         <p className="text-muted-foreground mb-4">
-                                            {statusFilter !== 'all' || severityFilter !== 'all'
-                                                ? 'Try adjusting your filters.'
+                                            {statusFilter !== 'all' || severityFilter !== 'all' || searchQuery
+                                                ? 'Try adjusting your filters or search terms.'
                                                 : 'You\'re all caught up! No price alerts at the moment.'
                                             }
                                         </p>
-                                        {(statusFilter !== 'all' || severityFilter !== 'all') && (
+                                        {(statusFilter !== 'all' || severityFilter !== 'all' || searchQuery) && (
                                             <Button
                                                 variant="outline"
                                                 onClick={() => {
                                                     setStatusFilter('all');
                                                     setSeverityFilter('all');
+                                                    setSearchQuery('');
                                                 }}
                                             >
                                                 Clear Filters
@@ -370,10 +652,10 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                     </p>
                                                                 </div>
                                                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
                                             <div className="flex items-center justify-between mt-4 pt-4 border-t">
                                                 <div className="flex items-center space-x-2">
@@ -381,33 +663,43 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                         <Button variant="outline" size="sm">
                                                             View Booking
                                                             <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
+                                                        </Button>
                                                     </Link>
-                    </div>
+                                                </div>
                                                 <div className="flex items-center space-x-2">
                                                     {alert.status === 'new' && (
                                                         <>
                                                             <Button
                                                                 size="sm"
                                                                 onClick={() => handleAlertAction(alert.id, 'action')}
+                                                                disabled={isLoading}
                                                             >
-                                                                <CheckCircle className="w-4 h-4 mr-2" />
+                                                                {isLoading ? (
+                                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                ) : (
+                                                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                                                )}
                                                                 Mark Actioned
                                                             </Button>
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
                                                                 onClick={() => handleAlertAction(alert.id, 'dismiss')}
+                                                                disabled={isLoading}
                                                             >
-                                                                <XCircle className="w-4 h-4 mr-2" />
+                                                                {isLoading ? (
+                                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                ) : (
+                                                                    <XCircle className="w-4 h-4 mr-2" />
+                                                                )}
                                                                 Dismiss
-                    </Button>
+                                                            </Button>
                                                         </>
                                                     )}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 ))
                             )}
                         </div>

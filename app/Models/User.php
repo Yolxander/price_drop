@@ -45,4 +45,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function hotelBookings()
+    {
+        return $this->hasMany(HotelBooking::class);
+    }
+
+    public function priceAlerts()
+    {
+        return $this->hasMany(PriceAlert::class);
+    }
+
+    public function alertSettings()
+    {
+        return $this->hasOne(AlertSetting::class);
+    }
 }

@@ -37,6 +37,18 @@ Route::post('/bookings/{booking}/enrich', [HotelBookingController::class, 'enric
 
 // Price Alerts
 Route::get('/price-alerts', [AlertController::class, 'index'])->name('alerts.index');
+Route::post('/price-alerts', [AlertController::class, 'createPriceAlert'])->name('alerts.create');
+Route::patch('/price-alerts/{id}/action', [AlertController::class, 'markAsActioned'])->name('alerts.action');
+Route::patch('/price-alerts/{id}/dismiss', [AlertController::class, 'dismiss'])->name('alerts.dismiss');
+Route::post('/price-alerts/mark-all-read', [AlertController::class, 'markAllAsRead'])->name('alerts.mark-all-read');
+Route::get('/price-alerts/settings', [AlertController::class, 'getAlertSettings'])->name('alerts.settings');
+Route::post('/price-alerts/settings', [AlertController::class, 'updateAlertSettings'])->name('alerts.update-settings');
+Route::post('/price-alerts/check-prices', [AlertController::class, 'checkPrices'])->name('alerts.check-prices');
+
+Route::post('/price-alerts/mark-all-read', [AlertController::class, 'markAllAsRead'])->name('alerts.mark-all-read');
+Route::get('/price-alerts/settings', [AlertController::class, 'getSettings'])->name('alerts.settings');
+Route::post('/price-alerts/settings', [AlertController::class, 'updateSettings'])->name('alerts.update-settings');
+Route::post('/price-alerts/create', [AlertController::class, 'createAlert'])->name('alerts.create');
 
 // Price History
 Route::get('/price-history', [HistoryController::class, 'index'])->name('history.index');
