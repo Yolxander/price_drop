@@ -10,10 +10,9 @@ use App\Http\Controllers\StatusController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SerpApiController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // Hotel Price Tracker Routes (without auth for demo)
 // Dashboard
