@@ -72,8 +72,8 @@ class HistoryController extends Controller
                 [
                     'label' => 'Average Price',
                     'data' => [1200, 1180, 1220, 1190, 1170, 1150],
-                    'borderColor' => '#3b82f6',
-                    'backgroundColor' => 'rgba(59, 130, 246, 0.1)'
+                    'borderColor' => '#eab308',
+                    'backgroundColor' => 'rgba(234, 179, 8, 0.1)'
                 ]
             ]
         ];

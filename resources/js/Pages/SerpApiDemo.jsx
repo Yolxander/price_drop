@@ -363,7 +363,7 @@ export default function SerpApiDemo({ auth }) {
                                                             <Card key={index}>
                                                                 <CardContent className="p-4">
                                                                     <div className="space-y-2">
-                                                                        <div className="font-medium text-blue-600">
+                                                                        <div className="font-medium text-yellow-600">
                                                                             <a href={result.link} target="_blank" rel="noopener noreferrer">
                                                                                 {result.title}
                                                                             </a>

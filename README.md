@@ -13,7 +13,7 @@ A Laravel-based hotel price tracking application that monitors hotel prices usin
 ### 💰 Price Monitoring
 - Automatic price checking using SerpAPI's Google Hotels API
 - Real-time price comparison with original booking price
-- Price drop detection and notifications
+- Price pulse detection and notifications
 - Price history tracking
 
 ### 📊 Dashboard Analytics
@@ -23,7 +23,7 @@ A Laravel-based hotel price tracking application that monitors hotel prices usin
 - API status monitoring
 
 ### 🔔 Notifications
-- Price drop alerts
+- Price pulse alerts
 - Daily check completion notifications
 - Email notifications (ready for implementation)
 
@@ -127,7 +127,7 @@ QUEUE_CONNECTION=database
 
 - The system automatically checks prices for active bookings
 - Manual price checks can be triggered from the dashboard
-- Price drops are highlighted with savings amounts
+- Price pulses are highlighted with savings amounts
 - All price changes are logged in the recent activity section
 
 ### Managing Bookings
@@ -234,7 +234,7 @@ database/migrations/
 | current_price | decimal(10,2) | Current market price |
 | last_checked | timestamp | Last price check time |
 | status | enum | active/paused/completed |
-| price_drop_detected | boolean | Price drop flag |
+| price_drop_detected | boolean | Price pulse flag |
 | price_drop_amount | decimal(10,2) | Amount saved |
 | booking_reference | string | External booking reference |
 | user_id | bigint | User who owns the booking |

@@ -98,7 +98,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 return <CheckCircle className="w-3 h-3 text-green-600" />;
             case 'pending':
             case 'processing':
-                return <Clock className="w-3 h-3 text-blue-600" />;
+                return <Clock className="w-3 h-3 text-yellow-600" />;
             case 'cancelled':
                 return <AlertCircle className="w-3 h-3 text-red-600" />;
             default:
@@ -191,7 +191,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                 {showMonthSummary ? 'Hide' : 'Show'} Summary
                             </Button>
                             <Link href="/bookings/create">
-                                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8">
+                                <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8">
                                     <Plus className="w-4 h-4 mr-2" />
                                     Add Booking
                                 </Button>
@@ -223,7 +223,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     <div className="text-sm text-muted-foreground">Total Bookings</div>
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-blue-600">
+                                    <div className="text-2xl font-bold text-yellow-600">
                                         {safeBookings.filter(b => {
                                             const checkIn = new Date(b.check_in_date);
                                             return checkIn.getMonth() === currentDate.getMonth() && checkIn.getFullYear() === currentDate.getFullYear() && b.status === 'active';
@@ -288,7 +288,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                         <span>Active</span>
                                     </div>
                                     <div className="flex items-center space-x-1">
-                                        <Clock className="w-3 h-3 text-blue-600" />
+                                        <Clock className="w-3 h-3 text-yellow-600" />
                                         <span>Pending</span>
                                     </div>
                                 </div>
@@ -312,9 +312,9 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     className={`min-h-[100px] p-2 border border-gray-200 transition-colors ${
                                         date ? 'hover:bg-gray-50 cursor-pointer' : ''
                                     } ${
-                                        isToday(date) ? 'bg-blue-50 border-blue-500' : ''
+                                        isToday(date) ? 'bg-yellow-50 border-yellow-500' : ''
                                     } ${
-                                        isSelected(date) ? 'ring-2 ring-blue-500' : ''
+                                        isSelected(date) ? 'ring-2 ring-yellow-500' : ''
                                     }`}
                                     onClick={() => date && setSelectedDate(date)}
                                 >
@@ -378,7 +378,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                         <Link key={booking.id} href={`/bookings/${booking.id}`}>
                                             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                                                 <div className="flex items-center space-x-3">
-                                                    <Building2 className="w-5 h-5 text-blue-600" />
+                                                    <Building2 className="w-5 h-5 text-yellow-600" />
                                                     <div>
                                                         <h3 className="font-medium text-gray-900">{booking.hotel_name}</h3>
                                                         <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -438,7 +438,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     <Link key={booking.id} href={`/bookings/${booking.id}`}>
                                         <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                                             <div className="flex items-center space-x-3">
-                                                <Building2 className="w-5 h-5 text-blue-600" />
+                                                <Building2 className="w-5 h-5 text-yellow-600" />
                                                 <div>
                                                     <h3 className="font-medium text-gray-900">{booking.hotel_name}</h3>
                                                     <div className="flex items-center space-x-2 text-sm text-gray-600">

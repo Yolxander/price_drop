@@ -218,7 +218,7 @@ export default function Show({ auth, booking }) {
                                                                     href={booking.enriched_data.overview.hotel_website}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:underline"
+                                                                    className="text-yellow-600 hover:underline"
                                                                 >
                                                                     Visit Hotel Website
                                                                 </a>
@@ -269,7 +269,7 @@ export default function Show({ auth, booking }) {
                                                         <div className="grid grid-cols-2 gap-2">
                                                             {booking.enriched_data.facilities.facilities?.map((facility, index) => (
                                                                 <div key={index} className="flex items-center gap-2">
-                                                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                                                                     <span className="text-sm">{facility}</span>
                                                                 </div>
                                                             ))}
@@ -374,7 +374,7 @@ export default function Show({ auth, booking }) {
                                                                 href={booking.enriched_data.details.booking_link}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="text-blue-600 hover:underline"
+                                                                className="text-yellow-600 hover:underline"
                                                             >
                                                                 View Booking Details
                                                             </a>
@@ -411,7 +411,7 @@ export default function Show({ auth, booking }) {
                                                             </div>
                                                             {booking.price_drop_detected && (
                                                                 <div>
-                                                                    <span className="text-sm text-gray-600">Price Drop:</span>
+                                                                    <span className="text-sm text-gray-600">Price Pulse:</span>
                                                                     <p className="font-medium text-green-600">
                                                                         -{formatCurrency(booking.price_drop_amount, booking.currency)} ({booking.price_drop_percentage}%)
                                                                     </p>

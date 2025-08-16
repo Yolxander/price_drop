@@ -88,7 +88,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
             case 'active':
                 return <CheckCircle className="w-4 h-4 text-green-600" />;
             case 'pending':
-                return <Clock className="w-4 w-4 text-blue-600" />;
+                return <Clock className="w-4 w-4 text-yellow-600" />;
             case 'cancelled':
                 return <AlertCircle className="w-4 h-4 text-red-600" />;
             default:
@@ -203,7 +203,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
                                 <p className="text-gray-500 mb-6">Start adding hotels to your favorites to track them here</p>
                                 <Link href="/bookings">
-                                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                                    <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold">
                                         <Plus className="h-4 w-4 mr-2" />
                                         Browse Hotels
                                     </Button>
@@ -235,7 +235,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                     <div className="absolute top-3 left-32">
                                                         <Badge variant="default" className="bg-green-600 text-white">
                                                             <TrendingDown className="h-3 w-3 mr-1" />
-                                                            Price Drop
+                                                            Price Pulse
                                                         </Badge>
                                                     </div>
                                                 )}
@@ -257,7 +257,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                 <Link href={`/bookings/${property.id}`} className="block">
                                                     <div className="space-y-3">
                                                         <div>
-                                                            <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 group-hover:text-blue-600 transition-colors">
+                                                            <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 group-hover:text-yellow-600 transition-colors">
                                                                 {property.name}
                                                             </h3>
                                                             <div className="flex items-center text-sm text-muted-foreground">

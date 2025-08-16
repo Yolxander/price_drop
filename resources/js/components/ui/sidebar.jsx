@@ -32,7 +32,7 @@ export default function Sidebar({ activePage = 'dashboard' }) {
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Drops',
+            label: 'Price Pulses',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -56,10 +56,10 @@ export default function Sidebar({ activePage = 'dashboard' }) {
             {/* Logo */}
             <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
                         <span className="text-white font-bold text-lg">T</span>
                     </div>
-                    <span className="text-xl font-bold text-blue-600">Price Drop</span>
+                                            <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
                 </div>
             </div>
 
@@ -79,7 +79,7 @@ export default function Sidebar({ activePage = 'dashboard' }) {
                                 {item.hasNotification ? (
                                     <div className="relative">
                                         <Icon className={`h-5 w-5 ${
-                                            isActive ? 'text-blue-600' : 'text-gray-600'
+                                            isActive ? 'text-yellow-600' : 'text-gray-600'
                                         }`} />
                                         <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                                             <span className="text-xs text-white font-medium">{item.notificationCount}</span>
@@ -87,7 +87,7 @@ export default function Sidebar({ activePage = 'dashboard' }) {
                                     </div>
                                 ) : (
                                     <Icon className={`h-5 w-5 ${
-                                        isActive ? 'text-blue-600' : 'text-gray-600'
+                                        isActive ? 'text-yellow-600' : 'text-gray-600'
                                     }`} />
                                 )}
                                 <span className={`${

@@ -200,7 +200,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             <Link href={`/bookings/${property.id}`} className="block">
                                                 <div className="space-y-3">
                                                     <div>
-                                                        <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 group-hover:text-blue-600 transition-colors">
+                                                        <h3 className="font-semibold text-foreground text-lg leading-tight mb-1 group-hover:text-yellow-600 transition-colors">
                                                             {property.name}
                                                         </h3>
                                                         <div className="flex items-center text-sm text-muted-foreground">

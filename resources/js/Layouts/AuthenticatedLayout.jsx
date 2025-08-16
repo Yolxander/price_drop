@@ -32,7 +32,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
         { name: 'My Trips', href: '/dashboard', icon: Home },
         { name: 'All Bookings', href: '/bookings', icon: Building2 },
         { name: 'Calendar', href: '/calendar', icon: Calendar },
-        { name: 'Price Drops', href: '/price-alerts', icon: Bell },
+        { name: 'Price Pulses', href: '/price-alerts', icon: Bell },
         { name: 'Past Prices', href: '/price-history', icon: TrendingDown },
         { name: 'Savings & Trends', href: '/reports', icon: BarChart3 },
         { name: 'Preferences', href: '/settings', icon: Settings },

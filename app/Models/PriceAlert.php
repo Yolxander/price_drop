@@ -117,7 +117,7 @@ class PriceAlert extends Model
     public function getStatusColorAttribute()
     {
         return match($this->status) {
-            'new' => 'text-blue-600',
+            'new' => 'text-yellow-600',
             'actioned' => 'text-green-600',
             'dismissed' => 'text-gray-600',
             default => 'text-gray-600'

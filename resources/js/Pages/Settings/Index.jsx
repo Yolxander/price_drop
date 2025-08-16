@@ -114,7 +114,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                 <RefreshCw className="h-4 w-4" />
                                 <span>Refresh</span>
                             </Button>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+                                                            <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6">
                                 <Save className="h-4 w-4 mr-2" />
                                 Save Changes
                             </Button>
@@ -158,12 +158,12 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     <TabsContent value="providers" className="space-y-6 mt-6">
                                         <div className="space-y-4">
                                             {Object.entries(formData.providers).map(([key, provider]) => (
-                                                <Card key={key} className="border-l-4 border-l-blue-500">
+                                                <Card key={key} className="border-l-4 border-l-yellow-500">
                                                     <CardContent className="p-6">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center space-x-4">
-                                                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                                    <Building2 className="h-6 w-6 text-blue-600" />
+                                                                                                        <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                            <Building2 className="h-6 w-6 text-yellow-600" />
                                                                 </div>
                                                                 <div>
                                                                     <h3 className="font-semibold text-gray-900">{provider.name}</h3>
@@ -198,15 +198,15 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     <TabsContent value="alerts" className="space-y-6 mt-6">
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                             {/* Price Alert Rules */}
-                                            <Card className="lg:col-span-2 border-l-4 border-l-blue-500">
+                                            <Card className="lg:col-span-2 border-l-4 border-l-yellow-500">
                                                 <CardHeader className="pb-4">
                                                     <CardTitle className="flex items-center space-x-3 text-lg">
-                                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                            <DollarSign className="h-5 w-5 text-blue-600" />
+                                                                                                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                            <DollarSign className="h-5 w-5 text-yellow-600" />
                                                         </div>
                                                         <div>
                                                         <span>Price Alert Rules</span>
-                                                            <p className="text-sm text-gray-500 font-normal mt-1">Configure price drop thresholds and rules</p>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">Configure price pulse thresholds and rules</p>
                                                         </div>
                                                     </CardTitle>
                                                 </CardHeader>

@@ -253,7 +253,7 @@ export default function Home() {
             >
               {/* Card 1 */}
               <div className="carousel-card min-w-[260px] max-w-[260px] md:min-w-[450px] md:max-w-[450px] bg-white rounded-3xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-2 hover:border-green-600 snap-start">
-                <div className="h-32 md:h-44 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                <div className="h-32 md:h-44 bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
                   <svg className="w-16 h-16 md:w-20 md:h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>

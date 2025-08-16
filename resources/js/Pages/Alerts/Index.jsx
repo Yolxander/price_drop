@@ -350,13 +350,13 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                     <DialogHeader>
                                         <DialogTitle>Alert Settings</DialogTitle>
                                         <DialogDescription>
-                                            Configure your price drop alert preferences
+                                            Configure your price pulse alert preferences
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <Label htmlFor="min_amount">Minimum Price Drop Amount ($)</Label>
+                                                <Label htmlFor="min_amount">Minimum Price Pulse Amount ($)</Label>
                                                 <Input
                                                     id="min_amount"
                                                     type="number"
@@ -369,7 +369,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                 />
                                             </div>
                                             <div>
-                                                <Label htmlFor="min_percent">Minimum Price Drop Percent (%)</Label>
+                                                <Label htmlFor="min_percent">Minimum Price Pulse Percent (%)</Label>
                                                 <Input
                                                     id="min_percent"
                                                     type="number"

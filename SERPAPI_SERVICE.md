@@ -12,7 +12,7 @@ The SerpAPI service has been enhanced to provide comprehensive integration with 
 - **Integration**: Already integrated with the existing hotel booking system
 - **Features**:
   - Real-time price checking
-  - Price drop detection
+  - Price pulse detection
   - Multiple currency support
   - Guest count handling
 

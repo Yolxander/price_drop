@@ -201,7 +201,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="flex h-screen bg-gradient-to-br from-gray-50 to-yellow-50">
             {/* Left Sidebar */}
             <Sidebar activePage="dashboard" />
 
@@ -595,7 +595,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     src={image}
                                                     alt={`Hotel ${index + 1}`}
                                                     className={`w-full h-20 object-cover rounded-lg cursor-pointer transition-opacity ${
-                                                        index === selectedImageIndex ? 'opacity-100 ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'
+                                                        index === selectedImageIndex ? 'opacity-100 ring-2 ring-yellow-500' : 'opacity-70 hover:opacity-100'
                                                     }`}
                                                     onClick={() => handleImageClick(index)}
                                                     onError={(e) => {
@@ -709,7 +709,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                         <div className="grid grid-cols-1 gap-2">
                                                             {selectedBooking.enriched_data.facilities.facilities?.slice(0, 6).map((facility, index) => (
                                                                 <div key={index} className="flex items-center gap-2">
-                                                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                                                                     <span className="text-sm">{facility}</span>
                                                                 </div>
                                                             ))}
@@ -796,7 +796,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                                     href={selectedBooking.enriched_data.details.booking_link}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:underline text-sm"
+                                                                    className="text-yellow-600 hover:underline text-sm"
                                                                 >
                                                                     View Booking Details
                                                                 </a>
@@ -887,7 +887,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     {/* View Full Details Button */}
                                     <div className="mt-6">
                                         <Link href={`/bookings/${selectedBooking.id}`}>
-                                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-semibold">
+                                            <Button className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 py-3 text-lg font-semibold">
                                                 View Full Details
                                             </Button>
                                         </Link>
@@ -963,7 +963,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             src={image}
                                             alt={`Thumbnail ${index + 1}`}
                                             className={`h-16 w-24 object-cover rounded cursor-pointer transition-opacity ${
-                                                index === selectedImageIndex ? 'opacity-100 ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'
+                                                index === selectedImageIndex ? 'opacity-100 ring-2 ring-yellow-500' : 'opacity-70 hover:opacity-100'
                                             }`}
                                             onClick={() => setSelectedImageIndex(index)}
                                             onError={(e) => {
