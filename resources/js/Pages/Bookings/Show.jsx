@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import ImageGalleryModal from '@/components/ui/image-gallery-modal';
 import Sidebar from '@/components/ui/sidebar';
-import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail } from 'lucide-react';
+import { toast, Toaster } from 'sonner';
+import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function Show({ auth, booking }) {
     const [loading, setLoading] = useState(false);
@@ -15,6 +16,52 @@ export default function Show({ auth, booking }) {
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [availableImages, setAvailableImages] = useState([]);
+    const [isVisible, setIsVisible] = useState({
+        header: false,
+        overview: false,
+        facilities: false,
+        details: false,
+        history: false,
+        sidebar: false
+    });
+
+    // Intersection Observer for animations
+    useEffect(() => {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const section = entry.target.dataset.section;
+                    if (section) {
+                        console.log('Section visible:', section);
+                        setIsVisible(prev => ({ ...prev, [section]: true }));
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        const sections = document.querySelectorAll('[data-section]');
+        console.log('Found sections:', sections.length);
+        sections.forEach(section => {
+            console.log('Observing section:', section.dataset.section);
+            observer.observe(section);
+        });
+
+        // Trigger header animation immediately
+        setIsVisible(prev => ({ ...prev, header: true }));
+
+        return () => observer.disconnect();
+    }, []);
+
+    // Debug log for state changes
+    useEffect(() => {
+        console.log('Animation state:', isVisible);
+    }, [isVisible]);
 
     // Filter out unavailable images
     React.useEffect(() => {
@@ -31,8 +78,25 @@ export default function Show({ auth, booking }) {
     }, [booking.enriched_data?.overview?.screenshots, booking.hotel_name]);
 
     const triggerEnrichment = async () => {
+        if (loading) return;
+
         setLoading(true);
+
+        // Show loading toast
+        const loadingToast = toast.loading('Enriching booking data...', {
+            duration: Infinity,
+            position: 'top-right',
+            style: {
+                background: '#fbbf24',
+                color: '#1f2937',
+                border: '1px solid #f59e0b',
+            },
+        });
+
         try {
+            // Simulate background processing
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             const response = await fetch(`/bookings/${booking.id}/enrich`, {
                 method: 'POST',
                 headers: {
@@ -44,14 +108,61 @@ export default function Show({ auth, booking }) {
             setEnrichmentStatus(data);
 
             if (data.success) {
+                // Dismiss loading toast
+                toast.dismiss(loadingToast);
+
+                // Show success toast
+                toast.success('Data enriched successfully!', {
+                    position: 'top-right',
+                    duration: 4000,
+                    style: {
+                        background: '#10b981',
+                        color: 'white',
+                        border: '1px solid #059669',
+                    },
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+
                 // Reload the page to show updated data
                 window.location.reload();
+            } else {
+                // Dismiss loading toast
+                toast.dismiss(loadingToast);
+
+                // Show error toast
+                toast.error('Enrichment failed. Please try again.', {
+                    position: 'top-right',
+                    duration: 4000,
+                    style: {
+                        background: '#ef4444',
+                        color: 'white',
+                        border: '1px solid #dc2626',
+                    },
+                    icon: <AlertCircle className="h-4 w-4" />,
+                });
             }
         } catch (error) {
             console.error('Enrichment failed:', error);
+
+            // Dismiss loading toast
+            toast.dismiss(loadingToast);
+
+            // Show error toast
+            toast.error('An unexpected error occurred.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+
             setEnrichmentStatus({ success: false, message: 'Enrichment failed' });
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const openGallery = (index) => {
@@ -95,21 +206,37 @@ export default function Show({ auth, booking }) {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Header */}
-                <div className="bg-white border-b border-gray-200 p-6">
+                <div
+                    data-section="header"
+                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                        isVisible.header
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-8'
+                    }`}
+                >
                     <div className="flex items-center justify-between">
-                        <div>
+                        <div className={`transition-all duration-1000 delay-200 ${
+                            isVisible.header
+                                ? 'opacity-100 translate-x-0'
+                                : 'opacity-0 -translate-x-8'
+                        }`}>
                             <h1 className="text-2xl font-bold text-gray-900">{booking.hotel_name}</h1>
                             <p className="text-gray-600 mt-1">{booking.location}</p>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className={`flex items-center gap-4 transition-all duration-1000 delay-400 ${
+                            isVisible.header
+                                ? 'opacity-100 translate-x-0'
+                                : 'opacity-0 translate-x-8'
+                        }`}>
                             <Link href="/bookings">
-                                <Button variant="outline">Back to Bookings</Button>
+                                <Button variant="outline" className="transition-all duration-300 hover:scale-105">Back to Bookings</Button>
                             </Link>
                             {!booking.enrichment_successful && (
                                 <Button
                                     onClick={triggerEnrichment}
                                     disabled={loading}
                                     variant="default"
+                                    className={`transition-all duration-300 hover:scale-105 ${loading ? 'btn-loading' : ''}`}
                                 >
                                     {loading ? 'Enriching...' : 'Enrich Data'}
                                 </Button>
@@ -124,7 +251,7 @@ export default function Show({ auth, booking }) {
 
                     {/* Enrichment Status */}
                     {enrichmentStatus && (
-                        <Card className={`mb-6 ${enrichmentStatus.success ? 'border-green-200' : 'border-red-200'}`}>
+                        <Card className={`mb-6 transition-all duration-500 hover:scale-[1.02] ${enrichmentStatus.success ? 'border-green-200' : 'border-red-200'}`}>
                             <CardContent className="p-4">
                                 <div className={`flex items-center gap-2 ${enrichmentStatus.success ? 'text-green-700' : 'text-red-700'}`}>
                                     <Badge variant={enrichmentStatus.success ? "default" : "destructive"}>
@@ -141,14 +268,21 @@ export default function Show({ auth, booking }) {
                         <div className="lg:col-span-2">
                             <Tabs defaultValue="overview" className="w-full">
                                 <TabsList className="grid w-full grid-cols-4">
-                                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                                    <TabsTrigger value="facilities">Facilities</TabsTrigger>
-                                    <TabsTrigger value="details">Details</TabsTrigger>
-                                    <TabsTrigger value="history">History</TabsTrigger>
+                                    <TabsTrigger value="overview" className="transition-all duration-300 hover:scale-105">Overview</TabsTrigger>
+                                    <TabsTrigger value="facilities" className="transition-all duration-300 hover:scale-105">Facilities</TabsTrigger>
+                                    <TabsTrigger value="details" className="transition-all duration-300 hover:scale-105">Details</TabsTrigger>
+                                    <TabsTrigger value="history" className="transition-all duration-300 hover:scale-105">History</TabsTrigger>
                                 </TabsList>
 
                                 <TabsContent value="overview" className="mt-6">
-                                    <Card>
+                                    <Card
+                                        data-section="overview"
+                                        className={`transition-all duration-1000 ease-out hover:shadow-lg ${
+                                            isVisible.overview
+                                                ? 'opacity-100 translate-y-0'
+                                                : 'opacity-0 translate-y-8'
+                                        }`}
+                                    >
                                         <CardHeader>
                                             <CardTitle>Hotel Overview</CardTitle>
                                         </CardHeader>
@@ -157,12 +291,12 @@ export default function Show({ auth, booking }) {
                                                 <>
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex items-center gap-2">
-                                                            <Star className="h-5 w-5 text-yellow-500 fill-current" />
+                                                            <Star className="h-5 w-5 text-yellow-500 fill-current animate-pulse" />
                                                             <span className="font-semibold">
                                                                 {booking.enriched_data.overview.star_rating} / 5.0
                                                             </span>
                                                         </div>
-                                                        <Badge variant="outline">
+                                                        <Badge variant="outline" className="transition-all duration-300 hover:scale-105">
                                                             {booking.enriched_data.overview.canonical_name}
                                                         </Badge>
                                                     </div>
@@ -175,13 +309,13 @@ export default function Show({ auth, booking }) {
                                                                 {availableImages.map((image, index) => (
                                                                     <div
                                                                         key={image.originalIndex}
-                                                                        className="aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                                                                        className="aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-all duration-300 hover:scale-105 image-hover"
                                                                         onClick={() => openGallery(image.originalIndex)}
                                                                     >
                                                                         <img
                                                                             src={image.src}
                                                                             alt={image.alt}
-                                                                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                                                            className="w-full h-full object-cover transition-transform duration-500"
                                                                             onError={() => handleImageError(image.originalIndex)}
                                                                         />
                                                                     </div>
@@ -218,7 +352,7 @@ export default function Show({ auth, booking }) {
                                                                     href={booking.enriched_data.overview.hotel_website}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="text-yellow-600 hover:underline"
+                                                                    className="text-yellow-600 hover:underline transition-all duration-300 hover:scale-105"
                                                                 >
                                                                     Visit Hotel Website
                                                                 </a>
@@ -232,7 +366,7 @@ export default function Show({ auth, booking }) {
                                                     <Button
                                                         onClick={triggerEnrichment}
                                                         disabled={loading}
-                                                        className="mt-4"
+                                                        className={`mt-4 transition-all duration-300 hover:scale-105 ${loading ? 'btn-loading' : ''}`}
                                                     >
                                                         {loading ? 'Enriching...' : 'Enrich Data'}
                                                     </Button>
@@ -243,7 +377,7 @@ export default function Show({ auth, booking }) {
                                 </TabsContent>
 
                                 <TabsContent value="facilities" className="mt-6">
-                                    <Card>
+                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg opacity-100 translate-y-0">
                                         <CardHeader>
                                             <CardTitle>Facilities & Amenities</CardTitle>
                                         </CardHeader>
@@ -254,7 +388,7 @@ export default function Show({ auth, booking }) {
                                                         <h3 className="font-semibold mb-3">Amenities</h3>
                                                         <div className="grid grid-cols-2 gap-2">
                                                             {booking.enriched_data.facilities.amenities?.map((amenity, index) => (
-                                                                <div key={index} className="flex items-center gap-2">
+                                                                <div key={index} className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
                                                                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                                                     <span className="text-sm">{amenity}</span>
                                                                 </div>
@@ -268,7 +402,7 @@ export default function Show({ auth, booking }) {
                                                         <h3 className="font-semibold mb-3">Facilities</h3>
                                                         <div className="grid grid-cols-2 gap-2">
                                                             {booking.enriched_data.facilities.facilities?.map((facility, index) => (
-                                                                <div key={index} className="flex items-center gap-2">
+                                                                <div key={index} className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
                                                                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                                                                     <span className="text-sm">{facility}</span>
                                                                 </div>
@@ -279,7 +413,7 @@ export default function Show({ auth, booking }) {
                                                     <Separator />
 
                                                     <div className="flex items-center gap-2">
-                                                        <Badge variant={booking.enriched_data.facilities.breakfast_included ? "default" : "secondary"}>
+                                                        <Badge variant={booking.enriched_data.facilities.breakfast_included ? "default" : "secondary"} className="transition-all duration-300 hover:scale-105">
                                                             {booking.enriched_data.facilities.breakfast_included ? 'Breakfast Included' : 'Breakfast Not Included'}
                                                         </Badge>
                                                     </div>
@@ -294,7 +428,7 @@ export default function Show({ auth, booking }) {
                                 </TabsContent>
 
                                 <TabsContent value="details" className="mt-6">
-                                    <Card>
+                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg opacity-100 translate-y-0">
                                         <CardHeader>
                                             <CardTitle>Booking Details</CardTitle>
                                         </CardHeader>
@@ -374,7 +508,7 @@ export default function Show({ auth, booking }) {
                                                                 href={booking.enriched_data.details.booking_link}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="text-yellow-600 hover:underline"
+                                                                className="text-yellow-600 hover:underline transition-all duration-300 hover:scale-105"
                                                             >
                                                                 View Booking Details
                                                             </a>
@@ -387,7 +521,7 @@ export default function Show({ auth, booking }) {
                                 </TabsContent>
 
                                 <TabsContent value="history" className="mt-6">
-                                    <Card>
+                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg opacity-100 translate-y-0">
                                         <CardHeader>
                                             <CardTitle>Price History & Tracking</CardTitle>
                                         </CardHeader>
@@ -412,7 +546,7 @@ export default function Show({ auth, booking }) {
                                                             {booking.price_drop_detected && (
                                                                 <div>
                                                                     <span className="text-sm text-gray-600">Price Pulse:</span>
-                                                                    <p className="font-medium text-green-600">
+                                                                    <p className="font-medium text-green-600 animate-pulse">
                                                                         -{formatCurrency(booking.price_drop_amount, booking.currency)} ({booking.price_drop_percentage}%)
                                                                     </p>
                                                                 </div>
@@ -425,7 +559,7 @@ export default function Show({ auth, booking }) {
                                                         <div className="space-y-2">
                                                             <div>
                                                                 <span className="text-sm text-gray-600">Status:</span>
-                                                                <Badge variant={booking.status === 'active' ? 'default' : 'secondary'}>
+                                                                <Badge variant={booking.status === 'active' ? 'default' : 'secondary'} className="transition-all duration-300 hover:scale-105">
                                                                     {booking.status}
                                                                 </Badge>
                                                             </div>
@@ -437,7 +571,7 @@ export default function Show({ auth, booking }) {
                                                             </div>
                                                             <div>
                                                                 <span className="text-sm text-gray-600">Enrichment:</span>
-                                                                <Badge variant={booking.enrichment_successful ? 'default' : 'destructive'}>
+                                                                <Badge variant={booking.enrichment_successful ? 'default' : 'destructive'} className="transition-all duration-300 hover:scale-105">
                                                                     {booking.enrichment_successful ? 'Successful' : 'Failed'}
                                                                 </Badge>
                                                             </div>
@@ -450,21 +584,21 @@ export default function Show({ auth, booking }) {
                                                 <div>
                                                     <h3 className="font-semibold mb-3">Stay Details</h3>
                                                     <div className="grid grid-cols-3 gap-4">
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
                                                             <Calendar className="h-4 w-4 text-gray-500" />
                                                             <div>
                                                                 <p className="text-sm text-gray-600">Check-in</p>
                                                                 <p className="font-medium">{formatDate(booking.check_in_date)}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
                                                             <Calendar className="h-4 w-4 text-gray-500" />
                                                             <div>
                                                                 <p className="text-sm text-gray-600">Check-out</p>
                                                                 <p className="font-medium">{formatDate(booking.check_out_date)}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
                                                             <Users className="h-4 w-4 text-gray-500" />
                                                             <div>
                                                                 <p className="text-sm text-gray-600">Guests</p>
@@ -481,9 +615,16 @@ export default function Show({ auth, booking }) {
                         </div>
 
                         {/* Sidebar */}
-                        <div className="space-y-6">
+                        <div
+                            className="space-y-6"
+                            data-section="sidebar"
+                        >
                             {/* Price Summary */}
-                            <Card>
+                            <Card className={`transition-all duration-1000 ease-out hover:shadow-lg ${
+                                isVisible.sidebar
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-8'
+                            }`}>
                                 <CardHeader>
                                     <CardTitle>Price Summary</CardTitle>
                                 </CardHeader>
@@ -500,7 +641,7 @@ export default function Show({ auth, booking }) {
                                         {booking.price_drop_detected && (
                                             <div className="flex justify-between text-green-600">
                                                 <span>Savings:</span>
-                                                <span className="font-medium">
+                                                <span className="font-medium animate-pulse">
                                                     -{formatCurrency(booking.price_drop_amount, booking.currency)}
                                                 </span>
                                             </div>
@@ -519,21 +660,25 @@ export default function Show({ auth, booking }) {
                             </Card>
 
                             {/* Quick Actions */}
-                            <Card>
+                            <Card className={`transition-all duration-1000 delay-200 ease-out hover:shadow-lg ${
+                                isVisible.sidebar
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-8'
+                            }`}>
                                 <CardHeader>
                                     <CardTitle>Quick Actions</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105" variant="outline">
                                         Check Current Price
                                     </Button>
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105" variant="outline">
                                         View Price History
                                     </Button>
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105" variant="outline">
                                         Edit Booking
                                     </Button>
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105" variant="outline">
                                         Set Price Alert
                                     </Button>
                                 </CardContent>
@@ -550,6 +695,9 @@ export default function Show({ auth, booking }) {
                 images={availableImages}
                 initialIndex={selectedImageIndex}
             />
+
+            {/* Toaster for notifications */}
+            <Toaster />
         </div>
     );
 }
