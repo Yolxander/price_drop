@@ -408,7 +408,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Event Banner Section */}
+        {/* Dashboard Introduction Banner Section */}
         <section
           data-section="banner"
           className={`relative w-full h-[600px] rounded-3xl overflow-hidden mx-auto mt-12 transition-all duration-1000 ease-out ${
@@ -418,8 +418,8 @@ export default function Home() {
           }`}
         >
           <img
-            src="/hotel/photo-15.jpeg"
-            alt="Snow Garden Hotel"
+            src="/dashboard.png"
+            alt="Price Pulse Dashboard"
             className="object-cover w-full h-full absolute inset-0"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -430,17 +430,17 @@ export default function Home() {
                 : 'opacity-0 -translate-x-8'
             }`}>
               <div className="mb-2">
-                <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">Price Pulse Alerts</span>
+                <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">Smart Dashboard</span>
               </div>
-              <h2 className="text-white text-3xl md:text-5xl font-bold leading-tight mb-4">Start Saving Money<br />on Your Next Trip</h2>
+              <h2 className="text-white text-3xl md:text-5xl font-bold leading-tight mb-4">Your Personal<br />Price Pulse Command Center</h2>
               <div className="flex items-center gap-6 text-white/90 text-base font-medium">
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5" />
-                  <span>Monitor Any Hotel</span>
+                  <span>Track All Bookings</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
-                  <span>Anywhere in the World</span>
+                  <span>Real-time Price Monitoring</span>
                 </div>
               </div>
             </div>
@@ -449,7 +449,7 @@ export default function Home() {
                 ? 'opacity-100 translate-x-0'
                 : 'opacity-0 translate-x-8'
             }`} asChild>
-              <Link href="/dashboard">Start Monitoring Now</Link>
+              <Link href="/dashboard">Explore Dashboard</Link>
             </Button>
           </div>
         </section>
