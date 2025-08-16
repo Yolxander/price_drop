@@ -495,3 +495,119 @@ html {
   0% { transform: translate(0, 0); }
   100% { transform: translate(24px, 0); }
 }
+
+/* Form and Dialog Animations */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Dialog animations */
+.dialog-enter {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+.dialog-exit {
+  animation: fadeInScale 0.2s ease-in reverse;
+}
+
+/* Form field animations */
+.form-field-enter {
+  animation: slideInFromBottom 0.4s ease-out;
+}
+
+.form-field-enter:nth-child(1) { animation-delay: 0.1s; }
+.form-field-enter:nth-child(2) { animation-delay: 0.2s; }
+.form-field-enter:nth-child(3) { animation-delay: 0.3s; }
+.form-field-enter:nth-child(4) { animation-delay: 0.4s; }
+
+/* Toast animations */
+.toast-enter {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.toast-exit {
+  animation: slideInFromRight 0.2s ease-in reverse;
+}
+
+/* Enhanced form focus effects */
+.form-input-focus {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-input-focus:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(251, 191, 36, 0.3);
+}
+
+/* Button loading state */
+.btn-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Form validation animations */
+.form-error {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Success animation */
+.form-success {
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

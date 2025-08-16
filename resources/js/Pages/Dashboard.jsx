@@ -13,6 +13,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Label } from '@/components/ui/label';
 import { Head, Link, router } from '@inertiajs/react';
 import Sidebar from '@/components/ui/sidebar';
+import { toast, Toaster } from 'sonner';
 import {
     Search,
     Calendar,
@@ -34,6 +35,7 @@ import {
 
 export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }) {
     const [showAddBooking, setShowAddBooking] = useState(false);
+    const [isFormSubmitting, setIsFormSubmitting] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [showImageGallery, setShowImageGallery] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -141,33 +143,122 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         }));
     };
 
-    const handleSubmit = () => {
-        console.log('Submitting form data:', formData);
-        router.post('/bookings', formData, {
-            onSuccess: () => {
-                console.log('Booking created successfully');
-                setShowAddBooking(false);
-                setFormData({
-                    hotel_name: '',
-                    location: '',
-                    check_in_date: '',
-                    check_out_date: '',
-                    guests: '',
-                    rooms: '',
-                    room_type: '',
-                    original_price: '',
-                    currency: ''
-                });
+    const handleSubmit = async () => {
+        if (isFormSubmitting) return;
+
+        setIsFormSubmitting(true);
+
+        // Close form immediately
+        setShowAddBooking(false);
+
+        // Show initial toast
+        const loadingToast = toast.loading('Adding booking and enriching data...', {
+            duration: Infinity,
+            position: 'top-right',
+            style: {
+                background: '#fbbf24',
+                color: '#1f2937',
+                border: '1px solid #f59e0b',
             },
-            onError: (errors) => {
-                console.error('Error creating booking:', errors);
-            }
         });
+
+        try {
+            // Simulate background processing
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Submit the form data
+            await router.post('/bookings', formData, {
+                onSuccess: () => {
+                    console.log('Booking created successfully');
+
+                    // Dismiss loading toast
+                    toast.dismiss(loadingToast);
+
+                    // Show success toast
+                    toast.success('Booking added successfully!', {
+                        position: 'top-right',
+                        duration: 4000,
+                        style: {
+                            background: '#10b981',
+                            color: 'white',
+                            border: '1px solid #059669',
+                        },
+                        icon: <CheckCircle className="h-4 w-4" />,
+                    });
+
+                    // Reset form data
+                    setFormData({
+                        hotel_name: '',
+                        location: '',
+                        check_in_date: '',
+                        check_out_date: '',
+                        guests: '',
+                        rooms: '',
+                        room_type: '',
+                        original_price: '',
+                        currency: ''
+                    });
+                },
+                onError: (errors) => {
+                    console.error('Error creating booking:', errors);
+
+                    // Dismiss loading toast
+                    toast.dismiss(loadingToast);
+
+                    // Show error toast
+                    toast.error('Failed to add booking. Please try again.', {
+                        position: 'top-right',
+                        duration: 4000,
+                        style: {
+                            background: '#ef4444',
+                            color: 'white',
+                            border: '1px solid #dc2626',
+                        },
+                        icon: <AlertCircle className="h-4 w-4" />,
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('Error:', error);
+
+            // Dismiss loading toast
+            toast.dismiss(loadingToast);
+
+            // Show error toast
+            toast.error('An unexpected error occurred.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+        } finally {
+            setIsFormSubmitting(false);
+        }
     };
 
     const handleAddBookingClick = () => {
         console.log('Add Booking button clicked');
         setShowAddBooking(true);
+    };
+
+    const handleCloseForm = () => {
+        setShowAddBooking(false);
+        // Reset form data when closing
+        setFormData({
+            hotel_name: '',
+            location: '',
+            check_in_date: '',
+            check_out_date: '',
+            guests: '',
+            rooms: '',
+            room_type: '',
+            original_price: '',
+            currency: ''
+        });
     };
 
     const handleBookingClick = (booking) => {
@@ -284,141 +375,145 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         }`}>
                             <Dialog open={showAddBooking} onOpenChange={setShowAddBooking}>
                                 <DialogTrigger asChild>
-                                <Button
+                                    <Button
                                         className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 btn-hover-effect"
                                         onClick={handleAddBookingClick}
-                                >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add Booking
-                                </Button>
-                                </DialogTrigger>
-                            <DialogContent className="sm:max-w-[600px]">
-                                <DialogHeader>
-                                    <DialogTitle className="text-2xl font-bold text-gray-900">Add New Booking</DialogTitle>
-                                    <DialogDescription className="text-gray-600 text-lg">
-                                        Enter your hotel booking details to start tracking price pulses and save money.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="hotel-name" className="text-gray-700 font-semibold">Hotel Name</Label>
-                                            <Input
-                                                id="hotel-name"
-                                                placeholder="Enter hotel name"
-                                                value={formData.hotel_name}
-                                                onChange={(e) => handleInputChange('hotel_name', e.target.value)}
-                                                className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="location" className="text-gray-700 font-semibold">Location</Label>
-                                            <Input
-                                                id="location"
-                                                placeholder="City, Country"
-                                                value={formData.location}
-                                                onChange={(e) => handleInputChange('location', e.target.value)}
-                                                className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="check-in" className="text-gray-700 font-semibold">Check-in Date</Label>
-                                            <Input
-                                                id="check-in"
-                                                type="date"
-                                                value={formData.check_in_date}
-                                                onChange={(e) => handleInputChange('check_in_date', e.target.value)}
-                                                className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-                                            />
-                                            </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="check-out" className="text-gray-700 font-semibold">Check-out Date</Label>
-                                            <Input
-                                                id="check-out"
-                                                type="date"
-                                                value={formData.check_out_date}
-                                                onChange={(e) => handleInputChange('check_out_date', e.target.value)}
-                                                className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-                                            />
-                                                </div>
-                                            </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="guests" className="text-gray-700 font-semibold">Number of Guests</Label>
-                                            <Input
-                                                id="guests"
-                                                type="number"
-                                                placeholder="2"
-                                                value={formData.guests}
-                                                onChange={(e) => handleInputChange('guests', e.target.value)}
-                                                className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="rooms" className="text-gray-700 font-semibold">Number of Rooms</Label>
-                                            <Input
-                                                id="rooms"
-                                                type="number"
-                                                placeholder="1"
-                                                value={formData.rooms}
-                                                onChange={(e) => handleInputChange('rooms', e.target.value)}
-                                                className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="room-type" className="text-gray-700 font-semibold">Room Type</Label>
-                                            <Input
-                                                id="room-type"
-                                                type="text"
-                                                placeholder="e.g., Deluxe King Room"
-                                                value={formData.room_type}
-                                                onChange={(e) => handleInputChange('room_type', e.target.value)}
-                                                className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="total-price" className="text-gray-700 font-semibold">Total Price</Label>
-                                            <Input
-                                                id="total-price"
-                                                type="number"
-                                                placeholder="0.00"
-                                                value={formData.original_price}
-                                                onChange={(e) => handleInputChange('original_price', e.target.value)}
-                                                className="border-gray-500 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="currency" className="text-gray-700 font-semibold">Currency</Label>
-                                        <Select value={formData.currency} onValueChange={(value) => handleInputChange('currency', value)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select currency" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="usd">USD ($)</SelectItem>
-                                                <SelectItem value="eur">EUR (€)</SelectItem>
-                                                <SelectItem value="gbp">GBP (£)</SelectItem>
-                                                <SelectItem value="jpy">JPY (¥)</SelectItem>
-                                                <SelectItem value="idr">IDR (Rp)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setShowAddBooking(false)} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105">
-                                        Cancel
-                                    </Button>
-                                    <Button onClick={handleSubmit} className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" />
                                         Add Booking
                                     </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[600px] animate-in slide-in-from-bottom-4 duration-300">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-2xl font-bold text-gray-900">Add New Booking</DialogTitle>
+                                        <DialogDescription className="text-gray-600 text-lg">
+                                            Enter your hotel booking details to start tracking price pulses and save money.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="hotel-name" className="text-gray-700 font-semibold">Hotel Name</Label>
+                                                <Input
+                                                    id="hotel-name"
+                                                    placeholder="Enter hotel name"
+                                                    value={formData.hotel_name}
+                                                    onChange={(e) => handleInputChange('hotel_name', e.target.value)}
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="location" className="text-gray-700 font-semibold">Location</Label>
+                                                <Input
+                                                    id="location"
+                                                    placeholder="City, Country"
+                                                    value={formData.location}
+                                                    onChange={(e) => handleInputChange('location', e.target.value)}
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="check-in" className="text-gray-700 font-semibold">Check-in Date</Label>
+                                                <Input
+                                                    id="check-in"
+                                                    type="date"
+                                                    value={formData.check_in_date}
+                                                    onChange={(e) => handleInputChange('check_in_date', e.target.value)}
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="check-out" className="text-gray-700 font-semibold">Check-out Date</Label>
+                                                <Input
+                                                    id="check-out"
+                                                    type="date"
+                                                    value={formData.check_out_date}
+                                                    onChange={(e) => handleInputChange('check_out_date', e.target.value)}
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="guests" className="text-gray-700 font-semibold">Number of Guests</Label>
+                                                <Input
+                                                    id="guests"
+                                                    type="number"
+                                                    placeholder="2"
+                                                    value={formData.guests}
+                                                    onChange={(e) => handleInputChange('guests', e.target.value)}
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="rooms" className="text-gray-700 font-semibold">Number of Rooms</Label>
+                                                <Input
+                                                    id="rooms"
+                                                    type="number"
+                                                    placeholder="1"
+                                                    value={formData.rooms}
+                                                    onChange={(e) => handleInputChange('rooms', e.target.value)}
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="room-type" className="text-gray-700 font-semibold">Room Type</Label>
+                                                <Input
+                                                    id="room-type"
+                                                    type="text"
+                                                    placeholder="e.g., Deluxe King Room"
+                                                    value={formData.room_type}
+                                                    onChange={(e) => handleInputChange('room_type', e.target.value)}
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="total-price" className="text-gray-700 font-semibold">Total Price</Label>
+                                                <Input
+                                                    id="total-price"
+                                                    type="number"
+                                                    placeholder="0.00"
+                                                    value={formData.original_price}
+                                                    onChange={(e) => handleInputChange('original_price', e.target.value)}
+                                                    className="border-gray-500 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="currency" className="text-gray-700 font-semibold">Currency</Label>
+                                            <Select value={formData.currency} onValueChange={(value) => handleInputChange('currency', value)}>
+                                                <SelectTrigger className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus">
+                                                    <SelectValue placeholder="Select currency" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="usd">USD ($)</SelectItem>
+                                                    <SelectItem value="eur">EUR (€)</SelectItem>
+                                                    <SelectItem value="gbp">GBP (£)</SelectItem>
+                                                    <SelectItem value="jpy">JPY (¥)</SelectItem>
+                                                    <SelectItem value="idr">IDR (Rp)</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button variant="outline" onClick={handleCloseForm} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105">
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            onClick={handleSubmit}
+                                            className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 btn-hover-effect ${isFormSubmitting ? 'btn-loading' : ''}`}
+                                            disabled={isFormSubmitting}
+                                        >
+                                            {isFormSubmitting ? 'Adding...' : 'Add Booking'}
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
                     </div>
-                            </div>
+                </div>
 
                 {/* Content with Right Panel */}
                 <div className="flex-1 flex overflow-hidden">
@@ -1112,7 +1207,9 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                     </DialogContent>
                 </Dialog>
             )}
-            </div>
+
+            {/* Toaster for notifications */}
+            <Toaster />
         </div>
     );
 }
