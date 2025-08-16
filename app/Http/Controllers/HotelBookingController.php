@@ -25,7 +25,7 @@ class HotelBookingController extends Controller
     public function index()
     {
         // Get actual bookings from database
-        $bookings = HotelBooking::where('user_id', 1) // For demo purposes, use user ID 1
+        $bookings = HotelBooking::where('user_id', 3) // For demo purposes, use dummy user ID 3
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -112,7 +112,7 @@ class HotelBookingController extends Controller
 
         // Create the booking
         $booking = HotelBooking::create([
-            'user_id' => 1, // For demo purposes, use user ID 1
+            'user_id' => 3, // For demo purposes, use dummy user ID 3
             'hotel_name' => $validated['hotel_name'],
             'location' => $validated['location'],
             'check_in_date' => $validated['check_in_date'],
@@ -431,7 +431,7 @@ class HotelBookingController extends Controller
     public function favorites()
     {
         // Get actual bookings from database and mark some as favorites for demo
-        $bookings = HotelBooking::where('user_id', 1) // For demo purposes, use user ID 1
+        $bookings = HotelBooking::where('user_id', 3) // For demo purposes, use dummy user ID 3
             ->orderBy('created_at', 'desc')
             ->get();
 

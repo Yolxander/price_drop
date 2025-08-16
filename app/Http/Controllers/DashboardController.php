@@ -12,7 +12,7 @@ class DashboardController extends Controller
     public function index()
     {
         // Get actual bookings from database
-        $hotelBookings = HotelBooking::where('user_id', 1) // For demo purposes, use user ID 1
+        $hotelBookings = HotelBooking::where('user_id', 3) // For demo purposes, use dummy user ID 3
             ->orderBy('created_at', 'desc')
             ->get();
 

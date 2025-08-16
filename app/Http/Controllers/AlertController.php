@@ -150,11 +150,11 @@ class AlertController extends Controller
 
     public function getAlertSettings()
     {
-        $settings = AlertSetting::where('user_id', 1)->first(); // For demo, using user ID 1
+        $settings = AlertSetting::where('user_id', 3)->first(); // For demo, using dummy user ID 3
 
         if (!$settings) {
             $settings = AlertSetting::create([
-                'user_id' => 1,
+                'user_id' => 3,
                 'min_price_drop_amount' => 10.00,
                 'min_price_drop_percent' => 5.00,
                 'email_notifications' => true,
@@ -187,7 +187,7 @@ class AlertController extends Controller
         ]);
 
         $settings = AlertSetting::updateOrCreate(
-            ['user_id' => 1], // For demo, using user ID 1
+            ['user_id' => 3], // For demo, using dummy user ID 3
             $request->all()
         );
 

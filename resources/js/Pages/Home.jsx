@@ -36,7 +36,7 @@ export default function Home() {
         <div className="container flex h-14 items-center justify-between px-4">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <img src="/logo/price-pulse-logo.svg" alt="PricePulse Logo" className="h-8 w-auto" />
+              <img src="/logo/price-pulse-logo.png" alt="PricePulse Logo" className="h-8 w-auto" />
             </Link>
           </div>
 
@@ -110,14 +110,16 @@ export default function Home() {
                 </div>
               </>
             ) : (
-              <Button
-                className="rounded-full bg-black text-white hover:bg-gray-800"
-                asChild
-              >
-                <Link href="/dashboard">
-                  Login / Register
-                </Link>
-              </Button>
+              <div className="ml-auto">
+                <Button
+                  className="rounded-full bg-black text-white hover:bg-gray-800"
+                  asChild
+                >
+                  <Link href="/dashboard">
+                    Login / Register
+                  </Link>
+                </Button>
+              </div>
             )}
           </div>
 

@@ -11,8 +11,8 @@ class CalendarController extends Controller
 {
     public function index()
     {
-        // Get all bookings for the current user (using user ID 1 for demo purposes)
-        $bookings = HotelBooking::where('user_id', 1)
+        // Get all bookings for the current user (using dummy user ID 3 for demo purposes)
+        $bookings = HotelBooking::where('user_id', 3)
             ->orderBy('check_in_date')
             ->get()
             ->map(function ($booking) {
@@ -55,7 +55,7 @@ class CalendarController extends Controller
             });
 
         // Get upcoming bookings (next 7 days)
-        $upcomingBookings = HotelBooking::where('user_id', 1)
+        $upcomingBookings = HotelBooking::where('user_id', 3)
             ->where('check_in_date', '>=', Carbon::now())
             ->where('check_in_date', '<=', Carbon::now()->addDays(7))
             ->orderBy('check_in_date')

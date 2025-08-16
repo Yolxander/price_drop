@@ -10,7 +10,7 @@ export default function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <img src="/logo/price-pulse-logo.svg" alt="PricePulse Logo" className="h-8 w-auto" />
+              <img src="/logo/price-pulse-logo.png" alt="PricePulse Logo" className="h-8 w-auto" />
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
               Save money after you book with PricePulse. We track hotel prices and find better deals so you never overpay again.

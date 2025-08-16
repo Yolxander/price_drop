@@ -105,7 +105,7 @@ export default function Sidebar({ activePage = 'dashboard' }) {
 
             {/* Logout */}
             <div className="p-4 border-t border-gray-200">
-                <Link href="/logout" method="post" as="button" className="w-full">
+                <Link href="/" className="w-full">
                     <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
                         <LogOut className="h-5 w-5 text-gray-600" />
                         <span className="text-gray-700">Log Out</span>
