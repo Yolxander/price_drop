@@ -462,7 +462,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             className="h-10"
                                                         />
                                                     </div>
-                                                    <Button className="w-full h-10">
+                                                    <Button className="w-full h-10 bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold">
                                                         <Shield className="h-4 w-4 mr-2" />
                                                         Update Password
                                                     </Button>
@@ -488,7 +488,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             <p className="font-medium text-gray-900">Enable 2FA</p>
                                                             <p className="text-sm text-gray-500">Protect your account with two-factor authentication</p>
                                                         </div>
-                                                        <Button variant="outline" className="h-10">
+                                                        <Button variant="outline" className="h-10 border-yellow-300 text-yellow-700 hover:bg-yellow-50">
                                                             <Shield className="h-4 w-4 mr-2" />
                                                             Setup 2FA
                                                         </Button>
@@ -530,7 +530,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                                 <p className="text-sm text-gray-500">Windows • Firefox • New York, NY</p>
                                                             </div>
                                                         </div>
-                                                        <Button variant="outline" size="sm" className="h-8">
+                                                        <Button variant="outline" size="sm" className="h-8 border-yellow-300 text-yellow-700 hover:bg-yellow-50">
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     </div>

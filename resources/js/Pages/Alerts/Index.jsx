@@ -446,12 +446,14 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                             <Button
                                                 variant="outline"
                                                 onClick={() => setShowSettings(false)}
+                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                             >
                                                 Cancel
                                             </Button>
                                             <Button
                                                 onClick={saveAlertSettings}
                                                 disabled={isLoading}
+                                                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold"
                                             >
                                                 {isLoading ? (
                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -660,7 +662,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                             <div className="flex items-center justify-between mt-4 pt-4 border-t">
                                                 <div className="flex items-center space-x-2">
                                                     <Link href={`/bookings/${alert.booking_id}`}>
-                                                        <Button variant="outline" size="sm">
+                                                        <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50">
                                                             View Booking
                                                             <ArrowRight className="w-4 h-4 ml-2" />
                                                         </Button>
@@ -673,6 +675,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                 size="sm"
                                                                 onClick={() => handleAlertAction(alert.id, 'action')}
                                                                 disabled={isLoading}
+                                                                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold"
                                                             >
                                                                 {isLoading ? (
                                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -686,6 +689,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                                 size="sm"
                                                                 onClick={() => handleAlertAction(alert.id, 'dismiss')}
                                                                 disabled={isLoading}
+                                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                                             >
                                                                 {isLoading ? (
                                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />

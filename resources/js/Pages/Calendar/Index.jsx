@@ -244,7 +244,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     <div className="text-2xl font-bold text-green-600">
                                         {safeBookings.filter(b => b.price_drop_detected).length}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">Price Drops</div>
+                                    <div className="text-sm text-muted-foreground">Price Pulses</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -256,13 +256,14 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => navigateMonth('prev')}
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                </Button>
+                                                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => navigateMonth('prev')}
+                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </Button>
                                 <h2 className="text-xl font-semibold text-gray-900">
                                     {formatDate(currentDate)}
                                 </h2>
@@ -270,6 +271,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     variant="outline"
                                     size="icon"
                                     onClick={() => navigateMonth('next')}
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                 >
                                     <ChevronRight className="w-4 h-4" />
                                 </Button>
@@ -401,10 +403,10 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                     {getStatusIcon(booking.status)}
                                                     {booking.price_drop_detected && (
                                                         <Badge className="bg-green-100 text-green-800" size="sm">
-                                                            Price Drop
+                                                            Price Pulse
                                                         </Badge>
                                                     )}
-                                                    <Button variant="outline" size="sm">
+                                                    <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50">
                                                         View
                                                     </Button>
                                                 </div>
@@ -461,7 +463,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                                 {getStatusIcon(booking.status)}
                                                 {booking.price_drop_detected && (
                                                     <Badge className="bg-green-100 text-green-800" size="sm">
-                                                        Price Drop
+                                                        Price Pulse
                                                     </Badge>
                                                 )}
                                             </div>

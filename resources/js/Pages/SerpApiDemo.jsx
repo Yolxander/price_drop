@@ -150,6 +150,7 @@ export default function SerpApiDemo({ auth }) {
                                             onClick={testConnection}
                                             disabled={loading}
                                             variant="outline"
+                                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                         >
                                             {loading ? 'Testing...' : 'Test Connection'}
                                         </Button>
@@ -225,7 +226,7 @@ export default function SerpApiDemo({ auth }) {
                                                     />
                                                 </div>
                                             </div>
-                                            <Button disabled={loading} className="w-full">
+                                            <Button disabled={loading} className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold">
                                                 Check Hotel Price (Integrated with existing booking system)
                                             </Button>
                                         </CardContent>
@@ -277,7 +278,7 @@ export default function SerpApiDemo({ auth }) {
                                                     />
                                                 </div>
                                             </div>
-                                            <Button onClick={searchFlights} disabled={loading} className="w-full">
+                                            <Button onClick={searchFlights} disabled={loading} className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold">
                                                 {loading ? 'Searching...' : 'Search Flights'}
                                             </Button>
 
@@ -350,7 +351,7 @@ export default function SerpApiDemo({ auth }) {
                                                     />
                                                 </div>
                                             </div>
-                                            <Button onClick={performWebSearch} disabled={loading} className="w-full">
+                                            <Button onClick={performWebSearch} disabled={loading} className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold">
                                                 {loading ? 'Searching...' : 'Search Web'}
                                             </Button>
 
@@ -416,7 +417,7 @@ export default function SerpApiDemo({ auth }) {
                                                     />
                                                 </div>
                                             </div>
-                                            <Button onClick={convertCurrency} disabled={loading} className="w-full">
+                                            <Button onClick={convertCurrency} disabled={loading} className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold">
                                                 {loading ? 'Converting...' : 'Convert Currency'}
                                             </Button>
 

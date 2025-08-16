@@ -302,6 +302,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                     size="sm"
                                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                                     disabled={currentPage === 1}
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                     Prev
@@ -314,7 +315,11 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             variant={currentPage === pageNum ? 'default' : 'outline'}
                                             size="sm"
                                             onClick={() => setCurrentPage(pageNum)}
-                                            className="w-8 h-8 p-0"
+                                            className={`w-8 h-8 p-0 ${
+                                                currentPage === pageNum 
+                                                    ? 'bg-yellow-300 hover:bg-yellow-400 text-gray-900' 
+                                                    : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
+                                            }`}
                                         >
                                             {pageNum}
                                         </Button>
@@ -327,7 +332,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => setCurrentPage(totalPages - 1)}
-                                            className="w-8 h-8 p-0"
+                                            className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                         >
                                             {totalPages - 1}
                                         </Button>
@@ -335,7 +340,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => setCurrentPage(totalPages)}
-                                            className="w-8 h-8 p-0"
+                                            className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                         >
                                             {totalPages}
                                         </Button>
@@ -346,6 +351,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                                     size="sm"
                                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                                     disabled={currentPage === totalPages}
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                 >
                                     Next
                                     <ChevronRight className="h-4 w-4" />
@@ -369,12 +375,14 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                         <Button
                             variant="outline"
                             onClick={() => setDeleteDialogOpen(false)}
+                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                         >
                             Cancel
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleDeleteConfirm}
+                            className="bg-red-600 hover:bg-red-700"
                         >
                             Delete Booking
                         </Button>

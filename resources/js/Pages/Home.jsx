@@ -198,7 +198,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/50" />
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-4">
             <h1 className="text-white text-3xl md:text-6xl font-bold tracking-tight text-center leading-tight drop-shadow-lg">
-              Never Overpay Again with<br /><span className="text-yellow-300">Price Drop Alerts</span>
+              Never Overpay Again with<br /><span className="text-yellow-300">Price Pulse Alerts</span>
             </h1>
 
             {/* Subtext & Stats */}
@@ -228,7 +228,7 @@ export default function Home() {
         <section className="mx-auto mt-16 mb-16 px-2 md:px-4">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 max-w-lg leading-tight">
-              How Price Drop Alerts Save You Money
+              How Price Pulse Alerts Save You Money
             </h2>
             <div className="text-gray-500 text-lg max-w-md mt-4 md:mt-0 md:text-right font-medium">
               Simply add your hotel booking to our system. We'll monitor prices 24/7 and instantly notify you when rates drop, so you can rebook and save money automatically.
@@ -279,7 +279,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <div className="p-4 md:p-6">
-                  <div className="text-lg md:text-2xl font-bold">Instant Price Drop Notifications</div>
+                  <div className="text-lg md:text-2xl font-bold">Instant Price Pulse Notifications</div>
                   <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Get real-time alerts when prices drop, so you can rebook immediately and save money on every booking.</div>
                   <div className="flex items-center gap-1 mb-1">
                     <span className="text-yellow-400 text-xl">★</span>
@@ -320,7 +320,7 @@ export default function Home() {
                 </div>
                 <div className="p-4 md:p-6">
                   <div className="text-lg md:text-2xl font-bold">Smart Savings Analytics</div>
-                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Track your total savings and get detailed reports on how much money you've saved with our price drop alerts.</div>
+                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Track your total savings and get detailed reports on how much money you've saved with our price pulse alerts.</div>
                   <div className="flex items-center gap-1 mb-1">
                     <span className="text-yellow-400 text-xl">★</span>
                     <span className="text-yellow-400 text-xl">★</span>
@@ -355,7 +355,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 w-full p-10 flex flex-col md:flex-row md:items-end md:justify-between z-10">
             <div>
               <div className="mb-2">
-                <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">Price Drop Alerts</span>
+                <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">Price Pulse Alerts</span>
               </div>
               <h2 className="text-white text-3xl md:text-5xl font-bold leading-tight mb-4">Start Saving Money<br />on Your Next Trip</h2>
               <div className="flex items-center gap-6 text-white/90 text-base font-medium">
@@ -390,7 +390,7 @@ export default function Home() {
           {/* Right: Text and Button */}
           <div className="flex-1 flex flex-col items-center md:items-start justify-center max-w-2xl text-center md:text-left">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 max-w-lg leading-tight mb-6">Never Overpay for<br />Your Dream Hotel Again</h2>
-            <p className="text-lg text-gray-700 mb-8">Join thousands of smart travelers who save hundreds on every trip. Our price drop alerts ensure you always get the best rates, even after you've already booked.</p>
+            <p className="text-lg text-gray-700 mb-8">Join thousands of smart travelers who save hundreds on every trip. Our price pulse alerts ensure you always get the best rates, even after you've already booked.</p>
             <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-4 rounded-full text-lg shadow-lg flex items-center gap-2 transition mb-10 mx-auto md:mx-0" asChild>
               <Link href="/dashboard">
                 Start Saving Money Today!
@@ -402,7 +402,9 @@ export default function Home() {
       </main>
 
       {/* Footer Section */}
-      <Footer />
+      <div className="mt-20">
+        <Footer />
+      </div>
     </div>
   );
 }

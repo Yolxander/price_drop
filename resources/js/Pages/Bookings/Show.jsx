@@ -524,16 +524,16 @@ export default function Show({ auth, booking }) {
                                     <CardTitle>Quick Actions</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <Button className="w-full" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50" variant="outline">
                                         Check Current Price
                                     </Button>
-                                    <Button className="w-full" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50" variant="outline">
                                         View Price History
                                     </Button>
-                                    <Button className="w-full" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50" variant="outline">
                                         Edit Booking
                                     </Button>
-                                    <Button className="w-full" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50" variant="outline">
                                         Set Price Alert
                                     </Button>
                                 </CardContent>

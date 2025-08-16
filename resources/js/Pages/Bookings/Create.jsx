@@ -317,14 +317,14 @@ export default function Create({ auth }) {
                                     type="button"
                                     variant="outline"
                                     onClick={() => window.history.back()}
-                                    className="border-gray-200 text-gray-700 hover:bg-gray-50"
+                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="bg-green-500 hover:bg-green-600 text-white border-0"
+                                    className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold border-0"
                                 >
                                     {isSubmitting ? 'Creating...' : 'Create Booking'}
                                 </Button>
