@@ -33,7 +33,7 @@ export default function Home() {
       <Head title="PricePulse - Save Money After You Book" />
 
       <header className="top-header sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between px-4">
+        <div className="w-full flex h-14 items-center justify-between px-6">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <img src="/logo/price-pulse-logo.png" alt="PricePulse Logo" className="h-8 w-auto" />
@@ -137,7 +137,7 @@ export default function Home() {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t">
-            <div className="container px-4 py-4 space-y-4">
+            <div className="w-full px-6 py-4 space-y-4">
               {user ? (
                 <>
                   <Button variant="ghost" className="w-full justify-start" asChild>
@@ -187,7 +187,7 @@ export default function Home() {
         )}
       </header>
 
-      <main className="bg-[#f9f9f9] px-1 md:px-4">
+      <main className="bg-[#f9f9f9] px-2 md:px-6">
         {/* Hero Section */}
         <section className="relative w-full h-[500px] md:h-[700px] rounded-3xl overflow-hidden mx-auto mt-6 shadow-lg">
           <img

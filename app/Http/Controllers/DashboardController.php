@@ -6,13 +6,35 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Models\HotelBooking;
+use App\Models\User;
 
 class DashboardController extends Controller
 {
+    /**
+     * Get the first available user ID or create a default user
+     */
+    private function getFirstUserId()
+    {
+        $user = User::first();
+
+        if (!$user) {
+            // Create a default user if none exists
+            $user = User::create([
+                'name' => 'Default User',
+                'email' => 'default@pricepulse.com',
+                'password' => bcrypt('password123'),
+            ]);
+        }
+
+        return $user->id;
+    }
+
     public function index()
     {
+        $userId = $this->getFirstUserId();
+
         // Get actual bookings from database
-        $hotelBookings = HotelBooking::where('user_id', 3) // For demo purposes, use dummy user ID 3
+        $hotelBookings = HotelBooking::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\HotelBooking;
+use App\Models\User;
 use App\Jobs\CheckHotelPrices;
 use App\Services\SerpApiService;
 use Illuminate\Support\Facades\Log;
@@ -20,12 +21,33 @@ class HotelBookingController extends Controller
     }
 
     /**
+     * Get the first available user ID or create a default user
+     */
+    private function getFirstUserId()
+    {
+        $user = User::first();
+
+        if (!$user) {
+            // Create a default user if none exists
+            $user = User::create([
+                'name' => 'Default User',
+                'email' => 'default@pricepulse.com',
+                'password' => bcrypt('password123'),
+            ]);
+        }
+
+        return $user->id;
+    }
+
+    /**
      * Display a listing of hotel bookings
      */
     public function index()
     {
+        $userId = $this->getFirstUserId();
+
         // Get actual bookings from database
-        $bookings = HotelBooking::where('user_id', 3) // For demo purposes, use dummy user ID 3
+        $bookings = HotelBooking::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -110,9 +132,12 @@ class HotelBookingController extends Controller
         $checkOut = \Carbon\Carbon::parse($validated['check_out_date']);
         $nights = $checkIn->diffInDays($checkOut);
 
+        // Get the first available user ID
+        $userId = $this->getFirstUserId();
+
         // Create the booking
         $booking = HotelBooking::create([
-            'user_id' => 3, // For demo purposes, use dummy user ID 3
+            'user_id' => $userId,
             'hotel_name' => $validated['hotel_name'],
             'location' => $validated['location'],
             'check_in_date' => $validated['check_in_date'],
@@ -430,8 +455,10 @@ class HotelBookingController extends Controller
      */
     public function favorites()
     {
+        $userId = $this->getFirstUserId();
+
         // Get actual bookings from database and mark some as favorites for demo
-        $bookings = HotelBooking::where('user_id', 3) // For demo purposes, use dummy user ID 3
+        $bookings = HotelBooking::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
 

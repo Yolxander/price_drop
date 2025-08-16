@@ -5,107 +5,56 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\PriceAlert;
-use App\Models\AlertSetting;
 use App\Models\HotelBooking;
+use App\Models\AlertSetting;
+use App\Services\SerpApiService;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class AlertController extends Controller
 {
-    public function index()
-    {
-        // Get real alerts from database (for demo, we'll use dummy data if none exist)
-        $alerts = PriceAlert::with(['hotelBooking', 'user'])
-            ->orderBy('triggered_at', 'desc')
-            ->get()
-            ->map(function ($alert) {
-                return [
-                    'id' => $alert->id,
-                    'booking_id' => $alert->hotel_booking_id,
-                    'hotel_name' => $alert->hotel_name,
-                    'location' => $alert->location,
-                    'triggered_at' => $alert->triggered_at->toISOString(),
-                    'created_at' => $alert->created_at->toISOString(),
-                    'provider' => $alert->provider,
-                    'current_price' => $alert->current_price,
-                    'booked_price' => $alert->booked_price,
-                    'delta_amount' => $alert->delta_amount,
-                    'delta_percent' => $alert->delta_percent,
-                    'rule_threshold' => $alert->rule_threshold,
-                    'status' => $alert->status,
-                    'severity' => $alert->severity,
-                    'currency' => $alert->currency,
-                    'check_in_date' => $alert->hotelBooking?->check_in_date?->toISOString() ?? Carbon::now()->addDays(30)->toISOString(),
-                    'notes' => $alert->notes
-                ];
-            });
+    protected $serpApiService;
 
-        // If no alerts exist, create some dummy data for demonstration
-        if ($alerts->isEmpty()) {
-            $alerts = collect([
-                [
-                    'id' => 1,
-                    'booking_id' => 1,
-                    'hotel_name' => 'Fairmont Royal York',
-                    'location' => 'Toronto, ON',
-                    'triggered_at' => Carbon::now()->subHours(2)->toISOString(),
-                    'created_at' => Carbon::now()->subHours(2)->toISOString(),
-                    'provider' => 'Google Hotels',
-                    'current_price' => 1184.00,
-                    'booked_price' => 1316.00,
-                    'delta_amount' => -132.00,
-                    'delta_percent' => -10.0,
-                    'rule_threshold' => '>$50 drop',
-                    'status' => 'new',
-                    'severity' => 'high',
-                    'currency' => 'USD',
-                    'check_in_date' => Carbon::now()->addDays(30)->toISOString(),
-                    'notes' => 'Price dropped significantly below threshold'
-                ],
-                [
-                    'id' => 2,
-                    'booking_id' => 3,
-                    'hotel_name' => 'Hotel Arts Barcelona',
-                    'location' => 'Barcelona, Spain',
-                    'triggered_at' => Carbon::now()->subHours(1)->toISOString(),
-                    'created_at' => Carbon::now()->subHours(1)->toISOString(),
-                    'provider' => 'Booking.com',
-                    'current_price' => 765.00,
-                    'booked_price' => 850.00,
-                    'delta_amount' => -85.00,
-                    'delta_percent' => -10.0,
-                    'rule_threshold' => '>5% drop',
-                    'status' => 'actioned',
-                    'severity' => 'medium',
-                    'currency' => 'USD',
-                    'check_in_date' => Carbon::now()->addDays(45)->toISOString(),
-                    'notes' => 'Customer rebooked at lower price'
-                ],
-                [
-                    'id' => 3,
-                    'booking_id' => 4,
-                    'hotel_name' => 'Park Hyatt Tokyo',
-                    'location' => 'Tokyo, Japan',
-                    'triggered_at' => Carbon::now()->subHours(4)->toISOString(),
-                    'created_at' => Carbon::now()->subHours(4)->toISOString(),
-                    'provider' => 'Expedia',
-                    'current_price' => 135000.00,
-                    'booked_price' => 150000.00,
-                    'delta_amount' => -15000.00,
-                    'delta_percent' => -10.0,
-                    'rule_threshold' => '>$1000 drop',
-                    'status' => 'dismissed',
-                    'severity' => 'high',
-                    'currency' => 'JPY',
-                    'check_in_date' => Carbon::now()->addDays(60)->toISOString(),
-                    'notes' => 'Customer decided to keep original booking'
-                ]
+    public function __construct(SerpApiService $serpApiService)
+    {
+        $this->serpApiService = $serpApiService;
+    }
+
+    /**
+     * Get the first available user ID or create a default user
+     */
+    private function getFirstUserId()
+    {
+        $user = \App\Models\User::first();
+
+        if (!$user) {
+            // Create a default user if none exists
+            $user = \App\Models\User::create([
+                'name' => 'Default User',
+                'email' => 'default@pricepulse.com',
+                'password' => bcrypt('password123'),
             ]);
         }
 
+        return $user->id;
+    }
+
+    /**
+     * Display a listing of price alerts
+     */
+    public function index()
+    {
+        $userId = $this->getFirstUserId();
+
+        $alerts = PriceAlert::where('user_id', $userId)
+            ->with('hotelBooking')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $stats = [
             'total_alerts' => $alerts->count(),
-            'new_alerts' => $alerts->where('status', 'new')->count(),
-            'actioned_alerts' => $alerts->where('status', 'actioned')->count(),
+            'unread_alerts' => $alerts->where('is_read', false)->count(),
+            'actioned_alerts' => $alerts->where('is_actioned', true)->count(),
             'total_savings' => $alerts->sum('delta_amount')
         ];
 
@@ -148,47 +97,62 @@ class AlertController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * Get alert settings for the current user
+     */
     public function getAlertSettings()
     {
-        $settings = AlertSetting::where('user_id', 3)->first(); // For demo, using dummy user ID 3
+        $userId = $this->getFirstUserId();
+
+        $settings = AlertSetting::where('user_id', $userId)->first();
 
         if (!$settings) {
+            // Create default settings if none exist
             $settings = AlertSetting::create([
-                'user_id' => 3,
+                'user_id' => $userId,
                 'min_price_drop_amount' => 10.00,
-                'min_price_drop_percent' => 5.00,
-                'email_notifications' => true,
-                'push_notifications' => true,
-                'sms_notifications' => false,
-                'notification_frequency' => 'immediate',
-                'quiet_hours_start' => null,
-                'quiet_hours_end' => null,
-                'excluded_providers' => [],
-                'included_locations' => []
+                'min_price_drop_percent' => 5.0,
+                'notification_email' => true,
+                'notification_push' => true,
+                'auto_rebook' => false,
+                'monitoring_frequency' => 'hourly',
+                'preferred_providers' => ['booking.com', 'expedia', 'hotels.com'],
+                'blacklisted_providers' => [],
+                'location_preferences' => [],
+                'price_thresholds' => [
+                    'budget' => 100,
+                    'mid_range' => 300,
+                    'luxury' => 1000
+                ]
             ]);
         }
 
         return response()->json($settings);
     }
 
+    /**
+     * Update alert settings
+     */
     public function updateAlertSettings(Request $request)
     {
-        $request->validate([
+        $userId = $this->getFirstUserId();
+
+        $validated = $request->validate([
             'min_price_drop_amount' => 'required|numeric|min:0',
             'min_price_drop_percent' => 'required|numeric|min:0|max:100',
-            'email_notifications' => 'boolean',
-            'push_notifications' => 'boolean',
-            'sms_notifications' => 'boolean',
-            'notification_frequency' => 'required|in:immediate,daily,weekly',
-            'quiet_hours_start' => 'nullable|date_format:H:i',
-            'quiet_hours_end' => 'nullable|date_format:H:i',
-            'excluded_providers' => 'array',
-            'included_locations' => 'array'
+            'notification_email' => 'boolean',
+            'notification_push' => 'boolean',
+            'auto_rebook' => 'boolean',
+            'monitoring_frequency' => 'required|in:every_15_minutes,every_30_minutes,hourly,daily',
+            'preferred_providers' => 'array',
+            'blacklisted_providers' => 'array',
+            'location_preferences' => 'array',
+            'price_thresholds' => 'array'
         ]);
 
         $settings = AlertSetting::updateOrCreate(
-            ['user_id' => 3], // For demo, using dummy user ID 3
-            $request->all()
+            ['user_id' => $userId],
+            $validated
         );
 
         return response()->json(['success' => true, 'settings' => $settings]);

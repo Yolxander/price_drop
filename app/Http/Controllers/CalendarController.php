@@ -3,16 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Models\HotelBooking;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
 class CalendarController extends Controller
 {
+    /**
+     * Get the first available user ID or create a default user
+     */
+    private function getFirstUserId()
+    {
+        $user = User::first();
+
+        if (!$user) {
+            // Create a default user if none exists
+            $user = User::create([
+                'name' => 'Default User',
+                'email' => 'default@pricepulse.com',
+                'password' => bcrypt('password123'),
+            ]);
+        }
+
+        return $user->id;
+    }
+
     public function index()
     {
-        // Get all bookings for the current user (using dummy user ID 3 for demo purposes)
-        $bookings = HotelBooking::where('user_id', 3)
+        $userId = $this->getFirstUserId();
+
+        // Get all bookings for the current user
+        $bookings = HotelBooking::where('user_id', $userId)
             ->orderBy('check_in_date')
             ->get()
             ->map(function ($booking) {
@@ -55,7 +77,7 @@ class CalendarController extends Controller
             });
 
         // Get upcoming bookings (next 7 days)
-        $upcomingBookings = HotelBooking::where('user_id', 3)
+        $upcomingBookings = HotelBooking::where('user_id', $userId)
             ->where('check_in_date', '>=', Carbon::now())
             ->where('check_in_date', '<=', Carbon::now()->addDays(7))
             ->orderBy('check_in_date')
