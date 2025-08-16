@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import ImageGalleryModal from '@/components/ui/image-gallery-modal';
 import Sidebar from '@/components/ui/sidebar';
 import { toast, Toaster } from 'sonner';
-import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail, CheckCircle, AlertCircle, Menu, X, Home, Grid3X3, Calendar as CalendarIcon, Heart, Bell, Settings, LogOut } from 'lucide-react';
 
 export default function Show({ auth, booking }) {
     const [loading, setLoading] = useState(false);
@@ -16,6 +16,7 @@ export default function Show({ auth, booking }) {
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [availableImages, setAvailableImages] = useState([]);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         overview: false,
@@ -24,6 +25,48 @@ export default function Show({ auth, booking }) {
         history: false,
         sidebar: false
     });
+
+    // Mobile navigation items
+    const mobileNavigationItems = [
+        {
+            href: '/dashboard',
+            icon: Home,
+            label: 'Dashboard',
+            page: 'dashboard'
+        },
+        {
+            href: '/bookings',
+            icon: Grid3X3,
+            label: 'All Bookings',
+            page: 'bookings'
+        },
+        {
+            href: '/calendar',
+            icon: CalendarIcon,
+            label: 'Calendar',
+            page: 'calendar'
+        },
+        {
+            href: '/price-alerts',
+            icon: Bell,
+            label: 'Price Pulses',
+            page: 'alerts',
+            hasNotification: true,
+            notificationCount: 2
+        },
+        {
+            href: '/favorites',
+            icon: Heart,
+            label: 'Favorites',
+            page: 'favorites'
+        },
+        {
+            href: '/settings',
+            icon: Settings,
+            label: 'Settings',
+            page: 'settings'
+        }
+    ];
 
     // Intersection Observer for animations
     useEffect(() => {
@@ -199,44 +242,166 @@ export default function Show({ auth, booking }) {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Left Sidebar */}
-            <Sidebar activePage="bookings" />
+        <div className="flex h-screen bg-gray-50 overflow-hidden">
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 lg:hidden">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => {
+                        setIsMobileMenuOpen(false);
+                    }} />
+                    <div className="mobile-menu-container fixed inset-y-0 left-0 flex w-80 flex-col bg-white border-r border-gray-200 animate-in slide-in-from-left duration-300">
+                        {/* Mobile Menu Header */}
+                        <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <img
+                                    src="/logo/price-pulse-logo.png"
+                                    alt="Price Pulse"
+                                    className="w-8 h-8"
+                                />
+                                <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="h-8 w-8"
+                            >
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Mobile Navigation */}
+                        <nav className="flex-1 p-4 space-y-2">
+                            {mobileNavigationItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = item.page === 'bookings';
+
+                                return (
+                                    <Link key={item.href} href={item.href} className="block">
+                                        <div className={`flex items-center space-x-3 p-4 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 ${
+                                            isActive
+                                                ? 'bg-yellow-50 border border-yellow-200'
+                                                : 'hover:bg-gray-50 active:bg-gray-100'
+                                        }`}>
+                                            {item.hasNotification ? (
+                                                <div className="relative">
+                                                    <Icon className={`h-6 w-6 ${
+                                                        isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                    }`} />
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                                        <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <Icon className={`h-6 w-6 ${
+                                                    isActive ? 'text-yellow-600' : 'text-gray-600'
+                                                }`} />
+                                            )}
+                                            <span className={`text-lg ${
+                                                isActive
+                                                    ? 'font-semibold text-gray-900'
+                                                    : 'text-gray-700'
+                                            }`}>
+                                                {item.label}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Mobile User Profile */}
+                        <div className="p-4 border-t border-gray-200">
+                            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
+                                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white font-semibold text-lg">
+                                        {auth?.user?.name?.charAt(0) || 'U'}
+                                    </span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold text-gray-900">{auth?.user?.name || 'User'}</p>
+                                    <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
+                                </div>
+                            </div>
+                            <Link href="/" className="block mt-3">
+                                <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
+                                    <LogOut className="h-5 w-5 text-gray-600" />
+                                    <span className="text-gray-700 font-medium">Log Out</span>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Sidebar - Hidden on mobile */}
+            <div className="hidden lg:block">
+                <Sidebar activePage="bookings" />
+            </div>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
+                <Head title={`Booking - ${booking.hotel_name}`} />
+
+                {/* Mobile Header */}
+                <div className="lg:hidden bg-white border-b border-gray-200 p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="h-10 w-10 active:scale-95 transition-transform"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                        <div className="flex items-center space-x-3">
+                            <img
+                                src="/logo/price-pulse-logo.png"
+                                alt="Price Pulse"
+                                className="w-8 h-8"
+                            />
+                            <span className="text-xl font-bold text-yellow-600">Booking Details</span>
+                        </div>
+                        <div className="w-10" /> {/* Spacer for centering */}
+                    </div>
+                </div>
+
                 {/* Header */}
                 <div
                     data-section="header"
-                    className={`bg-white border-b border-gray-200 p-6 transition-all duration-1000 ease-out ${
+                    className={`bg-white border-b border-gray-200 p-4 lg:p-6 transition-all duration-1000 ease-out ${
                         isVisible.header
                             ? 'opacity-100 translate-y-0'
                             : 'opacity-0 translate-y-8'
                     }`}
                 >
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                         <div className={`transition-all duration-1000 delay-200 ${
                             isVisible.header
                                 ? 'opacity-100 translate-x-0'
                                 : 'opacity-0 -translate-x-8'
                         }`}>
-                            <h1 className="text-2xl font-bold text-gray-900">{booking.hotel_name}</h1>
+                            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{booking.hotel_name}</h1>
                             <p className="text-gray-600 mt-1">{booking.location}</p>
                         </div>
-                        <div className={`flex items-center gap-4 transition-all duration-1000 delay-400 ${
+                        <div className={`flex flex-col sm:flex-row items-center gap-3 lg:gap-4 transition-all duration-1000 delay-400 ${
                             isVisible.header
                                 ? 'opacity-100 translate-x-0'
                                 : 'opacity-0 translate-x-8'
                         }`}>
                             <Link href="/bookings">
-                                <Button variant="outline" className="transition-all duration-300 hover:scale-105">Back to Bookings</Button>
+                                <Button variant="outline" className="transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation w-full sm:w-auto h-10">
+                                    Back to Bookings
+                                </Button>
                             </Link>
                             {!booking.enrichment_successful && (
                                 <Button
                                     onClick={triggerEnrichment}
                                     disabled={loading}
                                     variant="default"
-                                    className={`transition-all duration-300 hover:scale-105 ${loading ? 'btn-loading' : ''}`}
+                                    className={`transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation w-full sm:w-auto h-10 ${loading ? 'btn-loading' : ''}`}
                                 >
                                     {loading ? 'Enriching...' : 'Enrich Data'}
                                 </Button>
@@ -246,12 +411,10 @@ export default function Show({ auth, booking }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
-                    <Head title={`Booking - ${booking.hotel_name}`} />
-
+                <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">
                     {/* Enrichment Status */}
                     {enrichmentStatus && (
-                        <Card className={`mb-6 transition-all duration-500 hover:scale-[1.02] ${enrichmentStatus.success ? 'border-green-200' : 'border-red-200'}`}>
+                        <Card className={`mb-6 transition-all duration-500 hover:scale-[1.02] active:scale-95 touch-manipulation ${enrichmentStatus.success ? 'border-green-200' : 'border-red-200'}`}>
                             <CardContent className="p-4">
                                 <div className={`flex items-center gap-2 ${enrichmentStatus.success ? 'text-green-700' : 'text-red-700'}`}>
                                     <Badge variant={enrichmentStatus.success ? "default" : "destructive"}>
@@ -263,21 +426,41 @@ export default function Show({ auth, booking }) {
                         </Card>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                         {/* Main Content */}
                         <div className="lg:col-span-2">
                             <Tabs defaultValue="overview" className="w-full">
-                                <TabsList className="grid w-full grid-cols-4">
-                                    <TabsTrigger value="overview" className="transition-all duration-300 hover:scale-105">Overview</TabsTrigger>
-                                    <TabsTrigger value="facilities" className="transition-all duration-300 hover:scale-105">Facilities</TabsTrigger>
-                                    <TabsTrigger value="details" className="transition-all duration-300 hover:scale-105">Details</TabsTrigger>
-                                    <TabsTrigger value="history" className="transition-all duration-300 hover:scale-105">History</TabsTrigger>
+                                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 p-1 bg-gray-100 rounded-xl">
+                                    <TabsTrigger value="overview" className="flex flex-col items-center space-y-2 p-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-2 data-[state=active]:border-yellow-200">
+                                        <div className="w-6 h-6 rounded-lg bg-yellow-100 flex items-center justify-center">
+                                            <Star className="h-4 w-4 text-yellow-600" />
+                                        </div>
+                                        <span className="text-xs font-medium hidden sm:block">Overview</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger value="facilities" className="flex flex-col items-center space-y-2 p-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-2 data-[state=active]:border-yellow-200">
+                                        <div className="w-6 h-6 rounded-lg bg-green-100 flex items-center justify-center">
+                                            <CheckCircle className="h-4 w-4 text-green-600" />
+                                        </div>
+                                        <span className="text-xs font-medium hidden sm:block">Facilities</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger value="details" className="flex flex-col items-center space-y-2 p-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-2 data-[state=active]:border-yellow-200">
+                                        <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center">
+                                            <Calendar className="h-4 w-4 text-blue-600" />
+                                        </div>
+                                        <span className="text-xs font-medium hidden sm:block">Details</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger value="history" className="flex flex-col items-center space-y-2 p-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:border-2 data-[state=active]:border-yellow-200">
+                                        <div className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center">
+                                            <TrendingDown className="h-4 w-4 text-purple-600" />
+                                        </div>
+                                        <span className="text-xs font-medium hidden sm:block">History</span>
+                                    </TabsTrigger>
                                 </TabsList>
 
-                                <TabsContent value="overview" className="mt-6">
+                                <TabsContent value="overview" className="mt-4 lg:mt-6">
                                     <Card
                                         data-section="overview"
-                                        className={`transition-all duration-1000 ease-out hover:shadow-lg ${
+                                        className={`transition-all duration-1000 ease-out hover:shadow-lg active:scale-95 touch-manipulation ${
                                             isVisible.overview
                                                 ? 'opacity-100 translate-y-0'
                                                 : 'opacity-0 translate-y-8'
@@ -286,17 +469,17 @@ export default function Show({ auth, booking }) {
                                         <CardHeader>
                                             <CardTitle>Hotel Overview</CardTitle>
                                         </CardHeader>
-                                        <CardContent className="space-y-6">
+                                        <CardContent className="space-y-4 lg:space-y-6">
                                             {booking.enriched_data?.overview ? (
                                                 <>
-                                                    <div className="flex items-center gap-4">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                                                         <div className="flex items-center gap-2">
                                                             <Star className="h-5 w-5 text-yellow-500 fill-current animate-pulse" />
                                                             <span className="font-semibold">
                                                                 {booking.enriched_data.overview.star_rating} / 5.0
                                                             </span>
                                                         </div>
-                                                        <Badge variant="outline" className="transition-all duration-300 hover:scale-105">
+                                                        <Badge variant="outline" className="transition-all duration-300 hover:scale-105 active:scale-95 w-fit">
                                                             {booking.enriched_data.overview.canonical_name}
                                                         </Badge>
                                                     </div>
@@ -305,11 +488,11 @@ export default function Show({ auth, booking }) {
                                                     {availableImages.length > 0 ? (
                                                         <div>
                                                             <h3 className="font-semibold mb-3">Hotel Images</h3>
-                                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
                                                                 {availableImages.map((image, index) => (
                                                                     <div
                                                                         key={image.originalIndex}
-                                                                        className="aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-all duration-300 hover:scale-105 image-hover"
+                                                                        className="aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation image-hover"
                                                                         onClick={() => openGallery(image.originalIndex)}
                                                                     >
                                                                         <img
@@ -352,7 +535,7 @@ export default function Show({ auth, booking }) {
                                                                     href={booking.enriched_data.overview.hotel_website}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="text-yellow-600 hover:underline transition-all duration-300 hover:scale-105"
+                                                                    className="text-yellow-600 hover:underline transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation"
                                                                 >
                                                                     Visit Hotel Website
                                                                 </a>
@@ -366,7 +549,7 @@ export default function Show({ auth, booking }) {
                                                     <Button
                                                         onClick={triggerEnrichment}
                                                         disabled={loading}
-                                                        className={`mt-4 transition-all duration-300 hover:scale-105 ${loading ? 'btn-loading' : ''}`}
+                                                        className={`mt-4 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation w-full sm:w-auto h-10 ${loading ? 'btn-loading' : ''}`}
                                                     >
                                                         {loading ? 'Enriching...' : 'Enrich Data'}
                                                     </Button>
@@ -376,19 +559,19 @@ export default function Show({ auth, booking }) {
                                     </Card>
                                 </TabsContent>
 
-                                <TabsContent value="facilities" className="mt-6">
-                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg opacity-100 translate-y-0">
+                                <TabsContent value="facilities" className="mt-4 lg:mt-6">
+                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg active:scale-95 touch-manipulation opacity-100 translate-y-0">
                                         <CardHeader>
                                             <CardTitle>Facilities & Amenities</CardTitle>
                                         </CardHeader>
                                         <CardContent>
                                             {booking.enriched_data?.facilities ? (
-                                                <div className="space-y-6">
+                                                <div className="space-y-4 lg:space-y-6">
                                                     <div>
                                                         <h3 className="font-semibold mb-3">Amenities</h3>
-                                                        <div className="grid grid-cols-2 gap-2">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                             {booking.enriched_data.facilities.amenities?.map((amenity, index) => (
-                                                                <div key={index} className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
+                                                                <div key={index} className="flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95">
                                                                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                                                     <span className="text-sm">{amenity}</span>
                                                                 </div>
@@ -400,9 +583,9 @@ export default function Show({ auth, booking }) {
 
                                                     <div>
                                                         <h3 className="font-semibold mb-3">Facilities</h3>
-                                                        <div className="grid grid-cols-2 gap-2">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                             {booking.enriched_data.facilities.facilities?.map((facility, index) => (
-                                                                <div key={index} className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
+                                                                <div key={index} className="flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95">
                                                                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                                                                     <span className="text-sm">{facility}</span>
                                                                 </div>
@@ -413,7 +596,7 @@ export default function Show({ auth, booking }) {
                                                     <Separator />
 
                                                     <div className="flex items-center gap-2">
-                                                        <Badge variant={booking.enriched_data.facilities.breakfast_included ? "default" : "secondary"} className="transition-all duration-300 hover:scale-105">
+                                                        <Badge variant={booking.enriched_data.facilities.breakfast_included ? "default" : "secondary"} className="transition-all duration-300 hover:scale-105 active:scale-95">
                                                             {booking.enriched_data.facilities.breakfast_included ? 'Breakfast Included' : 'Breakfast Not Included'}
                                                         </Badge>
                                                     </div>
@@ -427,14 +610,14 @@ export default function Show({ auth, booking }) {
                                     </Card>
                                 </TabsContent>
 
-                                <TabsContent value="details" className="mt-6">
-                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg opacity-100 translate-y-0">
+                                <TabsContent value="details" className="mt-4 lg:mt-6">
+                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg active:scale-95 touch-manipulation opacity-100 translate-y-0">
                                         <CardHeader>
                                             <CardTitle>Booking Details</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <div className="space-y-6">
-                                                <div className="grid grid-cols-2 gap-6">
+                                            <div className="space-y-4 lg:space-y-6">
+                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                                                     <div>
                                                         <h3 className="font-semibold mb-3">Room Information</h3>
                                                         <div className="space-y-2">
@@ -508,7 +691,7 @@ export default function Show({ auth, booking }) {
                                                                 href={booking.enriched_data.details.booking_link}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="text-yellow-600 hover:underline transition-all duration-300 hover:scale-105"
+                                                                className="text-yellow-600 hover:underline transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation"
                                                             >
                                                                 View Booking Details
                                                             </a>
@@ -520,14 +703,14 @@ export default function Show({ auth, booking }) {
                                     </Card>
                                 </TabsContent>
 
-                                <TabsContent value="history" className="mt-6">
-                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg opacity-100 translate-y-0">
+                                <TabsContent value="history" className="mt-4 lg:mt-6">
+                                    <Card className="transition-all duration-1000 ease-out hover:shadow-lg active:scale-95 touch-manipulation opacity-100 translate-y-0">
                                         <CardHeader>
                                             <CardTitle>Price History & Tracking</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <div className="space-y-6">
-                                                <div className="grid grid-cols-2 gap-6">
+                                            <div className="space-y-4 lg:space-y-6">
+                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                                                     <div>
                                                         <h3 className="font-semibold mb-3">Price Information</h3>
                                                         <div className="space-y-2">
@@ -559,7 +742,7 @@ export default function Show({ auth, booking }) {
                                                         <div className="space-y-2">
                                                             <div>
                                                                 <span className="text-sm text-gray-600">Status:</span>
-                                                                <Badge variant={booking.status === 'active' ? 'default' : 'secondary'} className="transition-all duration-300 hover:scale-105">
+                                                                <Badge variant={booking.status === 'active' ? 'default' : 'secondary'} className="transition-all duration-300 hover:scale-105 active:scale-95">
                                                                     {booking.status}
                                                                 </Badge>
                                                             </div>
@@ -571,7 +754,7 @@ export default function Show({ auth, booking }) {
                                                             </div>
                                                             <div>
                                                                 <span className="text-sm text-gray-600">Enrichment:</span>
-                                                                <Badge variant={booking.enrichment_successful ? 'default' : 'destructive'} className="transition-all duration-300 hover:scale-105">
+                                                                <Badge variant={booking.enrichment_successful ? 'default' : 'destructive'} className="transition-all duration-300 hover:scale-105 active:scale-95">
                                                                     {booking.enrichment_successful ? 'Successful' : 'Failed'}
                                                                 </Badge>
                                                             </div>
@@ -583,22 +766,22 @@ export default function Show({ auth, booking }) {
 
                                                 <div>
                                                     <h3 className="font-semibold mb-3">Stay Details</h3>
-                                                    <div className="grid grid-cols-3 gap-4">
-                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95">
                                                             <Calendar className="h-4 w-4 text-gray-500" />
                                                             <div>
                                                                 <p className="text-sm text-gray-600">Check-in</p>
                                                                 <p className="font-medium">{formatDate(booking.check_in_date)}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
+                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95">
                                                             <Calendar className="h-4 w-4 text-gray-500" />
                                                             <div>
                                                                 <p className="text-sm text-gray-600">Check-out</p>
                                                                 <p className="font-medium">{formatDate(booking.check_out_date)}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105">
+                                                        <div className="flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95">
                                                             <Users className="h-4 w-4 text-gray-500" />
                                                             <div>
                                                                 <p className="text-sm text-gray-600">Guests</p>
@@ -616,11 +799,11 @@ export default function Show({ auth, booking }) {
 
                         {/* Sidebar */}
                         <div
-                            className="space-y-6"
+                            className="space-y-4 lg:space-y-6"
                             data-section="sidebar"
                         >
                             {/* Price Summary */}
-                            <Card className={`transition-all duration-1000 ease-out hover:shadow-lg ${
+                            <Card className={`transition-all duration-1000 ease-out hover:shadow-lg active:scale-95 touch-manipulation ${
                                 isVisible.sidebar
                                     ? 'opacity-100 translate-y-0'
                                     : 'opacity-0 translate-y-8'
@@ -660,7 +843,7 @@ export default function Show({ auth, booking }) {
                             </Card>
 
                             {/* Quick Actions */}
-                            <Card className={`transition-all duration-1000 delay-200 ease-out hover:shadow-lg ${
+                            <Card className={`transition-all duration-1000 delay-200 ease-out hover:shadow-lg active:scale-95 touch-manipulation ${
                                 isVisible.sidebar
                                     ? 'opacity-100 translate-y-0'
                                     : 'opacity-0 translate-y-8'
@@ -669,21 +852,55 @@ export default function Show({ auth, booking }) {
                                     <CardTitle>Quick Actions</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation h-10" variant="outline">
                                         Check Current Price
                                     </Button>
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation h-10" variant="outline">
                                         View Price History
                                     </Button>
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation h-10" variant="outline">
                                         Edit Booking
                                     </Button>
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105" variant="outline">
+                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation h-10" variant="outline">
                                         Set Price Alert
                                     </Button>
                                 </CardContent>
                             </Card>
                         </div>
+                    </div>
+                </div>
+
+                {/* Mobile Bottom Navigation */}
+                <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 z-40">
+                    <div className="flex items-center justify-around">
+                        {mobileNavigationItems.slice(0, 5).map((item) => {
+                            const Icon = item.icon;
+                            const isActive = item.page === 'bookings';
+
+                            return (
+                                <Link key={item.href} href={item.href} className="flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200 active:scale-95">
+                                    {item.hasNotification ? (
+                                        <div className="relative">
+                                            <Icon className={`h-6 w-6 ${
+                                                isActive ? 'text-yellow-600' : 'text-gray-600'
+                                            }`} />
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                                <span className="text-xs text-white font-medium">{item.notificationCount}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <Icon className={`h-6 w-6 ${
+                                            isActive ? 'text-yellow-600' : 'text-gray-600'
+                                        }`} />
+                                    )}
+                                    <span className={`text-xs ${
+                                        isActive ? 'font-semibold text-yellow-600' : 'text-gray-600'
+                                    }`}>
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
