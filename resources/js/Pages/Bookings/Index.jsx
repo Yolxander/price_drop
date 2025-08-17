@@ -34,24 +34,29 @@ import {
     Grid3X3,
     Bell,
     Heart,
-    LogOut
+    LogOut,
+    CalendarIcon
 } from 'lucide-react';
 
-export default function BookingsIndex({ auth, bookings, stats }) {
+export default function BookingsIndex({ auth, bookings, filters, stats }) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [viewMode, setViewMode] = useState('grid');
     const [currentPage, setCurrentPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [displayedBookings, setDisplayedBookings] = useState([]);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [bookingToDelete, setBookingToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         searchBar: false,
         bookingsGrid: false,
         pagination: false
     });
-    const itemsPerPage = 8;
+    const itemsPerPage = 12;
 
     // Mobile navigation items
     const mobileNavigationItems = [
@@ -69,7 +74,7 @@ export default function BookingsIndex({ auth, bookings, stats }) {
         },
         {
             href: '/calendar',
-            icon: Calendar,
+            icon: CalendarIcon,
             label: 'Calendar',
             page: 'calendar'
         },
@@ -94,6 +99,133 @@ export default function BookingsIndex({ auth, bookings, stats }) {
             page: 'settings'
         }
     ];
+
+    // Initialize displayed bookings
+    useEffect(() => {
+        // Convert bookings data to properties format for display
+        const properties = bookings ? bookings.map(booking => {
+            // Get the first screenshot from enriched data, or use placeholder
+            const screenshots = booking.enriched_data?.overview?.screenshots || [];
+            const image = screenshots.length > 0 ? screenshots[0] : null;
+
+            return {
+                id: booking.id,
+                name: booking.hotel_name,
+                location: booking.location,
+                price: booking.total_price,
+                image: image,
+                beds: booking.rooms || 1,
+                baths: 2, // Default value since we don't have this in booking data
+                sqft: 1500, // Default value since we don't have this in booking data
+                checkIn: booking.check_in_date,
+                checkOut: booking.check_out_date,
+                guests: booking.guests,
+                nights: booking.nights,
+                status: booking.status
+            };
+        }) : [];
+
+        const filtered = properties.filter(property => {
+            const matchesStatus = statusFilter === 'all' || property.status === statusFilter;
+            const matchesSearch = !searchQuery ||
+                property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                property.location.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesStatus && matchesSearch;
+        });
+
+        setDisplayedBookings(filtered.slice(0, itemsPerPage));
+        setCurrentPage(1);
+        setHasMore(filtered.length > itemsPerPage);
+    }, [bookings, statusFilter, searchQuery]);
+
+    // Load more bookings function
+    const loadMoreBookings = () => {
+        if (isLoading || !hasMore) return;
+
+        setIsLoading(true);
+
+        // Simulate API call delay
+        setTimeout(() => {
+            // Convert bookings data to properties format for display
+            const properties = bookings ? bookings.map(booking => {
+                // Get the first screenshot from enriched data, or use placeholder
+                const screenshots = booking.enriched_data?.overview?.screenshots || [];
+                const image = screenshots.length > 0 ? screenshots[0] : null;
+
+                return {
+                    id: booking.id,
+                    name: booking.hotel_name,
+                    location: booking.location,
+                    price: booking.total_price,
+                    image: image,
+                    beds: booking.rooms || 1,
+                    baths: 2, // Default value since we don't have this in booking data
+                    sqft: 1500, // Default value since we don't have this in booking data
+                    checkIn: booking.check_in_date,
+                    checkOut: booking.check_out_date,
+                    guests: booking.guests,
+                    nights: booking.nights,
+                    status: booking.status
+                };
+            }) : [];
+
+            const filtered = properties.filter(property => {
+                const matchesStatus = statusFilter === 'all' || property.status === statusFilter;
+                const matchesSearch = !searchQuery ||
+                    property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    property.location.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesStatus && matchesSearch;
+            });
+
+            const nextPage = currentPage + 1;
+            const startIndex = (nextPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const newBookings = filtered.slice(startIndex, endIndex);
+
+            setDisplayedBookings(prev => [...prev, ...newBookings]);
+            setCurrentPage(nextPage);
+            setHasMore(endIndex < filtered.length);
+            setIsLoading(false);
+        }, 500);
+    };
+
+    // Intersection Observer for infinite scroll
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !isLoading) {
+                    loadMoreBookings();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        const sentinel = document.getElementById('scroll-sentinel');
+        if (sentinel) {
+            observer.observe(sentinel);
+        }
+
+        return () => observer.disconnect();
+    }, [hasMore, isLoading, currentPage, statusFilter, searchQuery]);
+
+    // Handle delete confirmation
+    const handleDeleteConfirm = () => {
+        if (!bookingToDelete) return;
+
+        setIsDeleting(true);
+        router.delete(`/bookings/${bookingToDelete.id}`, {
+            onSuccess: () => {
+                setDeleteDialogOpen(false);
+                setBookingToDelete(null);
+                setIsDeleting(false);
+                toast.success('Booking deleted successfully');
+            },
+            onError: () => {
+                setIsDeleting(false);
+                toast.error('Failed to delete booking');
+            }
+        });
+    };
 
     // Intersection Observer for animations
     useEffect(() => {
@@ -153,89 +285,6 @@ export default function BookingsIndex({ auth, bookings, stats }) {
         setDeleteDialogOpen(true);
     };
 
-    const handleDeleteConfirm = async () => {
-        if (bookingToDelete && !isDeleting) {
-            setIsDeleting(true);
-
-            // Close dialog immediately
-            setDeleteDialogOpen(false);
-
-            // Show loading toast
-            const loadingToast = toast.loading('Deleting booking...', {
-                duration: Infinity,
-                position: 'top-right',
-                style: {
-                    background: '#fbbf24',
-                    color: '#1f2937',
-                    border: '1px solid #f59e0b',
-                },
-            });
-
-            try {
-                // Simulate background processing
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                await router.delete(`/bookings/${bookingToDelete.id}`, {
-                    onSuccess: () => {
-                        // Dismiss loading toast
-                        toast.dismiss(loadingToast);
-
-                        // Show success toast
-                        toast.success('Booking deleted successfully!', {
-                            position: 'top-right',
-                            duration: 4000,
-                            style: {
-                                background: '#10b981',
-                                color: 'white',
-                                border: '1px solid #059669',
-                            },
-                            icon: <CheckCircle className="h-4 w-4" />,
-                        });
-
-                        setBookingToDelete(null);
-                    },
-                    onError: (errors) => {
-                        console.error('Error deleting booking:', errors);
-
-                        // Dismiss loading toast
-                        toast.dismiss(loadingToast);
-
-                        // Show error toast
-                        toast.error('Failed to delete booking. Please try again.', {
-                            position: 'top-right',
-                            duration: 4000,
-                            style: {
-                                background: '#ef4444',
-                                color: 'white',
-                                border: '1px solid #dc2626',
-                            },
-                            icon: <AlertCircle className="h-4 w-4" />,
-                        });
-                    }
-                });
-            } catch (error) {
-                console.error('Error:', error);
-
-                // Dismiss loading toast
-                toast.dismiss(loadingToast);
-
-                // Show error toast
-                toast.error('An unexpected error occurred.', {
-                    position: 'top-right',
-                    duration: 4000,
-                    style: {
-                        background: '#ef4444',
-                        color: 'white',
-                        border: '1px solid #dc2626',
-                    },
-                    icon: <AlertCircle className="h-4 w-4" />,
-                });
-            } finally {
-                setIsDeleting(false);
-            }
-        }
-    };
-
     const getStatusBadgeVariant = (status) => {
         switch (status) {
             case 'active':
@@ -248,39 +297,6 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                 return 'outline';
         }
     };
-
-    // Convert bookings data to properties format for display
-    const properties = bookings ? bookings.map(booking => {
-        // Get the first screenshot from enriched data, or use placeholder
-        const screenshots = booking.enriched_data?.overview?.screenshots || [];
-        const image = screenshots.length > 0 ? screenshots[0] : null;
-
-        return {
-            id: booking.id,
-            name: booking.hotel_name,
-            location: booking.location,
-            price: booking.total_price,
-            image: image,
-            beds: booking.rooms || 1,
-            baths: 2, // Default value since we don't have this in booking data
-            sqft: 1500, // Default value since we don't have this in booking data
-            checkIn: booking.check_in_date,
-            checkOut: booking.check_out_date,
-            guests: booking.guests,
-            nights: booking.nights,
-            status: booking.status
-        };
-    }) : [];
-
-    const filteredProperties = properties.filter(property =>
-        property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        property.location.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentProperties = filteredProperties.slice(startIndex, endIndex);
 
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -461,15 +477,15 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                     </div>
                 </div>
 
-                {/* Content Area with Flex Layout */}
-                <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-24 lg:pb-6">
                     {/* Properties Grid - Scrollable Content */}
                     <div
                         className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6"
                         data-section="bookingsGrid"
                     >
                         <div className={`grid gap-4 lg:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}>
-                            {currentProperties.map((property, index) => (
+                            {displayedBookings.map((property, index) => (
                                 <div
                                     key={property.id}
                                     className={`relative transition-all duration-1000 ease-out ${
@@ -605,82 +621,26 @@ export default function BookingsIndex({ auth, bookings, stats }) {
                         </div>
                     </div>
 
-                    {/* Pagination - Fixed at Bottom */}
-                    <div
-                        className="bg-white border-t border-gray-200 p-4 lg:p-6"
-                        data-section="pagination"
-                    >
-                        <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 transition-all duration-1000 delay-300 ${
-                            isVisible.pagination
-                                ? 'opacity-100 translate-y-0'
-                                : 'opacity-0 translate-y-8'
-                        }`}>
-                            <div className="text-sm text-gray-600 text-center lg:text-left">
-                                Showing {startIndex + 1} to {Math.min(endIndex, filteredProperties.length)} of {filteredProperties.length} entries
-                            </div>
-                            <div className="flex items-center justify-center lg:justify-end space-x-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                    disabled={currentPage === 1}
-                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 h-8 lg:h-9"
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Prev</span>
-                                </Button>
-                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                    const pageNum = i + 1;
-                                    return (
-                                        <Button
-                                            key={pageNum}
-                                            variant={currentPage === pageNum ? 'default' : 'outline'}
-                                            size="sm"
-                                            onClick={() => setCurrentPage(pageNum)}
-                                            className={`w-8 h-8 lg:w-9 lg:h-9 p-0 transition-all duration-300 hover:scale-105 active:scale-95 ${
-                                                currentPage === pageNum
-                                                    ? 'bg-yellow-300 hover:bg-yellow-400 text-gray-900'
-                                                    : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
-                                            }`}
-                                        >
-                                            {pageNum}
-                                        </Button>
-                                    );
-                                })}
-                                {totalPages > 5 && (
-                                    <>
-                                        <span className="text-gray-500 hidden lg:inline">...</span>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setCurrentPage(totalPages - 1)}
-                                            className="w-8 h-8 lg:w-9 lg:h-9 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 hidden lg:flex"
-                                        >
-                                            {totalPages - 1}
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setCurrentPage(totalPages)}
-                                            className="w-8 h-8 lg:w-9 lg:h-9 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 hidden lg:flex"
-                                        >
-                                            {totalPages}
-                                        </Button>
-                                    </>
-                                )}
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 h-8 lg:h-9"
-                                >
-                                    <span className="hidden sm:inline">Next</span>
-                                    <ChevronRight className="h-4 w-4" />
-                                </Button>
-                            </div>
+                    {/* Infinite Scroll Sentinel */}
+                    {hasMore && (
+                        <div id="scroll-sentinel" className="flex justify-center py-8">
+                            {isLoading ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-6 h-6 border-2 border-yellow-300 border-t-transparent rounded-full animate-spin"></div>
+                                    <span className="text-gray-600">Loading more bookings...</span>
+                                </div>
+                            ) : (
+                                <div className="w-6 h-6 border-2 border-gray-300 border-t-transparent rounded-full"></div>
+                            )}
                         </div>
-                    </div>
+                    )}
+
+                    {/* No more results message */}
+                    {!hasMore && displayedBookings.length > 0 && (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">You've reached the end of your bookings</p>
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -50,13 +50,16 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
     const [favoriteToRemove, setFavoriteToRemove] = useState(null);
     const [isRemoving, setIsRemoving] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [displayedFavorites, setDisplayedFavorites] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         searchBar: false,
         favoritesGrid: false,
         pagination: false
     });
-    const itemsPerPage = 8;
+    const itemsPerPage = 12;
 
     // Mobile navigation items
     const mobileNavigationItems = [
@@ -99,6 +102,62 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
             page: 'settings'
         }
     ];
+
+    // Initialize displayed favorites
+    useEffect(() => {
+        const filtered = properties.filter(property =>
+            property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            property.location.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+        setDisplayedFavorites(filtered.slice(0, itemsPerPage));
+        setCurrentPage(1);
+        setHasMore(filtered.length > itemsPerPage);
+    }, [favorites, searchQuery]);
+
+    // Load more favorites function
+    const loadMoreFavorites = () => {
+        if (isLoading || !hasMore) return;
+
+        setIsLoading(true);
+
+        // Simulate API call delay
+        setTimeout(() => {
+            const filtered = properties.filter(property =>
+                property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                property.location.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            const nextPage = currentPage + 1;
+            const startIndex = (nextPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const newFavorites = filtered.slice(startIndex, endIndex);
+
+            setDisplayedFavorites(prev => [...prev, ...newFavorites]);
+            setCurrentPage(nextPage);
+            setHasMore(endIndex < filtered.length);
+            setIsLoading(false);
+        }, 500);
+    };
+
+    // Intersection Observer for infinite scroll
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !isLoading) {
+                    loadMoreFavorites();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        const sentinel = document.getElementById('scroll-sentinel');
+        if (sentinel) {
+            observer.observe(sentinel);
+        }
+
+        return () => observer.disconnect();
+    }, [hasMore, isLoading, currentPage, searchQuery]);
 
     // Intersection Observer for scroll-triggered animations
     useEffect(() => {
@@ -234,16 +293,6 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
             currentPrice: favorite.total_price
         };
     }) : [];
-
-    const filteredProperties = properties.filter(property =>
-        property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        property.location.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentProperties = filteredProperties.slice(startIndex, endIndex);
 
     const calculateSavings = (originalPrice, currentPrice) => {
         if (originalPrice > currentPrice) {
@@ -434,8 +483,8 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                 <div className="flex-1 flex flex-col overflow-hidden">
 
                     {/* Properties Grid - Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">
-                        {currentProperties.length === 0 ? (
+                    <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-24 lg:pb-6">
+                        {displayedFavorites.length === 0 ? (
                             <div
                                 data-section="favoritesGrid"
                                 className={`text-center py-12 transition-all duration-1000 ease-out ${
@@ -465,7 +514,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                         : 'opacity-0 translate-y-8'
                                 } ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}
                             >
-                                {currentProperties.map((property, index) => (
+                                {displayedFavorites.map((property, index) => (
                                     <div
                                         key={property.id}
                                         className="relative transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation"
@@ -586,82 +635,24 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                         )}
                     </div>
 
-                    {/* Pagination - Fixed at Bottom */}
-                    {currentProperties.length > 0 && (
-                        <div
-                            data-section="pagination"
-                            className={`bg-white border-t border-gray-200 p-4 lg:p-6 transition-all duration-1000 ease-out ${
-                                isVisible.pagination
-                                    ? 'opacity-100 translate-y-0'
-                                    : 'opacity-0 translate-y-8'
-                            }`}
-                        >
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                                <div className="text-sm text-gray-600 text-center sm:text-left">
-                                    Showing {startIndex + 1} to {Math.min(endIndex, filteredProperties.length)} of {filteredProperties.length} entries
+                    {/* Infinite Scroll Sentinel */}
+                    {hasMore && (
+                        <div id="scroll-sentinel" className="flex justify-center py-8">
+                            {isLoading ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-6 h-6 border-2 border-yellow-300 border-t-transparent rounded-full animate-spin"></div>
+                                    <span className="text-gray-600">Loading more favorites...</span>
                                 </div>
-                                <div className="flex items-center justify-center sm:justify-end space-x-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                        disabled={currentPage === 1}
-                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation"
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                        Prev
-                                    </Button>
-                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                        const pageNum = i + 1;
-                                        return (
-                                            <Button
-                                                key={pageNum}
-                                                variant={currentPage === pageNum ? 'default' : 'outline'}
-                                                size="sm"
-                                                onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-8 h-8 p-0 transition-all duration-300 hover:scale-105 active:scale-95 ${
-                                                    currentPage === pageNum
-                                                        ? 'bg-yellow-300 hover:bg-yellow-400 text-gray-900'
-                                                        : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
-                                                }`}
-                                            >
-                                                {pageNum}
-                                            </Button>
-                                        );
-                                    })}
-                                    {totalPages > 5 && (
-                                        <>
-                                            <span className="text-gray-500">...</span>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setCurrentPage(totalPages - 1)}
-                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95"
-                                            >
-                                                {totalPages - 1}
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setCurrentPage(totalPages)}
-                                                className="w-8 h-8 p-0 border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95"
-                                            >
-                                                {totalPages}
-                                            </Button>
-                                        </>
-                                    )}
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 touch-manipulation"
-                                    >
-                                        Next
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
+                            ) : (
+                                <div className="w-6 h-6 border-2 border-gray-300 border-t-transparent rounded-full"></div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* No more results message */}
+                    {!hasMore && displayedFavorites.length > 0 && (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">You've reached the end of your favorites</p>
                         </div>
                     )}
                 </div>

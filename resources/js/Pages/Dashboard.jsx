@@ -692,7 +692,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 {/* Content with Right Panel */}
                 <div className="flex-1 flex overflow-hidden">
                     {/* Main Content */}
-                    <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-20 lg:pb-8 space-y-6 lg:space-y-10">
+                    <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8 space-y-6 lg:space-y-10">
                         {/* Recent Bookings */}
                         <div
                             data-section="recentBookings"

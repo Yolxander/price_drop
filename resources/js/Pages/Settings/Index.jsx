@@ -373,7 +373,7 @@ export default function SettingsIndex({ auth, settings, stats }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-auto p-4 lg:p-6 pb-20 lg:pb-6">
+                <div className="flex-1 overflow-auto p-4 lg:p-6 pb-24 lg:pb-6">
                     <div className="max-w-6xl mx-auto">
                         {/* Settings Tabs */}
                         <Card

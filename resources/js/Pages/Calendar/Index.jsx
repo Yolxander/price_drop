@@ -554,7 +554,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-auto p-4 lg:p-6 pb-20 lg:pb-6">
+                <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-24 lg:pb-6">
                     <div className="space-y-4 lg:space-y-6">
 
                 {/* Month Summary */}

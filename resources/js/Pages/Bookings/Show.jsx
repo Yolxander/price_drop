@@ -411,7 +411,7 @@ export default function Show({ auth, booking }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">
+                <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-24 lg:pb-6">
                     {/* Enrichment Status */}
                     {enrichmentStatus && (
                         <Card className={`mb-6 transition-all duration-500 hover:scale-[1.02] active:scale-95 touch-manipulation ${enrichmentStatus.success ? 'border-green-200' : 'border-red-200'}`}>
