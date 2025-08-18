@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     Home,
     Grid3X3,
@@ -50,6 +50,15 @@ export default function Sidebar({ activePage = 'dashboard' }) {
             page: 'settings'
         }
     ];
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        router.post('/logout', {}, {
+            onSuccess: () => {
+                router.visit('/');
+            }
+        });
+    };
 
     return (
         <div className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col">
@@ -107,12 +116,12 @@ export default function Sidebar({ activePage = 'dashboard' }) {
 
             {/* Logout */}
             <div className="p-4 border-t border-gray-200">
-                <Link href="/" className="w-full">
+                <button onClick={handleLogout} className="w-full">
                     <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
                         <LogOut className="h-5 w-5 text-gray-600" />
                         <span className="text-gray-700">Log Out</span>
                     </div>
-                </Link>
+                </button>
             </div>
         </div>
     );

@@ -385,12 +385,22 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                     <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
                                 </div>
                             </div>
-                            <Link href="/" className="block mt-3">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    router.post('/logout', {}, {
+                                        onSuccess: () => {
+                                            router.visit('/');
+                                        }
+                                    });
+                                }}
+                                className="block mt-3 w-full"
+                            >
                                 <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
                                     <LogOut className="h-5 w-5 text-gray-600" />
                                     <span className="text-gray-700 font-medium">Log Out</span>
                                 </div>
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>

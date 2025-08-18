@@ -21,22 +21,11 @@ class AlertController extends Controller
     }
 
     /**
-     * Get the first available user ID or create a default user
+     * Get the authenticated user ID
      */
-    private function getFirstUserId()
+    private function getUserId()
     {
-        $user = \App\Models\User::first();
-
-        if (!$user) {
-            // Create a default user if none exists
-            $user = \App\Models\User::create([
-                'name' => 'Default User',
-                'email' => 'default@pricepulse.com',
-                'password' => bcrypt('password123'),
-            ]);
-        }
-
-        return $user->id;
+        return auth()->id();
     }
 
     /**
@@ -44,7 +33,7 @@ class AlertController extends Controller
      */
     public function index()
     {
-        $userId = $this->getFirstUserId();
+        $userId = $this->getUserId();
 
         $alerts = PriceAlert::where('user_id', $userId)
             ->with('hotelBooking')
@@ -102,7 +91,7 @@ class AlertController extends Controller
      */
     public function getAlertSettings()
     {
-        $userId = $this->getFirstUserId();
+        $userId = $this->getUserId();
 
         $settings = AlertSetting::where('user_id', $userId)->first();
 
@@ -135,7 +124,7 @@ class AlertController extends Controller
      */
     public function updateAlertSettings(Request $request)
     {
-        $userId = $this->getFirstUserId();
+        $userId = $this->getUserId();
 
         $validated = $request->validate([
             'min_price_drop_amount' => 'required|numeric|min:0',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,13 +46,13 @@ export default function SettingsIndex({ auth, settings, stats }) {
     const [isSaving, setIsSaving] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState({
-        header: false,
-        searchBar: false,
-        settingsTabs: false,
-        providersSection: false,
-        alertsSection: false,
-        dataSection: false,
-        securitySection: false
+        header: true,
+        searchBar: true,
+        settingsTabs: true,
+        providersSection: true,
+        alertsSection: true,
+        dataSection: true,
+        securitySection: true
     });
     const [formData, setFormData] = useState({
         providers: settings.providers,
@@ -290,12 +290,22 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
                                 </div>
                             </div>
-                            <Link href="/" className="block mt-3">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    router.post('/logout', {}, {
+                                        onSuccess: () => {
+                                            router.visit('/');
+                                        }
+                                    });
+                                }}
+                                className="block mt-3 w-full"
+                            >
                                 <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
                                     <LogOut className="h-5 w-5 text-gray-600" />
                                     <span className="text-gray-700 font-medium">Log Out</span>
                                 </div>
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>

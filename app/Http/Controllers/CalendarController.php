@@ -11,27 +11,16 @@ use Carbon\Carbon;
 class CalendarController extends Controller
 {
     /**
-     * Get the first available user ID or create a default user
+     * Get the authenticated user ID
      */
-    private function getFirstUserId()
+    private function getUserId()
     {
-        $user = User::first();
-
-        if (!$user) {
-            // Create a default user if none exists
-            $user = User::create([
-                'name' => 'Default User',
-                'email' => 'default@pricepulse.com',
-                'password' => bcrypt('password123'),
-            ]);
-        }
-
-        return $user->id;
+        return auth()->id();
     }
 
     public function index()
     {
-        $userId = $this->getFirstUserId();
+        $userId = $this->getUserId();
 
         // Get all bookings for the current user
         $bookings = HotelBooking::where('user_id', $userId)

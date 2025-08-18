@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,12 +18,12 @@ export default function Show({ auth, booking }) {
     const [availableImages, setAvailableImages] = useState([]);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isVisible, setIsVisible] = useState({
-        header: false,
-        overview: false,
-        facilities: false,
-        details: false,
-        history: false,
-        sidebar: false
+        header: true,
+        overview: true,
+        facilities: true,
+        details: true,
+        history: true,
+        sidebar: true
     });
 
     // Mobile navigation items
@@ -325,12 +325,22 @@ export default function Show({ auth, booking }) {
                                     <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
                                 </div>
                             </div>
-                            <Link href="/" className="block mt-3">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    router.post('/logout', {}, {
+                                        onSuccess: () => {
+                                            router.visit('/');
+                                        }
+                                    });
+                                }}
+                                className="block mt-3 w-full"
+                            >
                                 <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
                                     <LogOut className="h-5 w-5 text-gray-600" />
                                     <span className="text-gray-700 font-medium">Log Out</span>
                                 </div>
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>

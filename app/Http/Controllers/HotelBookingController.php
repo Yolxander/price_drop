@@ -21,22 +21,11 @@ class HotelBookingController extends Controller
     }
 
     /**
-     * Get the first available user ID or create a default user
+     * Get the authenticated user ID
      */
-    private function getFirstUserId()
+    private function getUserId()
     {
-        $user = User::first();
-
-        if (!$user) {
-            // Create a default user if none exists
-            $user = User::create([
-                'name' => 'Default User',
-                'email' => 'default@pricepulse.com',
-                'password' => bcrypt('password123'),
-            ]);
-        }
-
-        return $user->id;
+        return auth()->id();
     }
 
     /**
@@ -44,7 +33,7 @@ class HotelBookingController extends Controller
      */
     public function index()
     {
-        $userId = $this->getFirstUserId();
+        $userId = $this->getUserId();
 
         // Get actual bookings from database
         $bookings = HotelBooking::where('user_id', $userId)
@@ -132,8 +121,8 @@ class HotelBookingController extends Controller
         $checkOut = \Carbon\Carbon::parse($validated['check_out_date']);
         $nights = $checkIn->diffInDays($checkOut);
 
-        // Get the first available user ID
-        $userId = $this->getFirstUserId();
+        // Get the authenticated user ID
+        $userId = $this->getUserId();
 
         // Create the booking
         $booking = HotelBooking::create([
@@ -239,6 +228,11 @@ class HotelBookingController extends Controller
      */
     public function show(HotelBooking $booking)
     {
+        // Check if the booking belongs to the authenticated user
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to booking.');
+        }
+
         // Get enriched data for the booking
         $enrichedData = $booking->getEnrichedData();
 
@@ -287,6 +281,11 @@ class HotelBookingController extends Controller
      */
     public function edit(HotelBooking $booking)
     {
+        // Check if the booking belongs to the authenticated user
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to booking.');
+        }
+
         // For demo purposes, return dummy booking data
         $booking = [
             'id' => $booking->id,
@@ -323,6 +322,11 @@ class HotelBookingController extends Controller
      */
     public function update(Request $request, HotelBooking $booking)
     {
+        // Check if the booking belongs to the authenticated user
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to booking.');
+        }
+
         // For demo purposes, just redirect with success message
         return redirect()->route('bookings.index')->with('success', 'Hotel booking updated successfully!');
     }
@@ -332,6 +336,11 @@ class HotelBookingController extends Controller
      */
     public function destroy(HotelBooking $booking)
     {
+        // Check if the booking belongs to the authenticated user
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to booking.');
+        }
+
         try {
             $booking->delete();
 
@@ -362,6 +371,11 @@ class HotelBookingController extends Controller
      */
     public function checkPrice(HotelBooking $booking)
     {
+        // Check if the booking belongs to the authenticated user
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to booking.');
+        }
+
         // For demo purposes, just return success message
         return response()->json(['message' => 'Price check initiated for this booking']);
     }
@@ -371,6 +385,11 @@ class HotelBookingController extends Controller
      */
     public function toggleStatus(HotelBooking $booking)
     {
+        // Check if the booking belongs to the authenticated user
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to booking.');
+        }
+
         // For demo purposes, just return success message
         return response()->json([
             'message' => 'Booking status updated',
@@ -455,7 +474,7 @@ class HotelBookingController extends Controller
      */
     public function favorites()
     {
-        $userId = $this->getFirstUserId();
+        $userId = $this->getUserId();
 
         // Get actual bookings from database and mark some as favorites for demo
         $bookings = HotelBooking::where('user_id', $userId)
