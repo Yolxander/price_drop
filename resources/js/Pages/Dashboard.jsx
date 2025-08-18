@@ -65,18 +65,6 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         original_price: '',
         currency: ''
     });
-    const [selectedHotel, setSelectedHotel] = useState({
-        name: "Shikara Hotel",
-        location: "Jl. Aston No. 72 Yogyakarta",
-        price: 42.72,
-        image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-        description: "Shikara Hotel is committed to making your dreams come true. We believe that travel should be easy and accessible to everyone. Our hotel provides the perfect blend of comfort and luxury.",
-        images: [
-            "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop",
-            "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=200&h=150&fit=crop",
-            "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=200&h=150&fit=crop"
-        ]
-    });
 
     // Mobile navigation items
     const mobileNavigationItems = [
@@ -120,27 +108,6 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         }
     ];
 
-    const lodgingHotels = [
-        {
-            name: "Shikara Hotel",
-            location: "Jl. Aston No. 72 Yogyakarta",
-            price: 42.72,
-            image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop"
-        },
-        {
-            name: "Visala Hotel",
-            location: "Jl. Malioboro No. 123 Yogyakarta",
-            price: 38.42,
-            image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=300&fit=crop"
-        },
-        {
-            name: "Shikara Hotel",
-            location: "Jl. Sudirman No. 45 Yogyakarta",
-            price: 40.14,
-            image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&h=300&fit=crop"
-        }
-    ];
-
     const popularHotels = [
         { name: "Shikara Hotel", country: "Indonesia", price: 42, image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=150&h=100&fit=crop" },
         { name: "Hogi Hotel", country: "Thailand", price: 44, image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=150&h=100&fit=crop" },
@@ -160,7 +127,6 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 if (entry.isIntersecting) {
                     const section = entry.target.dataset.section;
                     if (section) {
-                        console.log('Section visible:', section);
                         setIsVisible(prev => ({ ...prev, [section]: true }));
                     }
                 }
@@ -169,22 +135,13 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
         // Observe all sections
         const sections = document.querySelectorAll('[data-section]');
-        console.log('Found sections:', sections.length);
-        sections.forEach(section => {
-            console.log('Observing section:', section.dataset.section);
-            observer.observe(section);
-        });
+        sections.forEach(section => observer.observe(section));
 
         // Trigger header animation immediately
         setIsVisible(prev => ({ ...prev, header: true }));
 
         return () => observer.disconnect();
     }, []);
-
-    // Debug log for state changes
-    useEffect(() => {
-        console.log('Animation state:', isVisible);
-    }, [isVisible]);
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -197,11 +154,8 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         if (isFormSubmitting) return;
 
         setIsFormSubmitting(true);
-
-        // Close form immediately
         setShowAddBooking(false);
 
-        // Show initial toast
         const loadingToast = toast.loading('Adding booking and enriching data...', {
             duration: Infinity,
             position: 'top-right',
@@ -213,18 +167,11 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         });
 
         try {
-            // Simulate background processing
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // Submit the form data
             await router.post('/bookings', formData, {
                 onSuccess: () => {
-                    console.log('Booking created successfully');
-
-                    // Dismiss loading toast
                     toast.dismiss(loadingToast);
-
-                    // Show success toast
                     toast.success('Booking added successfully!', {
                         position: 'top-right',
                         duration: 4000,
@@ -236,7 +183,6 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         icon: <CheckCircle className="h-4 w-4" />,
                     });
 
-                    // Reset form data
                     setFormData({
                         hotel_name: '',
                         location: '',
@@ -250,12 +196,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                     });
                 },
                 onError: (errors) => {
-                    console.error('Error creating booking:', errors);
-
-                    // Dismiss loading toast
                     toast.dismiss(loadingToast);
-
-                    // Show error toast
                     toast.error('Failed to add booking. Please try again.', {
                         position: 'top-right',
                         duration: 4000,
@@ -269,12 +210,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 }
             });
         } catch (error) {
-            console.error('Error:', error);
-
-            // Dismiss loading toast
             toast.dismiss(loadingToast);
-
-            // Show error toast
             toast.error('An unexpected error occurred.', {
                 position: 'top-right',
                 duration: 4000,
@@ -291,13 +227,11 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     const handleAddBookingClick = () => {
-        console.log('Add Booking button clicked');
         setShowAddBooking(true);
     };
 
     const handleCloseForm = () => {
         setShowAddBooking(false);
-        // Reset form data when closing
         setFormData({
             hotel_name: '',
             location: '',
@@ -312,7 +246,6 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     const handleBookingClick = (booking) => {
-        // Use the actual booking data with enriched information
         const bookingDetails = {
             id: booking.id,
             hotel_name: booking.hotel_name || 'Hotel Name Not Available',
@@ -326,30 +259,12 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
             nights: booking.nights || 3,
             currency: booking.currency || 'USD',
             status: booking.status || 'active',
-            booking_confirmation: booking.booking_confirmation || 'CONF-123456789',
-            // Price information from actual booking data
             original_price: booking.original_price || booking.total_price || 150.00,
             current_price: booking.current_price || booking.total_price || 150.00,
             price_drop_detected: booking.price_drop_detected || false,
             price_drop_amount: booking.price_drop_amount || 0,
             price_drop_percentage: booking.price_drop_percentage || 0,
             last_checked: booking.last_checked || null,
-            // Use enriched data if available
-            hotel_image: booking.enriched_data?.overview?.screenshots?.[0] || null,
-            hotel_description: booking.enriched_data?.overview?.description || "A beautiful hotel with modern amenities and excellent service.",
-            amenities: booking.enriched_data?.facilities?.amenities || ['Free WiFi', 'Swimming Pool', 'Spa', 'Restaurant', 'Gym'],
-            room_type: booking.enriched_data?.details?.room_type || 'Deluxe Room',
-            cancellation_policy: booking.enriched_data?.details?.cancellation_policy || 'Free cancellation until 24 hours before check-in',
-            contact_info: {
-                phone: '+1-555-0123',
-                email: 'reservations@hotel.com'
-            },
-            price_history: [
-                { date: '2024-01-10', price: 180.00 },
-                { date: '2024-01-12', price: 160.00 },
-                { date: '2024-01-14', price: 150.00 }
-            ],
-            // Include enriched data for access to screenshots
             enriched_data: booking.enriched_data
         };
 
@@ -358,32 +273,6 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
     const handleCloseBookingPanel = () => {
         setSelectedBooking(null);
-    };
-
-    const handleImageClick = (index) => {
-        setSelectedImageIndex(index);
-    };
-
-    const handleOpenGallery = () => {
-        setShowImageGallery(true);
-    };
-
-    const handleCloseGallery = () => {
-        setShowImageGallery(false);
-    };
-
-    const handlePreviousImage = () => {
-        if (selectedBooking?.enriched_data?.overview?.screenshots) {
-            const totalImages = selectedBooking.enriched_data.overview.screenshots.length;
-            setSelectedImageIndex((prev) => (prev === 0 ? totalImages - 1 : prev - 1));
-        }
-    };
-
-    const handleNextImage = () => {
-        if (selectedBooking?.enriched_data?.overview?.screenshots) {
-            const totalImages = selectedBooking.enriched_data.overview.screenshots.length;
-            setSelectedImageIndex((prev) => (prev === totalImages - 1 ? 0 : prev + 1));
-        }
     };
 
     return (
@@ -484,7 +373,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Head title="Dashboard" />
+            <Head title="Dashboard" />
 
                 {/* Mobile Header */}
                 <div className="lg:hidden bg-white border-b border-gray-200 p-4 shadow-sm">
@@ -556,7 +445,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             Add Booking
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
+                                    <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl">
                                         <DialogHeader>
                                             <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">Add New Booking</DialogTitle>
                                             <DialogDescription className="text-gray-600 text-base lg:text-lg">
@@ -693,7 +582,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 <div className="flex-1 flex overflow-hidden">
                     {/* Main Content */}
                     <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8 space-y-6 lg:space-y-10">
-                        {/* Recent Bookings */}
+                {/* Recent Bookings */}
                         <div
                             data-section="recentBookings"
                             className={`transition-all duration-1000 ease-out ${
@@ -871,8 +760,8 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             </CardContent>
                                         </Card>
                                     ))}
-                                </div>
-                            )}
+                            </div>
+                        )}
 
                             {activeNavTab === 'special-offers' && (
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -909,8 +798,8 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     <p className="text-xs lg:text-sm line-through text-gray-400">${Number(hotel.price + 10).toFixed(2)}</p>
                                                     <p className="text-xs lg:text-sm font-bold text-orange-600">${Number(hotel.price).toFixed(2)} <span className="text-xs text-gray-500 font-normal">/ night</span></p>
                                                 </div>
-                                            </CardContent>
-                                        </Card>
+                    </CardContent>
+                </Card>
                                     ))}
                                 </div>
                             )}
@@ -954,521 +843,11 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         </Card>
                                     ))}
                                 </div>
-                            )}
-                        </div>
+                                            )}
+                                        </div>
                     </div>
-
-                    {/* Right Detail Panel - Booking Details - Hidden on mobile */}
-                    {selectedBooking && (
-                        <div className="hidden lg:block fixed top-0 right-0 w-80 h-screen bg-white border-l border-gray-200 flex flex-col z-50 animate-in slide-in-from-right duration-500">
-                            {/* Header with close button */}
-                            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
-                                <h3 className="text-lg font-semibold text-gray-900">Booking Details</h3>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleCloseBookingPanel}
-                                    className="h-8 w-8 p-0 transition-all duration-300 hover:scale-110 hover:bg-red-50"
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            </div>
-
-                            {/* Booking Content */}
-                            <div className="flex-1 overflow-y-auto">
-                                <div className="p-6">
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-4 animate-fade-in-up">{selectedBooking.hotel_name}</h2>
-
-                                    {/* Hotel Images */}
-                                    {selectedBooking.enriched_data?.overview?.screenshots && selectedBooking.enriched_data.overview.screenshots.length > 0 ? (
-                                        <div className="grid grid-cols-3 gap-2 mb-4">
-                                            <img
-                                                src={selectedBooking.enriched_data.overview.screenshots[selectedImageIndex]}
-                                                alt="Main hotel"
-                                                className="col-span-3 w-full h-48 object-cover rounded-lg cursor-pointer transition-all duration-300 hover:scale-105"
-                                                onClick={handleOpenGallery}
-                                                onError={(e) => {
-                                                    console.error('Failed to load image:', e.target.src);
-                                                    e.target.style.display = 'none';
-                                                }}
-                                            />
-                                            {selectedBooking.enriched_data.overview.screenshots.slice(0, 3).map((image, index) => (
-                                                <img
-                                                    key={index}
-                                                    src={image}
-                                                    alt={`Hotel ${index + 1}`}
-                                                    className={`w-full h-20 object-cover rounded-lg cursor-pointer transition-all duration-300 hover:scale-110 ${
-                                                        index === selectedImageIndex ? 'opacity-100 ring-2 ring-yellow-500' : 'opacity-70 hover:opacity-100'
-                                                    }`}
-                                                    onClick={() => handleImageClick(index)}
-                                                    onError={(e) => {
-                                                        console.error('Failed to load image:', e.target.src);
-                                                        e.target.style.display = 'none';
-                                                    }}
-                                                />
-                                            ))}
-                                            {selectedBooking.enriched_data.overview.screenshots.length > 3 && (
-                                                <div className="relative cursor-pointer transition-all duration-300 hover:scale-110" onClick={handleOpenGallery}>
-                                                    <img
-                                                        src={selectedBooking.enriched_data.overview.screenshots[3]}
-                                                        alt="Hotel"
-                                                        className="w-full h-20 object-cover rounded-lg"
-                                                        onError={(e) => {
-                                                            console.error('Failed to load image:', e.target.src);
-                                                            e.target.style.display = 'none';
-                                                        }}
-                                                    />
-                                                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
-                                                        <span className="text-white text-sm font-medium">+{selectedBooking.enriched_data.overview.screenshots.length - 4}</span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-lg mb-4">
-                                            <span className="text-gray-500 text-sm">
-                                                {selectedBooking.enriched_data ? 'No images available' : 'Loading images...'}
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    {/* Tabs */}
-                                    <Tabs defaultValue="overview" className="w-full">
-                                        <TabsList className="grid w-full grid-cols-4">
-                                            <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-                                            <TabsTrigger value="facilities" className="text-xs">Facilities</TabsTrigger>
-                                            <TabsTrigger value="details" className="text-xs">Details</TabsTrigger>
-                                            <TabsTrigger value="price-history" className="text-xs">History</TabsTrigger>
-                                        </TabsList>
-
-                                        <TabsContent value="overview" className="mt-4">
-                                            {selectedBooking.enriched_data?.overview ? (
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                                        <span className="text-sm font-medium">
-                                                            {selectedBooking.enriched_data.overview.star_rating} / 5.0
-                                                        </span>
-                                                    </div>
-
-                                                    <p className="text-sm text-gray-600 leading-relaxed">
-                                                        {selectedBooking.enriched_data?.details?.room_description || selectedBooking.hotel_description || "A beautiful hotel with modern amenities and excellent service."}
-                                                    </p>
-
-                                                    {/* Booking Summary */}
-                                                    <div className="space-y-3">
-                                                        <h4 className="font-semibold text-gray-900 text-sm">Booking Summary</h4>
-                                                        <div className="grid grid-cols-2 gap-3 text-sm">
-                                                            <div>
-                                                                <span className="text-gray-600">Check-in:</span>
-                                                                <p className="font-medium">{new Date(selectedBooking.check_in_date).toLocaleDateString()}</p>
-                                                            </div>
-                                                            <div>
-                                                                <span className="text-gray-600">Check-out:</span>
-                                                                <p className="font-medium">{new Date(selectedBooking.check_out_date).toLocaleDateString()}</p>
-                                                            </div>
-                                                            <div>
-                                                                <span className="text-gray-600">Guests:</span>
-                                                                <p className="font-medium">{selectedBooking.guests}</p>
-                                                            </div>
-                                                            <div>
-                                                                <span className="text-gray-600">Nights:</span>
-                                                                <p className="font-medium">{selectedBooking.nights}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="pt-2">
-                                                            <span className="text-gray-600 text-sm">Total Price:</span>
-                                                            <p className="text-lg font-bold text-gray-900">${Number(selectedBooking.total_price).toFixed(2)} {selectedBooking.currency}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="text-center py-4">
-                                                    <p className="text-gray-500 text-sm">No enriched data available</p>
-                                                </div>
-                                            )}
-                                        </TabsContent>
-
-                                        <TabsContent value="facilities" className="mt-4">
-                                            {selectedBooking.enriched_data?.facilities ? (
-                                                <div className="space-y-4">
-                                                    <h4 className="font-semibold text-gray-900 text-sm">Amenities</h4>
-                                                    <div className="grid grid-cols-1 gap-2">
-                                                        {selectedBooking.enriched_data.facilities.amenities?.slice(0, 8).map((amenity, index) => (
-                                                            <div key={index} className="flex items-center gap-2">
-                                                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                                                <span className="text-sm">{amenity}</span>
-                                                            </div>
-                                                        ))}
-                                                        {selectedBooking.enriched_data.facilities.amenities?.length > 8 && (
-                                                            <p className="text-sm text-gray-500">+{selectedBooking.enriched_data.facilities.amenities.length - 8} more amenities</p>
-                                                        )}
-                                                    </div>
-
-                                                    <Separator />
-
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-900 text-sm mb-2">Facilities</h4>
-                                                        <div className="grid grid-cols-1 gap-2">
-                                                            {selectedBooking.enriched_data.facilities.facilities?.slice(0, 6).map((facility, index) => (
-                                                                <div key={index} className="flex items-center gap-2">
-                                                                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                                                    <span className="text-sm">{facility}</span>
-                                                                </div>
-                                                            ))}
-                                                            {selectedBooking.enriched_data.facilities.facilities?.length > 6 && (
-                                                                <p className="text-sm text-gray-500">+{selectedBooking.enriched_data.facilities.facilities.length - 6} more facilities</p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <Separator />
-
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge variant={selectedBooking.enriched_data.facilities.breakfast_included ? "default" : "secondary"} className="text-xs">
-                                                            {selectedBooking.enriched_data.facilities.breakfast_included ? 'Breakfast Included' : 'Breakfast Not Included'}
-                                                        </Badge>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="text-center py-4">
-                                                    <p className="text-gray-500 text-sm">No facilities data available</p>
-                                                </div>
-                                            )}
-                                        </TabsContent>
-
-                                        <TabsContent value="details" className="mt-4">
-                                            {selectedBooking.enriched_data?.details ? (
-                                                <div className="space-y-4">
-                                                    <div className="grid grid-cols-1 gap-4">
-                                                        <div>
-                                                            <h4 className="font-semibold text-gray-900 text-sm mb-2">Room Information</h4>
-                                                            <div className="space-y-2">
-                                                                <div>
-                                                                    <span className="text-sm text-gray-600">Room Type:</span>
-                                                                    <p className="text-sm font-medium">
-                                                                        {selectedBooking.enriched_data.details.room_type || 'Standard Room'}
-                                                                    </p>
-                                                                </div>
-                                                                <div>
-                                                                    <span className="text-sm text-gray-600">Room Code:</span>
-                                                                    <p className="text-sm font-medium">
-                                                                        {selectedBooking.enriched_data.details.room_code || 'N/A'}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div>
-                                                            <h4 className="font-semibold text-gray-900 text-sm mb-2">Pricing Details</h4>
-                                                            <div className="space-y-2">
-                                                                <div>
-                                                                    <span className="text-sm text-gray-600">Base Rate:</span>
-                                                                    <p className="text-sm font-medium">
-                                                                        {selectedBooking.enriched_data.details.base_rate
-                                                                            ? `$${Number(selectedBooking.enriched_data.details.base_rate).toFixed(2)}`
-                                                                            : `$${Number(selectedBooking.original_price).toFixed(2)}`
-                                                                        }
-                                                                    </p>
-                                                                </div>
-                                                                <div>
-                                                                    <span className="text-sm text-gray-600">Total Price:</span>
-                                                                    <p className="text-sm font-medium">
-                                                                        ${Number(selectedBooking.original_price).toFixed(2)}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <Separator />
-
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-900 text-sm mb-2">Cancellation Policy</h4>
-                                                        <p className="text-sm text-gray-600">
-                                                            {selectedBooking.enriched_data.details.cancellation_policy || 'Standard cancellation policy applies'}
-                                                        </p>
-                                                    </div>
-
-                                                    {selectedBooking.enriched_data.details.booking_link && (
-                                                        <>
-                                                            <Separator />
-                                                            <div>
-                                                                <h4 className="font-semibold text-gray-900 text-sm mb-2">Booking Links</h4>
-                                                                <a
-                                                                    href={selectedBooking.enriched_data.details.booking_link}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-yellow-600 hover:underline text-sm"
-                                                                >
-                                                                    View Booking Details
-                                                                </a>
-                                                            </div>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <div className="text-center py-4">
-                                                    <p className="text-gray-500 text-sm">No details data available</p>
-                                                </div>
-                                            )}
-                                        </TabsContent>
-
-                                        <TabsContent value="price-history" className="mt-4">
-                                            <div className="space-y-4">
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-900 text-sm mb-2">Price Information</h4>
-                                                        <div className="space-y-2">
-                                                            <div>
-                                                                <span className="text-sm text-gray-600">Original Price:</span>
-                                                                <p className="text-sm font-medium">
-                                                                    ${(Number(selectedBooking.original_price) || 0).toFixed(2)}
-                                                                </p>
-                                                            </div>
-                                                            <div>
-                                                                <span className="text-sm text-gray-600">Current Price:</span>
-                                                                <p className="text-sm font-medium">
-                                                                    ${(Number(selectedBooking.current_price) || 0).toFixed(2)}
-                                                                </p>
-                                                            </div>
-                                                            {selectedBooking.price_drop_detected && (
-                                                                <div>
-                                                                    <span className="text-sm text-gray-600">Price Pulse:</span>
-                                                                    <p className="text-sm font-medium text-green-600">
-                                                                        -${(Number(selectedBooking.price_drop_amount) || 0).toFixed(2)} ({(Number(selectedBooking.price_drop_percentage) || 0).toFixed(1)}%)
-                                                                    </p>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-900 text-sm mb-2">Tracking Status</h4>
-                                                        <div className="space-y-2">
-                                                            <div>
-                                                                <span className="text-sm text-gray-600">Status:</span>
-                                                                <Badge variant={selectedBooking.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                                                                    {selectedBooking.status}
-                                                                </Badge>
-                                                            </div>
-                                                            <div>
-                                                                <span className="text-sm text-gray-600">Last Checked:</span>
-                                                                <p className="text-sm font-medium">
-                                                                    {selectedBooking.last_checked ? new Date(selectedBooking.last_checked).toLocaleDateString() : 'Never'}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <Separator />
-
-                                                <div>
-                                                    <h4 className="font-semibold text-gray-900 text-sm mb-2">Stay Details</h4>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <Calendar className="h-4 w-4 text-gray-500" />
-                                                            <div>
-                                                                <p className="text-sm text-gray-600">Check-in</p>
-                                                                <p className="text-sm font-medium">{new Date(selectedBooking.check_in_date).toLocaleDateString()}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Calendar className="h-4 w-4 text-gray-500" />
-                                                            <div>
-                                                                <p className="text-sm text-gray-600">Check-out</p>
-                                                                <p className="text-sm font-medium">{new Date(selectedBooking.check_out_date).toLocaleDateString()}</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </TabsContent>
-                                    </Tabs>
-
-                                    {/* View Full Details Button */}
-                                    <div className="mt-6">
-                                        <Link href={`/bookings/${selectedBooking.id}`}>
-                                            <Button className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 py-3 text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl btn-hover-effect">
-                                                View Full Details
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Mobile Booking Details Modal */}
-            {selectedBooking && (
-                <Dialog open={!!selectedBooking} onOpenChange={() => setSelectedBooking(null)}>
-                    <DialogContent className="max-w-[95vw] max-h-[90vh] p-0 lg:hidden">
-                        <div className="relative">
-                            {/* Header */}
-                            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
-                                <h3 className="text-lg font-semibold text-gray-900">Booking Details</h3>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleCloseBookingPanel}
-                                    className="h-8 w-8 p-0"
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            </div>
-
-                            {/* Mobile Content */}
-                            <div className="max-h-[70vh] overflow-y-auto">
-                                <div className="p-4">
-                                    <h2 className="text-xl font-bold text-gray-900 mb-4">{selectedBooking.hotel_name}</h2>
-
-                                    {/* Hotel Images */}
-                                    {selectedBooking.enriched_data?.overview?.screenshots && selectedBooking.enriched_data.overview.screenshots.length > 0 ? (
-                                        <div className="mb-4">
-                                            <img
-                                                src={selectedBooking.enriched_data.overview.screenshots[selectedImageIndex]}
-                                                alt="Main hotel"
-                                                className="w-full h-48 object-cover rounded-lg mb-3"
-                                            />
-                                            <div className="flex gap-2 overflow-x-auto">
-                                                {selectedBooking.enriched_data.overview.screenshots.slice(0, 4).map((image, index) => (
-                                                    <img
-                                                        key={index}
-                                                        src={image}
-                                                        alt={`Hotel ${index + 1}`}
-                                                        className={`h-16 w-20 object-cover rounded cursor-pointer transition-opacity ${
-                                                            index === selectedImageIndex ? 'opacity-100 ring-2 ring-yellow-500' : 'opacity-70 hover:opacity-100'
-                                                        }`}
-                                                        onClick={() => handleImageClick(index)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-lg mb-4">
-                                            <span className="text-gray-500 text-sm">No images available</span>
-                                        </div>
-                                    )}
-
-                                    {/* Quick Info */}
-                                    <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
-                                        <div>
-                                            <p className="text-sm text-gray-600">Check-in</p>
-                                            <p className="font-medium">{new Date(selectedBooking.check_in_date).toLocaleDateString()}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Check-out</p>
-                                            <p className="font-medium">{new Date(selectedBooking.check_out_date).toLocaleDateString()}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Total Price</p>
-                                            <p className="font-bold text-lg text-yellow-600">${Number(selectedBooking.total_price).toFixed(2)}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Status</p>
-                                            <Badge variant={selectedBooking.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                                                {selectedBooking.status}
-                                            </Badge>
                                         </div>
                                     </div>
-
-                                    {/* View Full Details Button */}
-                                    <div className="mt-4">
-                                        <Link href={`/bookings/${selectedBooking.id}`}>
-                                            <Button className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-900 py-3 text-lg font-semibold">
-                                                View Full Details
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-
-            {/* Image Gallery Modal */}
-            {showImageGallery && selectedBooking?.enriched_data?.overview?.screenshots && (
-                <Dialog open={showImageGallery} onOpenChange={setShowImageGallery}>
-                    <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-                        <div className="relative">
-                            {/* Close button */}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleCloseGallery}
-                                className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
-
-                            {/* Main image */}
-                            <div className="relative">
-                                <img
-                                    src={selectedBooking.enriched_data.overview.screenshots[selectedImageIndex]}
-                                    alt={`Hotel image ${selectedImageIndex + 1}`}
-                                    className="w-full h-[70vh] object-cover"
-                                    onError={(e) => {
-                                        console.error('Failed to load image:', e.target.src);
-                                        e.target.style.display = 'none';
-                                    }}
-                                />
-
-                                {/* Navigation arrows */}
-                                {selectedBooking.enriched_data.overview.screenshots.length > 1 && (
-                                    <>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={handlePreviousImage}
-                                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
-                                        >
-                                            <ChevronLeft className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={handleNextImage}
-                                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
-                                        >
-                                            <ChevronRight className="h-4 w-4" />
-                                        </Button>
-                                    </>
-                                )}
-
-                                {/* Image counter */}
-                                <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                                    {selectedImageIndex + 1} / {selectedBooking.enriched_data.overview.screenshots.length}
-                                </div>
-                            </div>
-
-                            {/* Thumbnail strip */}
-                            <div className="p-4 bg-gray-100">
-                                <div className="flex gap-2 overflow-x-auto">
-                                    {selectedBooking.enriched_data.overview.screenshots.map((image, index) => (
-                                        <img
-                                            key={index}
-                                            src={image}
-                                            alt={`Thumbnail ${index + 1}`}
-                                            className={`h-16 w-24 object-cover rounded cursor-pointer transition-opacity ${
-                                                index === selectedImageIndex ? 'opacity-100 ring-2 ring-yellow-500' : 'opacity-70 hover:opacity-100'
-                                            }`}
-                                            onClick={() => setSelectedImageIndex(index)}
-                                            onError={(e) => {
-                                                console.error('Failed to load thumbnail:', e.target.src);
-                                                e.target.style.display = 'none';
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            )}
 
             {/* Toaster for notifications */}
             <Toaster />
@@ -1490,7 +869,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             }`} />
                                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                                                 <span className="text-xs text-white font-medium">{item.notificationCount}</span>
-                                            </div>
+                                        </div>
                                         </div>
                                     ) : (
                                         <Icon className={`h-6 w-6 ${
@@ -1506,7 +885,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             </Link>
                         );
                     })}
-                </div>
+                        </div>
             </div>
         </div>
     );

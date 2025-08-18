@@ -5,13 +5,9 @@ import { ArrowUpRight, MapPin, Calendar as CalendarIcon, User as UserIcon, Chevr
 import { Button } from '@/components/ui/button';
 import Footer from './components/Footer';
 import { LogOut, Bell, Calendar, Users, DollarSign, Building, Search, Menu, X, LayoutDashboard, Sparkles, Shield } from 'lucide-react';
-import { usePage } from '@inertiajs/react';
 
-
-export default function Home() {
+export default function Home({ canLogin, canRegister }) {
   const carouselRef = useRef(null);
-  const { auth } = usePage().props;
-  const user = auth.user;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState({
     hero: false,
@@ -57,11 +53,6 @@ export default function Home() {
     el.scrollBy({ left: dir === "left" ? -cardWidth - 24 : cardWidth + 24, behavior: "smooth" });
   };
 
-  const signOut = () => {
-    // Handle sign out logic here
-    console.log('Sign out clicked');
-  };
-
   return (
     <div className="min-h-screen bg-[#f9f9f9]">
       <Head title="PricePulse - Save Money After You Book" />
@@ -76,85 +67,71 @@ export default function Home() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
-            {user ? (
-              <>
-               <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full border-b-2 border-yellow-300 hover:scale-105 transition-all duration-300"
-                  asChild
-                >
-                  <Link href="/" className="flex items-center">
-                    <Building className="h-4 w-4 mr-2" />
-                    Home
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full hover:scale-105 transition-all duration-300"
-                  asChild
-                >
-                  <Link href="/top-hotels">
-                    <Building className="h-4 w-4 mr-2" />
-                    Top Hotels
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full hover:scale-105 transition-all duration-300"
-                  asChild
-                >
-                  <Link href="/mystery-booking" className="flex items-center">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Mystery Booking
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full hover:scale-105 transition-all duration-300"
-                  asChild
-                >
-                  <Link href="/travel-insurance" className="flex items-center">
-                    <Shield className="h-4 w-4 mr-2" />
-                    Travel Insurance
-                  </Link>
-                </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full border-b-2 border-yellow-300 hover:scale-105 transition-all duration-300"
+              asChild
+            >
+              <Link href="/" className="flex items-center">
+                <Building className="h-4 w-4 mr-2" />
+                Home
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full hover:scale-105 transition-all duration-300"
+              asChild
+            >
+              <Link href="/top-hotels">
+                <Building className="h-4 w-4 mr-2" />
+                Top Hotels
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full hover:scale-105 transition-all duration-300"
+              asChild
+            >
+              <Link href="/mystery-booking" className="flex items-center">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Mystery Booking
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full hover:scale-105 transition-all duration-300"
+              asChild
+            >
+              <Link href="/travel-insurance" className="flex items-center">
+                <Shield className="h-4 w-4 mr-2" />
+                Travel Insurance
+              </Link>
+            </Button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full hover:scale-105 transition-all duration-300"
-                  asChild
-                >
-                  <Link href="/dashboard" className="flex items-center">
-                    <LayoutDashboard className="h-4 w-4 mr-2" />
-                    Dashboard
-                  </Link>
-                </Button>
-                <div className="flex items-center space-x-1 ml-2 border-l pl-2">
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 hover:scale-105 transition-all duration-300">
-                    <Bell className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 hover:scale-105 transition-all duration-300" onClick={() => signOut()}>
-                    <LogOut className="h-5 w-5" />
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="ml-auto">
-                <Button
-                  className="rounded-full bg-black text-white hover:bg-gray-800"
-                  asChild
-                >
-                  <Link href="/dashboard">
-                    Login / Register
-                  </Link>
-                </Button>
-              </div>
-            )}
+            <div className="ml-auto flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-black text-black hover:bg-black hover:text-white"
+                asChild
+              >
+                <Link href={canLogin}>
+                  Login
+                </Link>
+              </Button>
+              <Button
+                className="rounded-full bg-black text-white hover:bg-gray-800"
+                asChild
+              >
+                <Link href={canRegister}>
+                  Register
+                </Link>
+              </Button>
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -172,50 +149,43 @@ export default function Home() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t animate-in slide-in-from-top-2 duration-300">
             <div className="w-full px-6 py-4 space-y-4">
-              {user ? (
-                <>
-                  <Button variant="ghost" className="w-full justify-start" asChild>
-                    <Link href="/top-hotels" className="flex items-center">
-                      <Building className="h-4 w-4 mr-2" />
-                      Top Hotels
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start" asChild>
-                    <Link href="/mystery-booking" className="flex items-center">
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Mystery Booking
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start" asChild>
-                    <Link href="/travel-insurance" className="flex items-center">
-                      <Shield className="h-4 w-4 mr-2" />
-                      Travel Insurance
-                    </Link>
-                  </Button>
-                  <Button className="w-full justify-start bg-black text-white hover:bg-gray-800" asChild>
-                    <Link href="/dashboard">
-                      Go to Dashboard
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Bell className="h-5 w-5 mr-2" />
-                    Notifications
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start text-red-500" onClick={() => signOut()}>
-                    <LogOut className="h-5 w-5 mr-2" />
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link href="/top-hotels" className="flex items-center">
+                  <Building className="h-4 w-4 mr-2" />
+                  Top Hotels
+                </Link>
+              </Button>
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link href="/mystery-booking" className="flex items-center">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Mystery Booking
+                </Link>
+              </Button>
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link href="/travel-insurance" className="flex items-center">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Travel Insurance
+                </Link>
+              </Button>
+              <div className="flex gap-2">
                 <Button
-                  className="w-full bg-black text-white hover:bg-gray-800"
+                  variant="outline"
+                  className="flex-1 border-black text-black hover:bg-black hover:text-white"
                   asChild
                 >
-                  <Link href="/dashboard">
-                    Login / Register
+                  <Link href={canLogin}>
+                    Login
                   </Link>
                 </Button>
-              )}
+                <Button
+                  className="flex-1 bg-black text-white hover:bg-gray-800"
+                  asChild
+                >
+                  <Link href={canRegister}>
+                    Register
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -269,6 +239,33 @@ export default function Home() {
                   <div className="text-xs opacity-80 font-medium">Price Tracking</div>
                 </div>
               </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className={`flex flex-col sm:flex-row gap-4 mt-8 transition-all duration-1000 delay-700 ${
+              isVisible.hero
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+            }`}>
+              <Button
+                size="lg"
+                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-4 rounded-full text-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                asChild
+              >
+                <Link href={canRegister}>
+                  Start Saving Money Today!
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white text-white hover:bg-white hover:text-gray-900 font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 hover:scale-105"
+                asChild
+              >
+                <Link href={canLogin}>
+                  Sign In
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -449,7 +446,7 @@ export default function Home() {
                 ? 'opacity-100 translate-x-0'
                 : 'opacity-0 translate-x-8'
             }`} asChild>
-              <Link href="/dashboard">Explore Dashboard</Link>
+              <Link href={canRegister}>Get Started Free</Link>
             </Button>
           </div>
         </section>
@@ -486,7 +483,7 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 max-w-lg leading-tight mb-6">Never Overpay for<br />Your Dream Hotel Again</h2>
             <p className="text-lg text-gray-700 mb-8">Join thousands of smart travelers who save hundreds on every trip. Our price pulse alerts ensure you always get the best rates, even after you've already booked.</p>
             <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-4 rounded-full text-lg shadow-lg flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-xl mb-10 mx-auto md:mx-0 btn-hover-effect" asChild>
-              <Link href="/dashboard">
+              <Link href={canRegister}>
                 Start Saving Money Today!
                 <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
               </Link>

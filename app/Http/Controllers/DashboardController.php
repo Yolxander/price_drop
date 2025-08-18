@@ -10,31 +10,12 @@ use App\Models\User;
 
 class DashboardController extends Controller
 {
-    /**
-     * Get the first available user ID or create a default user
-     */
-    private function getFirstUserId()
-    {
-        $user = User::first();
-
-        if (!$user) {
-            // Create a default user if none exists
-            $user = User::create([
-                'name' => 'Default User',
-                'email' => 'default@pricepulse.com',
-                'password' => bcrypt('password123'),
-            ]);
-        }
-
-        return $user->id;
-    }
-
     public function index()
     {
-        $userId = $this->getFirstUserId();
+        $user = auth()->user();
 
         // Get actual bookings from database
-        $hotelBookings = HotelBooking::where('user_id', $userId)
+        $hotelBookings = HotelBooking::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -96,13 +77,7 @@ class DashboardController extends Controller
         ];
 
         return Inertia::render('Dashboard', [
-            'auth' => [
-                'user' => [
-                    'name' => 'John Doe',
-                    'email' => 'john@example.com',
-                    'avatar' => null,
-                ],
-            ],
+            'user' => $user,
             'stats' => [
                 'total_bookings' => $totalBookings,
                 'active_bookings' => $activeBookings,

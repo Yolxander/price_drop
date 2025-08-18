@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -551,50 +551,6 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             </div>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end space-y-3 sm:space-y-0 sm:space-x-4">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto">
-                                        <Filter className="w-4 h-4 mr-2" />
-                                        Status: {statusFilter === 'all' ? 'All' : statusFilter}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="animate-in slide-in-from-top-2">
-                                    <DropdownMenuItem onClick={() => setStatusFilter('all')}>
-                                        All Status
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setStatusFilter('new')}>
-                                        New
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setStatusFilter('actioned')}>
-                                        Actioned
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setStatusFilter('dismissed')}>
-                                        Dismissed
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto">
-                                        <Filter className="w-4 h-4 mr-2" />
-                                        Severity: {severityFilter === 'all' ? 'All' : severityFilter}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="animate-in slide-in-from-top-2">
-                                    <DropdownMenuItem onClick={() => setSeverityFilter('all')}>
-                                        All Severity
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setSeverityFilter('high')}>
-                                        High
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setSeverityFilter('medium')}>
-                                        Medium
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setSeverityFilter('low')}>
-                                        Low
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -625,52 +581,57 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             </Button>
                             <Dialog open={showSettings} onOpenChange={setShowSettings}>
                                 <DialogTrigger asChild>
-                                    <Button size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto">
+                                    <Button
+                                        size="sm"
+                                        className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95 h-10 w-full sm:w-auto"
+                                    >
                                         <Settings className="w-4 h-4 mr-2" />
                                         Alert Settings
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-[95vw] max-h-[90vh] lg:max-w-2xl animate-in slide-in-from-bottom-4">
+                                <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl">
                                     <DialogHeader>
-                                        <DialogTitle>Alert Settings</DialogTitle>
-                                        <DialogDescription>
-                                            Configure your price pulse alert preferences
+                                        <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">Alert Settings</DialogTitle>
+                                        <DialogDescription className="text-gray-600 text-base lg:text-lg">
+                                            Configure your price pulse alert preferences to stay informed about the best deals.
                                         </DialogDescription>
                                     </DialogHeader>
-                                    <div className="space-y-6">
+                                    <div className="grid gap-4 py-4">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="min_amount">Minimum Price Pulse Amount ($)</Label>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="min_amount" className="text-gray-700 font-semibold">Minimum Price Pulse Amount ($)</Label>
                                                 <Input
                                                     id="min_amount"
                                                     type="number"
                                                     step="0.01"
+                                                    placeholder="0.00"
                                                     value={alertSettings.min_price_drop_amount}
                                                     onChange={(e) => setAlertSettings({
                                                         ...alertSettings,
                                                         min_price_drop_amount: parseFloat(e.target.value)
                                                     })}
-                                                    className="form-input-focus transition-all duration-300 h-12 text-base"
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
                                                 />
                                             </div>
-                                            <div>
-                                                <Label htmlFor="min_percent">Minimum Price Pulse Percent (%)</Label>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="min_percent" className="text-gray-700 font-semibold">Minimum Price Pulse Percent (%)</Label>
                                                 <Input
                                                     id="min_percent"
                                                     type="number"
                                                     step="0.1"
+                                                    placeholder="0.0"
                                                     value={alertSettings.min_price_drop_percent}
                                                     onChange={(e) => setAlertSettings({
                                                         ...alertSettings,
                                                         min_price_drop_percent: parseFloat(e.target.value)
                                                     })}
-                                                    className="form-input-focus transition-all duration-300 h-12 text-base"
+                                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div>
-                                            <Label>Notification Methods</Label>
+                                        <div className="space-y-2">
+                                            <Label className="text-gray-700 font-semibold">Notification Methods</Label>
                                             <div className="space-y-3 mt-2">
                                                 <div className="flex items-center space-x-2">
                                                     <Switch
@@ -681,7 +642,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                             email_notifications: checked
                                                         })}
                                                     />
-                                                    <Label htmlFor="email">Email Notifications</Label>
+                                                    <Label htmlFor="email" className="text-gray-700">Email Notifications</Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
                                                     <Switch
@@ -692,7 +653,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                             push_notifications: checked
                                                         })}
                                                     />
-                                                    <Label htmlFor="push">Push Notifications</Label>
+                                                    <Label htmlFor="push" className="text-gray-700">Push Notifications</Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
                                                     <Switch
@@ -703,13 +664,13 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                             sms_notifications: checked
                                                         })}
                                                     />
-                                                    <Label htmlFor="sms">SMS Notifications</Label>
+                                                    <Label htmlFor="sms" className="text-gray-700">SMS Notifications</Label>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div>
-                                            <Label htmlFor="frequency">Notification Frequency</Label>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="frequency" className="text-gray-700 font-semibold">Notification Frequency</Label>
                                             <Select
                                                 value={alertSettings.notification_frequency}
                                                 onValueChange={(value) => setAlertSettings({
@@ -717,7 +678,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                     notification_frequency: value
                                                 })}
                                             >
-                                                <SelectTrigger className="form-input-focus transition-all duration-300 h-12 text-base">
+                                                <SelectTrigger className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -728,18 +689,18 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                             </Select>
                                         </div>
 
-                                        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                                        <DialogFooter className="flex flex-col sm:flex-row gap-2">
                                             <Button
                                                 variant="outline"
                                                 onClick={() => setShowSettings(false)}
-                                                className="border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation w-full sm:w-auto h-12 text-base"
+                                                className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105 w-full sm:w-auto h-12 text-base"
                                             >
                                                 Cancel
                                             </Button>
                                             <Button
                                                 onClick={saveAlertSettings}
                                                 disabled={isLoading}
-                                                className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 touch-manipulation w-full sm:w-auto h-12 text-base ${isLoading ? 'btn-loading' : ''}`}
+                                                className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 btn-hover-effect w-full sm:w-auto h-12 text-base ${isLoading ? 'btn-loading' : ''}`}
                                             >
                                                 {isLoading ? (
                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -748,7 +709,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                 )}
                                                 Save Settings
                                             </Button>
-                                        </div>
+                                        </DialogFooter>
                                     </div>
                                 </DialogContent>
                             </Dialog>

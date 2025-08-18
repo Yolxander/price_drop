@@ -6,6 +6,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Head, Link, router } from '@inertiajs/react';
 import Sidebar from '@/components/ui/sidebar';
 import { toast, Toaster } from 'sonner';
@@ -35,7 +37,8 @@ import {
     Bell,
     Heart,
     LogOut,
-    CalendarIcon
+    CalendarIcon,
+    Plus
 } from 'lucide-react';
 
 export default function BookingsIndex({ auth, bookings, filters, stats }) {
@@ -50,6 +53,19 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [bookingToDelete, setBookingToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [showAddBooking, setShowAddBooking] = useState(false);
+    const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        hotel_name: '',
+        location: '',
+        check_in_date: '',
+        check_out_date: '',
+        guests: '',
+        rooms: '',
+        room_type: '',
+        original_price: '',
+        currency: ''
+    });
     const [isVisible, setIsVisible] = useState({
         header: false,
         searchBar: false,
@@ -285,6 +301,109 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
         setDeleteDialogOpen(true);
     };
 
+    // Modal functions
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleSubmit = async () => {
+        if (isFormSubmitting) return;
+
+        setIsFormSubmitting(true);
+        setShowAddBooking(false);
+
+        const loadingToast = toast.loading('Adding booking and enriching data...', {
+            duration: Infinity,
+            position: 'top-right',
+            style: {
+                background: '#fbbf24',
+                color: '#1f2937',
+                border: '1px solid #f59e0b',
+            },
+        });
+
+        try {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            await router.post('/bookings', formData, {
+                onSuccess: () => {
+                    toast.dismiss(loadingToast);
+                    toast.success('Booking added successfully!', {
+                        position: 'top-right',
+                        duration: 4000,
+                        style: {
+                            background: '#10b981',
+                            color: 'white',
+                            border: '1px solid #059669',
+                        },
+                        icon: <CheckCircle className="h-4 w-4" />,
+                    });
+
+                    setFormData({
+                        hotel_name: '',
+                        location: '',
+                        check_in_date: '',
+                        check_out_date: '',
+                        guests: '',
+                        rooms: '',
+                        room_type: '',
+                        original_price: '',
+                        currency: ''
+                    });
+                },
+                onError: (errors) => {
+                    toast.dismiss(loadingToast);
+                    toast.error('Failed to add booking. Please try again.', {
+                        position: 'top-right',
+                        duration: 4000,
+                        style: {
+                            background: '#ef4444',
+                            color: 'white',
+                            border: '1px solid #dc2626',
+                        },
+                        icon: <AlertCircle className="h-4 w-4" />,
+                    });
+                }
+            });
+        } catch (error) {
+            toast.dismiss(loadingToast);
+            toast.error('An unexpected error occurred.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+        } finally {
+            setIsFormSubmitting(false);
+        }
+    };
+
+    const handleAddBookingClick = () => {
+        setShowAddBooking(true);
+    };
+
+    const handleCloseForm = () => {
+        setShowAddBooking(false);
+        setFormData({
+            hotel_name: '',
+            location: '',
+            check_in_date: '',
+            check_out_date: '',
+            guests: '',
+            rooms: '',
+            room_type: '',
+            original_price: '',
+            currency: ''
+        });
+    };
+
     const getStatusBadgeVariant = (status) => {
         switch (status) {
             case 'active':
@@ -451,6 +570,13 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                                 ? 'opacity-100 translate-x-0'
                                 : 'opacity-0 translate-x-8'
                         }`}>
+                            <Button
+                                onClick={handleAddBookingClick}
+                                className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-4 lg:px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 h-10 flex items-center space-x-2"
+                            >
+                                <Plus className="h-4 w-4" />
+                                <span className="hidden sm:inline">Add Booking</span>
+                            </Button>
                             <Button variant="outline" className="flex items-center space-x-2 transition-all duration-300 hover:scale-105 active:scale-95 h-10">
                                 <Filter className="h-4 w-4" />
                                 <span className="hidden sm:inline">Filter</span>
@@ -484,8 +610,9 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                         className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6"
                         data-section="bookingsGrid"
                     >
-                        <div className={`grid gap-4 lg:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}>
-                            {displayedBookings.map((property, index) => (
+                        {displayedBookings.length > 0 ? (
+                            <div className={`grid gap-4 lg:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2' : 'grid-cols-1'}`}>
+                                {displayedBookings.map((property, index) => (
                                 <div
                                     key={property.id}
                                     className={`relative transition-all duration-1000 ease-out ${
@@ -618,7 +745,29 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                                     </div>
                                 </div>
                             ))}
-                        </div>
+                            </div>
+                        ) : (
+                            <div className={`flex items-center justify-center w-full py-12 lg:py-16 transition-all duration-1000 delay-300 ${
+                                isVisible.bookingsGrid
+                                    ? 'opacity-100 translate-y-0'
+                                    : 'opacity-0 translate-y-8'
+                            }`}>
+                                <div className="text-center bg-white/60 rounded-2xl border-2 border-dashed border-gray-300 p-6 lg:p-12 max-w-sm lg:max-w-md hover-lift transition-all duration-500 mx-4">
+                                    <div className="mx-auto w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center mb-4 lg:mb-6 animate-float">
+                                        <Grid3X3 className="w-10 h-10 lg:w-12 lg:h-12 text-yellow-600" />
+                                    </div>
+                                    <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-3">No Bookings Yet</h3>
+                                    <p className="text-gray-600 mb-4 lg:mb-6 text-sm lg:text-base px-2">Start tracking your hotel bookings to monitor price pulses and save money on every trip.</p>
+                                    <Button
+                                        onClick={handleAddBookingClick}
+                                        className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 lg:px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 btn-hover-effect w-full touch-manipulation"
+                                    >
+                                        <Plus className="w-5 h-5 mr-2" />
+                                        Add Your First Booking
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Infinite Scroll Sentinel */}
@@ -668,6 +817,137 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                             disabled={isDeleting}
                         >
                             {isDeleting ? 'Deleting...' : 'Delete Booking'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Booking Modal */}
+            <Dialog open={showAddBooking} onOpenChange={setShowAddBooking}>
+                <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">Add New Booking</DialogTitle>
+                        <DialogDescription className="text-gray-600 text-base lg:text-lg">
+                            Enter your hotel booking details to start tracking price pulses and save money.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="hotel-name" className="text-gray-700 font-semibold">Hotel Name</Label>
+                                <Input
+                                    id="hotel-name"
+                                    placeholder="Enter hotel name"
+                                    value={formData.hotel_name}
+                                    onChange={(e) => handleInputChange('hotel_name', e.target.value)}
+                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="location" className="text-gray-700 font-semibold">Location</Label>
+                                <Input
+                                    id="location"
+                                    placeholder="City, Country"
+                                    value={formData.location}
+                                    onChange={(e) => handleInputChange('location', e.target.value)}
+                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="check-in" className="text-gray-700 font-semibold">Check-in Date</Label>
+                                <Input
+                                    id="check-in"
+                                    type="date"
+                                    value={formData.check_in_date}
+                                    onChange={(e) => handleInputChange('check_in_date', e.target.value)}
+                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="check-out" className="text-gray-700 font-semibold">Check-out Date</Label>
+                                <Input
+                                    id="check-out"
+                                    type="date"
+                                    value={formData.check_out_date}
+                                    onChange={(e) => handleInputChange('check_out_date', e.target.value)}
+                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="guests" className="text-gray-700 font-semibold">Number of Guests</Label>
+                                <Input
+                                    id="guests"
+                                    type="number"
+                                    placeholder="2"
+                                    value={formData.guests}
+                                    onChange={(e) => handleInputChange('guests', e.target.value)}
+                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="rooms" className="text-gray-700 font-semibold">Number of Rooms</Label>
+                                <Input
+                                    id="rooms"
+                                    type="number"
+                                    placeholder="1"
+                                    value={formData.rooms}
+                                    onChange={(e) => handleInputChange('rooms', e.target.value)}
+                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="room-type" className="text-gray-700 font-semibold">Room Type</Label>
+                                <Input
+                                    id="room-type"
+                                    type="text"
+                                    placeholder="e.g., Deluxe King Room"
+                                    value={formData.room_type}
+                                    onChange={(e) => handleInputChange('room_type', e.target.value)}
+                                    className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="total-price" className="text-gray-700 font-semibold">Total Price</Label>
+                                <Input
+                                    id="total-price"
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={formData.original_price}
+                                    onChange={(e) => handleInputChange('original_price', e.target.value)}
+                                    className="border-gray-500 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="currency" className="text-gray-700 font-semibold">Currency</Label>
+                            <Select value={formData.currency} onValueChange={(value) => handleInputChange('currency', value)}>
+                                <SelectTrigger className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base">
+                                    <SelectValue placeholder="Select currency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="usd">USD ($)</SelectItem>
+                                    <SelectItem value="eur">EUR (€)</SelectItem>
+                                    <SelectItem value="gbp">GBP (£)</SelectItem>
+                                    <SelectItem value="jpy">JPY (¥)</SelectItem>
+                                    <SelectItem value="idr">IDR (Rp)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                        <Button variant="outline" onClick={handleCloseForm} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105 w-full sm:w-auto h-12 text-base">
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSubmit}
+                            className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 btn-hover-effect w-full sm:w-auto h-12 text-base ${isFormSubmitting ? 'btn-loading' : ''}`}
+                            disabled={isFormSubmitting}
+                        >
+                            {isFormSubmitting ? 'Adding...' : 'Add Booking'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

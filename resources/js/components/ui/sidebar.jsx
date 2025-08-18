@@ -52,14 +52,16 @@ export default function Sidebar({ activePage = 'dashboard' }) {
     ];
 
     return (
-        <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col">
             {/* Logo */}
             <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center space-x-2">
-                                            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">T</span>
-                    </div>
-                                            <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
+                    <img
+                        src="/logo/price-pulse-logo.png"
+                        alt="Price Pulse"
+                        className="w-8 h-8"
+                    />
+                    <span className="text-xl font-bold text-yellow-600">Price Pulse</span>
                 </div>
             </div>
 

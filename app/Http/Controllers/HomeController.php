@@ -9,10 +9,13 @@ class HomeController extends Controller
 {
     public function index()
     {
+        if (auth()->check()) {
+            return redirect()->route('dashboard');
+        }
+
         return Inertia::render('Home', [
-            'auth' => [
-                'user' => auth()->user(),
-            ],
+            'canLogin' => route('login'),
+            'canRegister' => route('register'),
         ]);
     }
 }

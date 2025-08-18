@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     BarChart3,
     Users,
@@ -38,6 +38,11 @@ export default function AuthenticatedLayout({ user, header, children }) {
         { name: 'Preferences', href: '/settings', icon: Settings },
     ];
 
+    const handleLogout = (e) => {
+        e.preventDefault();
+        router.post('/logout');
+    };
+
     return (
         <div className="min-h-screen bg-background">
             {/* Mobile sidebar */}
@@ -68,43 +73,26 @@ export default function AuthenticatedLayout({ user, header, children }) {
                         ))}
                     </nav>
 
-                    {/* Profile section at bottom of mobile sidebar */}
-                    <div className="border-t border-sidebar-border p-4">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="w-full justify-start h-auto p-2">
-                                    <div className="flex items-center space-x-3">
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={user?.avatar} alt={user?.name} />
-                                            <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col items-start">
-                                            <p className="text-sm font-medium text-sidebar-foreground">{user?.name}</p>
-                                            <p className="text-xs text-sidebar-foreground/70">{user?.email}</p>
-                                        </div>
-                                    </div>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56" align="start" forceMount>
-                                <DropdownMenuLabel className="font-normal">
-                                    <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium leading-none">{user?.name}</p>
-                                        <p className="text-xs leading-none text-muted-foreground">
-                                            {user?.email}
-                                        </p>
-                                    </div>
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem>
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    <span>Settings</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Log out</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                    {/* User profile and logout at bottom of mobile sidebar */}
+                    <div className="border-t border-sidebar-border p-4 space-y-2">
+                        <div className="flex items-center space-x-3 p-2">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={user?.avatar} alt={user?.name} />
+                                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col items-start">
+                                <p className="text-sm font-medium text-sidebar-foreground">{user?.name}</p>
+                                <p className="text-xs text-sidebar-foreground/70">{user?.email}</p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            onClick={handleLogout}
+                            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        >
+                            <LogOut className="mr-3 h-5 w-5" />
+                            Log out
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -138,74 +126,47 @@ export default function AuthenticatedLayout({ user, header, children }) {
                         ))}
                     </nav>
 
-                    {/* Profile section at bottom of desktop sidebar */}
-                    <div className="border-t border-sidebar-border p-4">
+                    {/* User profile and logout at bottom of desktop sidebar */}
+                    <div className="border-t border-sidebar-border p-4 space-y-2">
                         {sidebarCollapsed ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="w-full h-10 p-0" title={`${user?.name} (${user?.email})`}>
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={user?.avatar} alt={user?.name} />
-                                            <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-56" align="start" forceMount>
-                                    <DropdownMenuLabel className="font-normal">
-                                        <div className="flex flex-col space-y-1">
-                                            <p className="text-sm font-medium leading-none">{user?.name}</p>
-                                            <p className="text-xs leading-none text-muted-foreground">
-                                                {user?.email}
-                                            </p>
-                                        </div>
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                        <Settings className="mr-2 h-4 w-4" />
-                                        <span>Settings</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        <span>Log out</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <>
+                                <div className="flex justify-center">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src={user?.avatar} alt={user?.name} />
+                                        <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleLogout}
+                                    className="w-full h-10 p-0 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                    title="Log out"
+                                >
+                                    <LogOut className="h-5 w-5" />
+                                </Button>
+                            </>
                         ) : (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="w-full justify-start h-auto p-2">
-                                        <div className="flex items-center space-x-3">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarImage src={user?.avatar} alt={user?.name} />
-                                                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex flex-col items-start">
-                                                <p className="text-sm font-medium text-sidebar-foreground">{user?.name}</p>
-                                                <p className="text-xs text-sidebar-foreground/70">{user?.email}</p>
-                                            </div>
-                                        </div>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-56" align="start" forceMount>
-                                    <DropdownMenuLabel className="font-normal">
-                                        <div className="flex flex-col space-y-1">
-                                            <p className="text-sm font-medium leading-none">{user?.name}</p>
-                                            <p className="text-xs leading-none text-muted-foreground">
-                                                {user?.email}
-                                            </p>
-                                        </div>
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                        <Settings className="mr-2 h-4 w-4" />
-                                        <span>Settings</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        <span>Log out</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <>
+                                <div className="flex items-center space-x-3 p-2">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src={user?.avatar} alt={user?.name} />
+                                        <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col items-start">
+                                        <p className="text-sm font-medium text-sidebar-foreground">{user?.name}</p>
+                                        <p className="text-xs text-sidebar-foreground/70">{user?.email}</p>
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    onClick={handleLogout}
+                                    className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                                >
+                                    <LogOut className="mr-3 h-5 w-5" />
+                                    Log out
+                                </Button>
+                            </>
                         )}
                     </div>
                 </div>
