@@ -10,6 +10,15 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <script data-noptimize="1" data-cfasync="false" data-wpfc-render="false">
+            (function () {
+                var script = document.createElement("script");
+                script.async = 1;
+                script.src = 'https://emrldco.com/NDUxMzg0.js?t=451384';
+                document.head.appendChild(script);
+            })();
+        </script>
+
         <!-- Scripts -->
         @routes
         @viteReactRefresh
