@@ -3,7 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import Checkbox from '@/Components/Checkbox';
+import Checkbox from '@/components/Checkbox';
 import { ArrowUpRight, Eye, EyeOff, Building, Sparkles, Shield } from 'lucide-react';
 
 export default function Login({ status, canResetPassword }) {
