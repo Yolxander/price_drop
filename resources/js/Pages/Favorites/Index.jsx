@@ -66,25 +66,25 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
         {
             href: '/dashboard',
             icon: Home,
-            label: 'Dashboard',
+            label: 'My Trips',
             page: 'dashboard'
         },
         {
             href: '/bookings',
             icon: Grid3X3,
-            label: 'All Bookings',
+            label: 'All My Bookings',
             page: 'bookings'
         },
         {
             href: '/calendar',
             icon: CalendarIcon,
-            label: 'Calendar',
+            label: 'Trip Calendar',
             page: 'calendar'
         },
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Pulses',
+            label: 'Price Drops',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -92,13 +92,13 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
         {
             href: '/favorites',
             icon: Heart,
-            label: 'Favorites',
+            label: 'My Wishlist',
             page: 'favorites'
         },
         {
             href: '/settings',
             icon: Settings,
-            label: 'Settings',
+            label: 'My Preferences',
             page: 'settings'
         }
     ];
@@ -542,7 +542,7 @@ export default function FavoritesIndex({ auth, favorites = [], stats = {} }) {
                                                     <div className="absolute top-3 left-32">
                                                         <Badge variant="default" className="bg-green-600 text-white animate-pulse transition-all duration-300 hover:scale-105 active:scale-95">
                                                             <TrendingDown className="h-3 w-3 mr-1" />
-                                                            Price Pulse
+                                                            Price Drop!
                                                         </Badge>
                                                     </div>
                                                 )}

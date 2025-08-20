@@ -71,25 +71,25 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         {
             href: '/dashboard',
             icon: Home,
-            label: 'Dashboard',
+            label: 'My Trips',
             page: 'dashboard'
         },
         {
             href: '/bookings',
             icon: Grid3X3,
-            label: 'All Bookings',
+            label: 'All My Bookings',
             page: 'bookings'
         },
         {
             href: '/calendar',
             icon: Calendar,
-            label: 'Calendar',
+            label: 'Trip Calendar',
             page: 'calendar'
         },
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Pulses',
+            label: 'Price Drops',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -97,13 +97,13 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         {
             href: '/favorites',
             icon: Heart,
-            label: 'Favorites',
+            label: 'My Wishlist',
             page: 'favorites'
         },
         {
             href: '/settings',
             icon: Settings,
-            label: 'Settings',
+            label: 'My Preferences',
             page: 'settings'
         }
     ];
@@ -156,7 +156,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         setIsFormSubmitting(true);
         setShowAddBooking(false);
 
-        const loadingToast = toast.loading('Adding booking and enriching data...', {
+        const loadingToast = toast.loading('Adding your trip and getting the details...', {
             duration: Infinity,
             position: 'top-right',
             style: {
@@ -172,7 +172,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
             await router.post('/bookings', formData, {
                 onSuccess: () => {
                     toast.dismiss(loadingToast);
-                    toast.success('Booking added successfully!', {
+                    toast.success('Your trip has been added! We\'ll start watching for price drops.', {
                         position: 'top-right',
                         duration: 4000,
                         style: {
@@ -197,7 +197,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                 },
                 onError: (errors) => {
                     toast.dismiss(loadingToast);
-                    toast.error('Failed to add booking. Please try again.', {
+                    toast.error('Oops! We couldn\'t add your trip. Please try again.', {
                         position: 'top-right',
                         duration: 4000,
                         style: {
@@ -211,7 +211,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
             });
         } catch (error) {
             toast.dismiss(loadingToast);
-            toast.error('An unexpected error occurred.', {
+            toast.error('Something went wrong. Please try again in a moment.', {
                 position: 'top-right',
                 duration: 4000,
                 style: {
@@ -424,7 +424,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
-                                    placeholder="Search hotels..."
+                                    placeholder="Find your dream hotel..."
                                     className="pl-10 bg-white/90 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md w-full h-12 text-base"
                                 />
                             </div>
@@ -442,30 +442,30 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             onClick={handleAddBookingClick}
                                         >
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Add Booking
+                                            Add My Trip
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl">
                                         <DialogHeader>
-                                            <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">Add New Booking</DialogTitle>
+                                            <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">Add My Next Adventure</DialogTitle>
                                             <DialogDescription className="text-gray-600 text-base lg:text-lg">
-                                                Enter your hotel booking details to start tracking price pulses and save money.
+                                                Tell us about your hotel stay and we'll keep an eye on the prices for you.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="hotel-name" className="text-gray-700 font-semibold">Hotel Name</Label>
+                                                    <Label htmlFor="hotel-name" className="text-gray-700 font-semibold">Where are you staying?</Label>
                                                     <Input
                                                         id="hotel-name"
-                                                        placeholder="Enter hotel name"
+                                                        placeholder="Hotel name"
                                                         value={formData.hotel_name}
                                                         onChange={(e) => handleInputChange('hotel_name', e.target.value)}
                                                         className="border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-lg transition-all duration-300 form-input-focus h-12 text-base"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="location" className="text-gray-700 font-semibold">Location</Label>
+                                                    <Label htmlFor="location" className="text-gray-700 font-semibold">Destination</Label>
                                                     <Input
                                                         id="location"
                                                         placeholder="City, Country"
@@ -477,7 +477,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             </div>
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="check-in" className="text-gray-700 font-semibold">Check-in Date</Label>
+                                                    <Label htmlFor="check-in" className="text-gray-700 font-semibold">When do you arrive?</Label>
                                                     <Input
                                                         id="check-in"
                                                         type="date"
@@ -487,7 +487,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="check-out" className="text-gray-700 font-semibold">Check-out Date</Label>
+                                                    <Label htmlFor="check-out" className="text-gray-700 font-semibold">When do you leave?</Label>
                                                     <Input
                                                         id="check-out"
                                                         type="date"
@@ -499,7 +499,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             </div>
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="guests" className="text-gray-700 font-semibold">Number of Guests</Label>
+                                                    <Label htmlFor="guests" className="text-gray-700 font-semibold">Traveling with</Label>
                                                     <Input
                                                         id="guests"
                                                         type="number"
@@ -510,7 +510,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="rooms" className="text-gray-700 font-semibold">Number of Rooms</Label>
+                                                    <Label htmlFor="rooms" className="text-gray-700 font-semibold">How many rooms?</Label>
                                                     <Input
                                                         id="rooms"
                                                         type="number"
@@ -521,7 +521,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="room-type" className="text-gray-700 font-semibold">Room Type</Label>
+                                                    <Label htmlFor="room-type" className="text-gray-700 font-semibold">Room style</Label>
                                                     <Input
                                                         id="room-type"
                                                         type="text"
@@ -532,7 +532,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="total-price" className="text-gray-700 font-semibold">Total Price</Label>
+                                                    <Label htmlFor="total-price" className="text-gray-700 font-semibold">What did you pay?</Label>
                                                     <Input
                                                         id="total-price"
                                                         type="number"
@@ -561,14 +561,14 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         </div>
                                         <DialogFooter className="flex flex-col sm:flex-row gap-2">
                                             <Button variant="outline" onClick={handleCloseForm} className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105 w-full sm:w-auto h-12 text-base">
-                                                Cancel
+                                                Maybe Later
                                             </Button>
                                             <Button
                                                 onClick={handleSubmit}
                                                 className={`bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 btn-hover-effect w-full sm:w-auto h-12 text-base ${isFormSubmitting ? 'btn-loading' : ''}`}
                                                 disabled={isFormSubmitting}
                                             >
-                                                {isFormSubmitting ? 'Adding...' : 'Add Booking'}
+                                                {isFormSubmitting ? 'Adding...' : 'Start Watching This Deal'}
                                             </Button>
                                         </DialogFooter>
                                     </DialogContent>
@@ -596,9 +596,9 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     ? 'opacity-100 translate-x-0'
                                     : 'opacity-0 -translate-x-8'
                             }`}>
-                                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Recent Bookings</h2>
+                                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Your Recent Adventures</h2>
                                 <Link href="/bookings">
-                                    <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-base lg:text-lg transition-all duration-300 hover:scale-105">View All →</Button>
+                                    <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-base lg:text-lg transition-all duration-300 hover:scale-105">See All My Trips →</Button>
                                 </Link>
                             </div>
                             <div className="flex space-x-4 lg:space-x-6 overflow-x-auto pb-4 lg:pb-6 scrollbar-hide">
@@ -662,11 +662,11 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             <div className="mx-auto w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center mb-4 lg:mb-6 animate-float">
                                                 <Building className="w-10 h-10 lg:w-12 lg:h-12 text-yellow-600" />
                                             </div>
-                                            <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-3">No Bookings Yet</h3>
-                                            <p className="text-gray-600 mb-4 lg:mb-6 text-sm lg:text-base px-2">Start tracking your hotel bookings to monitor price pulses and save money on every trip.</p>
+                                            <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-3">Your suitcase is empty!</h3>
+                                            <p className="text-gray-600 mb-4 lg:mb-6 text-sm lg:text-base px-2">Add your first trip to start tracking prices and saving money on your next adventure.</p>
                                             <Button onClick={handleAddBookingClick} className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 lg:px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 btn-hover-effect w-full touch-manipulation">
                                                 <Plus className="w-5 h-5 mr-2" />
-                                                Add Your First Booking
+                                                Plan My First Trip
                                             </Button>
                                         </div>
                                     </div>
@@ -698,7 +698,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     : 'text-base lg:text-lg text-gray-600 hover:text-gray-900 hover:text-lg lg:hover:text-xl'
                                             }`}
                                         >
-                                            Most Popular
+                                            Traveler Favorites
                                         </button>
                                         <button
                                             onClick={() => setActiveNavTab('special-offers')}
@@ -708,7 +708,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     : 'text-base lg:text-lg text-gray-600 hover:text-gray-900 hover:text-lg lg:hover:text-xl'
                                             }`}
                                         >
-                                            Special Offers
+                                            Hot Deals
                                         </button>
                                         <button
                                             onClick={() => setActiveNavTab('near-me')}
@@ -718,7 +718,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     : 'text-base lg:text-lg text-gray-600 hover:text-gray-900 hover:text-lg lg:hover:text-xl'
                                             }`}
                                         >
-                                            Near Me
+                                            Near You
                                         </button>
                                     </div>
                                 </div>
@@ -785,7 +785,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     className="w-full h-20 lg:h-24 object-cover rounded-t-lg transition-transform duration-500"
                                                 />
                                                 <div className="absolute top-2 right-2">
-                                                    <Badge className="bg-orange-500 text-white text-xs animate-pulse">Special Offer</Badge>
+                                                    <Badge className="bg-orange-500 text-white text-xs animate-pulse">Limited Time!</Badge>
                                                 </div>
                                             </div>
                                             <CardContent className="p-3 lg:p-4">
@@ -826,7 +826,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                     className="w-full h-20 lg:h-24 object-cover rounded-t-lg transition-transform duration-500"
                                                 />
                                                 <div className="absolute top-2 right-2">
-                                                    <Badge className="bg-green-500 text-white text-xs animate-pulse">Nearby</Badge>
+                                                    <Badge className="bg-green-500 text-white text-xs animate-pulse">Close to You</Badge>
                                                 </div>
                                             </div>
                                             <CardContent className="p-3 lg:p-4">

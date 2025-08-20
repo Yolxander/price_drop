@@ -67,25 +67,25 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
         {
             href: '/dashboard',
             icon: Home,
-            label: 'Dashboard',
+            label: 'My Trips',
             page: 'dashboard'
         },
         {
             href: '/bookings',
             icon: Grid3X3,
-            label: 'All Bookings',
+            label: 'All My Bookings',
             page: 'bookings'
         },
         {
             href: '/calendar',
             icon: CalendarIcon,
-            label: 'Calendar',
+            label: 'Trip Calendar',
             page: 'calendar'
         },
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Pulses',
+            label: 'Price Drops',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -93,13 +93,13 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
         {
             href: '/favorites',
             icon: Heart,
-            label: 'Favorites',
+            label: 'My Wishlist',
             page: 'favorites'
         },
         {
             href: '/settings',
             icon: Settings,
-            label: 'Settings',
+            label: 'My Preferences',
             page: 'settings'
         }
     ];
@@ -602,7 +602,7 @@ export default function Calendar({ auth, bookings, upcomingBookings }) {
                                     <div className="text-xl lg:text-2xl font-bold text-green-600 animate-pulse">
                                         {safeBookings.filter(b => b.price_drop_detected).length}
                                     </div>
-                                    <div className="text-xs lg:text-sm text-muted-foreground">Price Pulses</div>
+                                    <div className="text-xs lg:text-sm text-muted-foreground">Price Drops</div>
                                 </div>
                             </div>
                         </CardContent>

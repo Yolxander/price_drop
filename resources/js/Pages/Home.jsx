@@ -86,7 +86,7 @@ export default function Home({ canLogin, canRegister }) {
             >
               <Link href="/top-hotels">
                 <Building className="h-4 w-4 mr-2" />
-                Top Hotels
+                Dream Hotels
               </Link>
             </Button>
             <Button
@@ -97,7 +97,7 @@ export default function Home({ canLogin, canRegister }) {
             >
               <Link href="/mystery-booking" className="flex items-center">
                 <Sparkles className="h-4 w-4 mr-2" />
-                Mystery Booking
+                Surprise Deals
               </Link>
             </Button>
             <Button
@@ -108,7 +108,7 @@ export default function Home({ canLogin, canRegister }) {
             >
               <Link href="/travel-insurance" className="flex items-center">
                 <Shield className="h-4 w-4 mr-2" />
-                Travel Insurance
+                Travel Protection
               </Link>
             </Button>
 
@@ -152,19 +152,19 @@ export default function Home({ canLogin, canRegister }) {
               <Button variant="ghost" className="w-full justify-start" asChild>
                 <Link href="/top-hotels" className="flex items-center">
                   <Building className="h-4 w-4 mr-2" />
-                  Top Hotels
+                  Dream Hotels
                 </Link>
               </Button>
               <Button variant="ghost" className="w-full justify-start" asChild>
                 <Link href="/mystery-booking" className="flex items-center">
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Mystery Booking
+                  Surprise Deals
                 </Link>
               </Button>
               <Button variant="ghost" className="w-full justify-start" asChild>
                 <Link href="/travel-insurance" className="flex items-center">
                   <Shield className="h-4 w-4 mr-2" />
-                  Travel Insurance
+                  Travel Protection
                 </Link>
               </Button>
               <div className="flex gap-2">
@@ -213,7 +213,7 @@ export default function Home({ canLogin, canRegister }) {
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-8'
             }`}>
-              Never Overpay Again with<br /><span className="text-yellow-300">Price Pulse Alerts</span>
+              Never Overpay Again with<br /><span className="text-yellow-300">Smart Price Alerts</span>
             </h1>
 
             {/* Subtext & Stats */}
@@ -223,7 +223,7 @@ export default function Home({ canLogin, canRegister }) {
                 : 'opacity-0 translate-y-8'
             }`}>
               <div className="text-white text-sm md:text-base font-medium md:text-left text-center max-w-md px-4 md:px-0">
-                Get instant notifications when hotel prices drop after you book. Our AI-powered system monitors 100+ booking sites and automatically finds you better deals, saving you hundreds on every trip.
+                Get friendly alerts when hotel prices drop after you book. Our smart system watches 100+ booking sites and finds you better deals, so you can save hundreds on every trip.
               </div>
               <div className="flex gap-6 md:gap-8 mt-4 md:mt-0 text-white text-center">
                 <div className="stats-item animate-pulse hover:scale-110 transition-transform duration-300">
@@ -232,11 +232,11 @@ export default function Home({ canLogin, canRegister }) {
                 </div>
                 <div className="stats-item animate-pulse hover:scale-110 transition-transform duration-300" style={{ animationDelay: '0.2s' }}>
                   <div className="text-2xl md:text-3xl font-bold">100+</div>
-                  <div className="text-xs opacity-80 font-medium">Sites Monitored</div>
+                  <div className="text-xs opacity-80 font-medium">Sites We Watch</div>
                 </div>
                 <div className="stats-item animate-pulse hover:scale-110 transition-transform duration-300" style={{ animationDelay: '0.4s' }}>
                   <div className="text-2xl md:text-3xl font-bold">24/7</div>
-                  <div className="text-xs opacity-80 font-medium">Price Tracking</div>
+                  <div className="text-xs opacity-80 font-medium">Always Watching</div>
                 </div>
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function Home({ canLogin, canRegister }) {
                 asChild
               >
                 <Link href={canLogin}>
-                  Sign In
+                  Welcome Back
                 </Link>
               </Button>
             </div>
@@ -285,14 +285,14 @@ export default function Home({ canLogin, canRegister }) {
                 ? 'opacity-100 translate-x-0'
                 : 'opacity-0 -translate-x-8'
             }`}>
-              How Price Pulse Alerts Save You Money
+              How We Help You Save Money
             </h2>
             <div className={`text-gray-500 text-lg max-w-md mt-4 md:mt-0 md:text-right font-medium transition-all duration-1000 delay-400 ${
               isVisible.features
                 ? 'opacity-100 translate-x-0'
                 : 'opacity-0 translate-x-8'
             }`}>
-              Simply add your hotel booking to our system. We'll monitor prices 24/7 and instantly notify you when rates drop, so you can rebook and save money automatically.
+              Just add your hotel booking and we'll keep an eye on the prices for you. When rates drop, we'll give you a friendly nudge so you can rebook and save money.
             </div>
           </div>
           {/* Carousel */}
@@ -320,8 +320,8 @@ export default function Home({ canLogin, canRegister }) {
                   </svg>
                 </div>
                 <div className="p-4 md:p-6">
-                  <div className="text-lg md:text-2xl font-bold">Smart Price Monitoring</div>
-                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Our AI continuously monitors your hotel's price across all major booking platforms in real-time.</div>
+                  <div className="text-lg md:text-2xl font-bold">Smart Price Watching</div>
+                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Our smart system keeps an eye on your hotel's price across all major booking sites, so you don't have to.</div>
                   <div className="flex items-center gap-1 mb-1">
                     <span className="text-yellow-400 text-xl">★</span>
                     <span className="text-yellow-400 text-xl">★</span>
@@ -340,8 +340,8 @@ export default function Home({ canLogin, canRegister }) {
                   </svg>
                 </div>
                 <div className="p-4 md:p-6">
-                  <div className="text-lg md:text-2xl font-bold">Instant Price Pulse Notifications</div>
-                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Get real-time alerts when prices drop, so you can rebook immediately and save money on every booking.</div>
+                  <div className="text-lg md:text-2xl font-bold">Friendly Price Drop Alerts</div>
+                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Get a friendly nudge when prices drop, so you can grab the better deal and save money on your stay.</div>
                   <div className="flex items-center gap-1 mb-1">
                     <span className="text-yellow-400 text-xl">★</span>
                     <span className="text-yellow-400 text-xl">★</span>
@@ -360,8 +360,8 @@ export default function Home({ canLogin, canRegister }) {
                   </svg>
                 </div>
                 <div className="p-4 md:p-6">
-                  <div className="text-lg md:text-2xl font-bold">Automatic Rebooking</div>
-                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">When prices drop, we automatically rebook your stay at the lower rate, ensuring you always get the best deal.</div>
+                  <div className="text-lg md:text-2xl font-bold">Easy Rebooking</div>
+                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">When prices drop, we make it simple to rebook at the lower rate, so you always get the best deal.</div>
                   <div className="flex items-center gap-1 mb-1">
                     <span className="text-yellow-400 text-xl">★</span>
                     <span className="text-yellow-400 text-xl">★</span>
@@ -380,8 +380,8 @@ export default function Home({ canLogin, canRegister }) {
                   </svg>
                 </div>
                 <div className="p-4 md:p-6">
-                  <div className="text-lg md:text-2xl font-bold">Smart Savings Analytics</div>
-                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Track your total savings and get detailed reports on how much money you've saved with our price pulse alerts.</div>
+                  <div className="text-lg md:text-2xl font-bold">See Your Savings</div>
+                  <div className="text-gray-500 text-sm md:text-base mb-2 font-medium">Track how much money you've saved and get helpful reports on your travel savings journey.</div>
                   <div className="flex items-center gap-1 mb-1">
                     <span className="text-yellow-400 text-xl">★</span>
                     <span className="text-yellow-400 text-xl">★</span>
@@ -416,7 +416,7 @@ export default function Home({ canLogin, canRegister }) {
         >
           <img
             src="/dashboard.png"
-            alt="Price Pulse Dashboard"
+            alt="Your Travel Savings Hub"
             className="object-cover w-full h-full absolute inset-0"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -427,17 +427,17 @@ export default function Home({ canLogin, canRegister }) {
                 : 'opacity-0 -translate-x-8'
             }`}>
               <div className="mb-2">
-                <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">Smart Dashboard</span>
+                <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm">Your Travel Hub</span>
               </div>
-              <h2 className="text-white text-3xl md:text-5xl font-bold leading-tight mb-4">Your Personal<br />Price Pulse Command Center</h2>
+              <h2 className="text-white text-3xl md:text-5xl font-bold leading-tight mb-4">Your Personal<br />Travel Savings Hub</h2>
               <div className="flex items-center gap-6 text-white/90 text-base font-medium">
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5" />
-                  <span>Track All Bookings</span>
+                  <span>All My Trips</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
-                  <span>Real-time Price Monitoring</span>
+                  <span>Always Watching Prices</span>
                 </div>
               </div>
             </div>
@@ -481,7 +481,7 @@ export default function Home({ canLogin, canRegister }) {
               : 'opacity-0 translate-x-8'
           }`}>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 max-w-lg leading-tight mb-6">Never Overpay for<br />Your Dream Hotel Again</h2>
-            <p className="text-lg text-gray-700 mb-8">Join thousands of smart travelers who save hundreds on every trip. Our price pulse alerts ensure you always get the best rates, even after you've already booked.</p>
+            <p className="text-lg text-gray-700 mb-8">Join thousands of smart travelers who save hundreds on every trip. Our friendly price alerts ensure you always get the best rates, even after you've already booked.</p>
             <Button className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-4 rounded-full text-lg shadow-lg flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-xl mb-10 mx-auto md:mx-0 btn-hover-effect" asChild>
               <Link href={canRegister}>
                 Start Saving Money Today!

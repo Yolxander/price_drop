@@ -14,25 +14,25 @@ export default function Sidebar({ activePage = 'dashboard' }) {
         {
             href: '/dashboard',
             icon: Home,
-            label: 'Dashboard',
+            label: 'My Trips',
             page: 'dashboard'
         },
         {
             href: '/bookings',
             icon: Grid3X3,
-            label: 'All Bookings',
+            label: 'All My Bookings',
             page: 'bookings'
         },
         {
             href: '/calendar',
             icon: Bell,
-            label: 'Calendar',
+            label: 'Trip Calendar',
             page: 'calendar'
         },
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Pulses',
+            label: 'Price Drops',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -40,13 +40,13 @@ export default function Sidebar({ activePage = 'dashboard' }) {
         {
             href: '/favorites',
             icon: Heart,
-            label: 'Favorite',
+            label: 'My Wishlist',
             page: 'favorites'
         },
         {
             href: '/settings',
             icon: Settings,
-            label: 'Settings',
+            label: 'My Preferences',
             page: 'settings'
         }
     ];

@@ -79,25 +79,25 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
         {
             href: '/dashboard',
             icon: Home,
-            label: 'Dashboard',
+            label: 'My Trips',
             page: 'dashboard'
         },
         {
             href: '/bookings',
             icon: Grid3X3,
-            label: 'All Bookings',
+            label: 'All My Bookings',
             page: 'bookings'
         },
         {
             href: '/calendar',
             icon: CalendarIcon,
-            label: 'Calendar',
+            label: 'Trip Calendar',
             page: 'calendar'
         },
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Pulses',
+            label: 'Price Drops',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -105,13 +105,13 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
         {
             href: '/favorites',
             icon: Heart,
-            label: 'Favorites',
+            label: 'My Wishlist',
             page: 'favorites'
         },
         {
             href: '/settings',
             icon: Settings,
-            label: 'Settings',
+            label: 'My Preferences',
             page: 'settings'
         }
     ];
@@ -315,7 +315,7 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
         setIsFormSubmitting(true);
         setShowAddBooking(false);
 
-        const loadingToast = toast.loading('Adding booking and enriching data...', {
+        const loadingToast = toast.loading('Adding your trip and getting the details...', {
             duration: Infinity,
             position: 'top-right',
             style: {
@@ -331,7 +331,7 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
             await router.post('/bookings', formData, {
                 onSuccess: () => {
                     toast.dismiss(loadingToast);
-                    toast.success('Booking added successfully!', {
+                    toast.success('Your trip has been added! We\'ll start watching for price drops.', {
                         position: 'top-right',
                         duration: 4000,
                         style: {
@@ -356,7 +356,7 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                 },
                 onError: (errors) => {
                     toast.dismiss(loadingToast);
-                    toast.error('Failed to add booking. Please try again.', {
+                    toast.error('Oops! We couldn\'t add your trip. Please try again.', {
                         position: 'top-right',
                         duration: 4000,
                         style: {
@@ -370,7 +370,7 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
             });
         } catch (error) {
             toast.dismiss(loadingToast);
-            toast.error('An unexpected error occurred.', {
+            toast.error('Something went wrong. Please try again in a moment.', {
                 position: 'top-right',
                 duration: 4000,
                 style: {
@@ -756,14 +756,14 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                                     <div className="mx-auto w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center mb-4 lg:mb-6 animate-float">
                                         <Grid3X3 className="w-10 h-10 lg:w-12 lg:h-12 text-yellow-600" />
                                     </div>
-                                    <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-3">No Bookings Yet</h3>
-                                    <p className="text-gray-600 mb-4 lg:mb-6 text-sm lg:text-base px-2">Start tracking your hotel bookings to monitor price pulses and save money on every trip.</p>
+                                    <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-3">Your suitcase is empty!</h3>
+                                    <p className="text-gray-600 mb-4 lg:mb-6 text-sm lg:text-base px-2">Add your first trip to start tracking prices and saving money on your next adventure.</p>
                                     <Button
                                         onClick={handleAddBookingClick}
                                         className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 lg:px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 btn-hover-effect w-full touch-manipulation"
                                     >
                                         <Plus className="w-5 h-5 mr-2" />
-                                        Add Your First Booking
+                                        Plan My First Trip
                                     </Button>
                                 </div>
                             </div>
@@ -797,9 +797,9 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <DialogContent className="animate-in slide-in-from-bottom-4 duration-300 max-w-[95vw] sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle className="text-lg lg:text-xl">Delete Booking</DialogTitle>
+                        <DialogTitle className="text-lg lg:text-xl">Remove This Trip</DialogTitle>
                         <DialogDescription className="text-sm lg:text-base">
-                            Are you sure you want to delete "{bookingToDelete?.name}"? This action cannot be undone.
+                            Are you sure you want to remove "{bookingToDelete?.name}" from your trips? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex flex-col sm:flex-row gap-2">
@@ -816,7 +816,7 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                             className={`bg-red-600 hover:bg-red-700 transition-all duration-300 hover:scale-105 active:scale-95 w-full sm:w-auto h-12 text-base ${isDeleting ? 'btn-loading' : ''}`}
                             disabled={isDeleting}
                         >
-                            {isDeleting ? 'Deleting...' : 'Delete Booking'}
+                            {isDeleting ? 'Removing...' : 'Remove Trip'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -826,9 +826,9 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
             <Dialog open={showAddBooking} onOpenChange={setShowAddBooking}>
                 <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">Add New Booking</DialogTitle>
+                        <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">Add My Next Adventure</DialogTitle>
                         <DialogDescription className="text-gray-600 text-base lg:text-lg">
-                            Enter your hotel booking details to start tracking price pulses and save money.
+                            Tell us about your hotel stay and we'll keep an eye on the prices for you.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">

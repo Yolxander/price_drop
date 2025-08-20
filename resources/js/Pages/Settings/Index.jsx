@@ -66,25 +66,25 @@ export default function SettingsIndex({ auth, settings, stats }) {
         {
             href: '/dashboard',
             icon: Home,
-            label: 'Dashboard',
+            label: 'My Trips',
             page: 'dashboard'
         },
         {
             href: '/bookings',
             icon: Grid3X3,
-            label: 'All Bookings',
+            label: 'All My Bookings',
             page: 'bookings'
         },
         {
             href: '/calendar',
             icon: CalendarIcon,
-            label: 'Calendar',
+            label: 'Trip Calendar',
             page: 'calendar'
         },
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Pulses',
+            label: 'Price Drops',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -92,13 +92,13 @@ export default function SettingsIndex({ auth, settings, stats }) {
         {
             href: '/favorites',
             icon: Heart,
-            label: 'Favorites',
+            label: 'My Wishlist',
             page: 'favorites'
         },
         {
             href: '/settings',
             icon: SettingsIcon,
-            label: 'Settings',
+            label: 'My Preferences',
             page: 'settings'
         }
     ];
@@ -519,8 +519,8 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                     {/* Alerts Tab */}
                                     <TabsContent value="alerts" className="space-y-4 lg:space-y-6 mt-6 lg:mt-8">
                                         <div className="mb-6">
-                                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Alert Configuration</h2>
-                                            <p className="text-gray-600">Configure price pulse alerts, notifications, and delivery preferences</p>
+                                            <h2 className="text-2xl font-bold text-gray-900 mb-2">My Alert Preferences</h2>
+                                            <p className="text-gray-600">Set up how you'd like to hear about price drops and great deals</p>
                                         </div>
                                         <div
                                             data-section="alertsSection"
@@ -538,8 +538,8 @@ export default function SettingsIndex({ auth, settings, stats }) {
                                                             <DollarSign className="h-5 w-5 text-yellow-600" />
                                                         </div>
                                                         <div>
-                                                            <span>Price Alert Rules</span>
-                                                            <p className="text-sm text-gray-500 font-normal mt-1">Configure price pulse thresholds and rules</p>
+                                                            <span>Price Drop Rules</span>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">Set your savings thresholds and preferences</p>
                                                         </div>
                                                     </CardTitle>
                                                 </CardHeader>

@@ -72,25 +72,25 @@ export default function AlertsIndex({ auth, alerts, stats }) {
         {
             href: '/dashboard',
             icon: Home,
-            label: 'Dashboard',
+            label: 'My Trips',
             page: 'dashboard'
         },
         {
             href: '/bookings',
             icon: Grid3X3,
-            label: 'All Bookings',
+            label: 'All My Bookings',
             page: 'bookings'
         },
         {
             href: '/calendar',
             icon: CalendarIcon,
-            label: 'Calendar',
+            label: 'Trip Calendar',
             page: 'calendar'
         },
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Pulses',
+            label: 'Price Drops',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -98,13 +98,13 @@ export default function AlertsIndex({ auth, alerts, stats }) {
         {
             href: '/favorites',
             icon: Heart,
-            label: 'Favorites',
+            label: 'My Wishlist',
             page: 'favorites'
         },
         {
             href: '/settings',
             icon: Settings,
-            label: 'Settings',
+            label: 'My Preferences',
             page: 'settings'
         }
     ];
@@ -591,15 +591,15 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl">
                                     <DialogHeader>
-                                        <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">Alert Settings</DialogTitle>
+                                        <DialogTitle className="text-xl lg:text-2xl font-bold text-gray-900">My Alert Preferences</DialogTitle>
                                         <DialogDescription className="text-gray-600 text-base lg:text-lg">
-                                            Configure your price pulse alert preferences to stay informed about the best deals.
+                                            Set up how you'd like to hear about price drops and great deals.
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="min_amount" className="text-gray-700 font-semibold">Minimum Price Pulse Amount ($)</Label>
+                                                <Label htmlFor="min_amount" className="text-gray-700 font-semibold">Minimum Savings Amount ($)</Label>
                                                 <Input
                                                     id="min_amount"
                                                     type="number"
@@ -614,7 +614,7 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="min_percent" className="text-gray-700 font-semibold">Minimum Price Pulse Percent (%)</Label>
+                                                <Label htmlFor="min_percent" className="text-gray-700 font-semibold">Minimum Savings Percent (%)</Label>
                                                 <Input
                                                     id="min_percent"
                                                     type="number"

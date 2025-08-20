@@ -31,25 +31,25 @@ export default function Show({ auth, booking }) {
         {
             href: '/dashboard',
             icon: Home,
-            label: 'Dashboard',
+            label: 'My Trips',
             page: 'dashboard'
         },
         {
             href: '/bookings',
             icon: Grid3X3,
-            label: 'All Bookings',
+            label: 'All My Bookings',
             page: 'bookings'
         },
         {
             href: '/calendar',
             icon: CalendarIcon,
-            label: 'Calendar',
+            label: 'Trip Calendar',
             page: 'calendar'
         },
         {
             href: '/price-alerts',
             icon: Bell,
-            label: 'Price Pulses',
+            label: 'Price Drops',
             page: 'alerts',
             hasNotification: true,
             notificationCount: 2
@@ -57,13 +57,13 @@ export default function Show({ auth, booking }) {
         {
             href: '/favorites',
             icon: Heart,
-            label: 'Favorites',
+            label: 'My Wishlist',
             page: 'favorites'
         },
         {
             href: '/settings',
             icon: Settings,
-            label: 'Settings',
+            label: 'My Preferences',
             page: 'settings'
         }
     ];
@@ -126,7 +126,7 @@ export default function Show({ auth, booking }) {
         setLoading(true);
 
         // Show loading toast
-        const loadingToast = toast.loading('Enriching booking data...', {
+        const loadingToast = toast.loading('Getting more details about your trip...', {
             duration: Infinity,
             position: 'top-right',
             style: {
@@ -191,7 +191,7 @@ export default function Show({ auth, booking }) {
             toast.dismiss(loadingToast);
 
             // Show error toast
-            toast.error('An unexpected error occurred.', {
+            toast.error('Something went wrong. Please try again in a moment.', {
                 position: 'top-right',
                 duration: 4000,
                 style: {

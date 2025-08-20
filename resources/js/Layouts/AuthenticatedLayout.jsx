@@ -30,12 +30,12 @@ export default function AuthenticatedLayout({ user, header, children }) {
 
     const navigation = [
         { name: 'My Trips', href: '/dashboard', icon: Home },
-        { name: 'All Bookings', href: '/bookings', icon: Building2 },
-        { name: 'Calendar', href: '/calendar', icon: Calendar },
-        { name: 'Price Pulses', href: '/price-alerts', icon: Bell },
+        { name: 'All My Bookings', href: '/bookings', icon: Building2 },
+        { name: 'Trip Calendar', href: '/calendar', icon: Calendar },
+        { name: 'Price Drops', href: '/price-alerts', icon: Bell },
         { name: 'Past Prices', href: '/price-history', icon: TrendingDown },
         { name: 'Savings & Trends', href: '/reports', icon: BarChart3 },
-        { name: 'Preferences', href: '/settings', icon: Settings },
+        { name: 'My Preferences', href: '/settings', icon: Settings },
     ];
 
     const handleLogout = (e) => {
@@ -50,7 +50,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
                 <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
                 <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-sidebar border-r border-sidebar-border">
                     <div className="flex h-16 items-center justify-between px-4">
-                        <h1 className="text-xl font-semibold text-sidebar-foreground">Dashboard</h1>
+                        <h1 className="text-xl font-semibold text-sidebar-foreground">My Trips</h1>
                         <Button
                             variant="ghost"
                             size="icon"
@@ -101,7 +101,7 @@ export default function AuthenticatedLayout({ user, header, children }) {
             <div className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-48'}`}>
                 <div className="flex flex-col flex-grow bg-sidebar border-r border-sidebar-border">
                     <div className="flex h-16 items-center justify-between px-4">
-                        {!sidebarCollapsed && <h1 className="text-xl font-semibold text-sidebar-foreground">Dashboard</h1>}
+                        {!sidebarCollapsed && <h1 className="text-xl font-semibold text-sidebar-foreground">My Trips</h1>}
                         <Button
                             variant="ghost"
                             size="icon"
