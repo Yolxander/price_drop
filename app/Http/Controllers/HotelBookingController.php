@@ -20,31 +20,18 @@ class HotelBookingController extends Controller
         $this->serpApiService = $serpApiService;
     }
 
-    /**
-     * Get the first available user ID or create a default user
-     */
-    private function getFirstUserId()
-    {
-        $user = User::first();
 
-        if (!$user) {
-            // Create a default user if none exists
-            $user = User::create([
-                'name' => 'Default User',
-                'email' => 'default@pricepulse.com',
-                'password' => bcrypt('password123'),
-            ]);
-        }
-
-        return $user->id;
-    }
 
     /**
      * Display a listing of hotel bookings
      */
     public function index()
     {
-        $userId = $this->getFirstUserId();
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return redirect()->route('login');
+        }
 
         // Get actual bookings from database
         $bookings = HotelBooking::where('user_id', $userId)
@@ -68,11 +55,7 @@ class HotelBookingController extends Controller
 
         return Inertia::render('Bookings/Index', [
             'auth' => [
-                'user' => [
-                    'name' => 'John Doe',
-                    'email' => 'john@example.com',
-                    'avatar' => null,
-                ],
+                'user' => auth()->user()
             ],
             'bookings' => $bookings,
             'stats' => [
@@ -91,11 +74,7 @@ class HotelBookingController extends Controller
     {
         return Inertia::render('Bookings/Create', [
             'auth' => [
-                'user' => [
-                    'name' => 'John Doe',
-                    'email' => 'john@example.com',
-                    'avatar' => null,
-                ],
+                'user' => auth()->user()
             ],
             'currencies' => [
                 'USD' => 'US Dollar',
@@ -132,8 +111,12 @@ class HotelBookingController extends Controller
         $checkOut = \Carbon\Carbon::parse($validated['check_out_date']);
         $nights = $checkIn->diffInDays($checkOut);
 
-        // Get the first available user ID
-        $userId = $this->getFirstUserId();
+        // Get the authenticated user ID
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return redirect()->back()->with('error', 'You must be logged in to create a booking.');
+        }
 
         // Create the booking
         $booking = HotelBooking::create([
@@ -150,9 +133,10 @@ class HotelBookingController extends Controller
             'status' => 'active',
         ]);
 
-                // Log user input data
+        // Log user input data
         Log::info('User booking data received', [
             'booking_id' => $booking->id,
+            'user_id' => $userId,
             'user_input' => [
                 'hotel_name' => $validated['hotel_name'],
                 'location' => $validated['location'],
@@ -239,6 +223,11 @@ class HotelBookingController extends Controller
      */
     public function show(HotelBooking $booking)
     {
+        // Check if the user owns this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this booking.');
+        }
+
         // Get enriched data for the booking
         $enrichedData = $booking->getEnrichedData();
 
@@ -272,11 +261,7 @@ class HotelBookingController extends Controller
 
         return Inertia::render('Bookings/Show', [
             'auth' => [
-                'user' => [
-                    'name' => 'John Doe',
-                    'email' => 'john@example.com',
-                    'avatar' => null,
-                ],
+                'user' => auth()->user()
             ],
             'booking' => $bookingData
         ]);
@@ -287,6 +272,11 @@ class HotelBookingController extends Controller
      */
     public function edit(HotelBooking $booking)
     {
+        // Check if the user owns this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this booking.');
+        }
+
         // For demo purposes, return dummy booking data
         $booking = [
             'id' => $booking->id,
@@ -308,11 +298,7 @@ class HotelBookingController extends Controller
 
         return Inertia::render('Bookings/Edit', [
             'auth' => [
-                'user' => [
-                    'name' => 'John Doe',
-                    'email' => 'john@example.com',
-                    'avatar' => null,
-                ],
+                'user' => auth()->user()
             ],
             'booking' => $booking
         ]);
@@ -323,6 +309,11 @@ class HotelBookingController extends Controller
      */
     public function update(Request $request, HotelBooking $booking)
     {
+        // Check if the user owns this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this booking.');
+        }
+
         // For demo purposes, just redirect with success message
         return redirect()->route('bookings.index')->with('success', 'Hotel booking updated successfully!');
     }
@@ -332,6 +323,11 @@ class HotelBookingController extends Controller
      */
     public function destroy(HotelBooking $booking)
     {
+        // Check if the user owns this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this booking.');
+        }
+
         try {
             $booking->delete();
 
@@ -342,7 +338,7 @@ class HotelBookingController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return redirect()->route('bookings.index')->with('error', 'Failed to delete booking. Please try again.');
+            return redirect()->back()->with('error', 'Failed to delete booking. Please try again.');
         }
     }
 
@@ -362,6 +358,11 @@ class HotelBookingController extends Controller
      */
     public function checkPrice(HotelBooking $booking)
     {
+        // Check if the user owns this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this booking.');
+        }
+
         // For demo purposes, just return success message
         return response()->json(['message' => 'Price check initiated for this booking']);
     }
@@ -371,6 +372,11 @@ class HotelBookingController extends Controller
      */
     public function toggleStatus(HotelBooking $booking)
     {
+        // Check if the user owns this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this booking.');
+        }
+
         // For demo purposes, just return success message
         return response()->json([
             'message' => 'Booking status updated',
@@ -383,6 +389,11 @@ class HotelBookingController extends Controller
      */
     public function priceHistory(HotelBooking $booking)
     {
+        // Check if the user owns this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this booking.');
+        }
+
         // Generate dummy price history
         $priceHistory = [];
         $basePrice = $booking->original_price;
@@ -407,6 +418,11 @@ class HotelBookingController extends Controller
      */
     public function enrichBooking(HotelBooking $booking)
     {
+        // Check if the user owns this booking
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this booking.');
+        }
+
         try {
             $enrichedData = $this->serpApiService->enrichHotelData(
                 $booking->hotel_name,
@@ -455,7 +471,11 @@ class HotelBookingController extends Controller
      */
     public function favorites()
     {
-        $userId = $this->getFirstUserId();
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return redirect()->route('login');
+        }
 
         // Get actual bookings from database and mark some as favorites for demo
         $bookings = HotelBooking::where('user_id', $userId)
@@ -484,11 +504,7 @@ class HotelBookingController extends Controller
 
         return Inertia::render('Favorites/Index', [
             'auth' => [
-                'user' => [
-                    'name' => 'John Doe',
-                    'email' => 'john@example.com',
-                    'avatar' => null,
-                ],
+                'user' => auth()->user()
             ],
             'favorites' => $favorites->values(), // Ensure it's an array
             'stats' => [

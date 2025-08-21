@@ -65,6 +65,61 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         original_price: '',
         currency: ''
     });
+    const [localBookings, setLocalBookings] = useState(hotel_bookings || []);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Update localBookings when hotel_bookings prop changes
+    useEffect(() => {
+        setLocalBookings(hotel_bookings || []);
+    }, [hotel_bookings]);
+
+    // Function to refresh bookings from server
+    const refreshBookings = async () => {
+        if (isRefreshing) return;
+
+        if (!auth?.user) {
+            toast.error('You must be logged in to refresh bookings.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+            return;
+        }
+
+        setIsRefreshing(true);
+        try {
+            await router.reload({ only: ['hotel_bookings'] });
+            toast.success('Bookings refreshed successfully!', {
+                position: 'top-right',
+                duration: 3000,
+                style: {
+                    background: '#10b981',
+                    color: 'white',
+                    border: '1px solid #059669',
+                },
+                icon: <CheckCircle className="h-4 w-4" />,
+            });
+        } catch (error) {
+            console.error('Failed to refresh bookings:', error);
+            toast.error('Failed to refresh bookings. Please try again.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
 
     // Mobile navigation items
     const mobileNavigationItems = [
@@ -153,6 +208,20 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     const handleSubmit = async () => {
         if (isFormSubmitting) return;
 
+        if (!auth?.user) {
+            toast.error('You must be logged in to create a booking.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+            return;
+        }
+
         setIsFormSubmitting(true);
         setShowAddBooking(false);
 
@@ -170,7 +239,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             await router.post('/bookings', formData, {
-                onSuccess: () => {
+                onSuccess: (response) => {
                     toast.dismiss(loadingToast);
                     toast.success('Your trip has been added! We\'ll start watching for price drops.', {
                         position: 'top-right',
@@ -182,6 +251,38 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         },
                         icon: <CheckCircle className="h-4 w-4" />,
                     });
+
+                    // Create a new booking object to add to local state
+                    const checkIn = new Date(formData.check_in_date);
+                    const checkOut = new Date(formData.check_out_date);
+                    const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+                    const newBooking = {
+                        id: Date.now(), // Temporary ID until we get the real one
+                        hotel_name: formData.hotel_name,
+                        location: formData.location,
+                        check_in_date: formData.check_in_date,
+                        check_out_date: formData.check_out_date,
+                        guests: parseInt(formData.guests),
+                        rooms: parseInt(formData.rooms) || 1,
+                        room_type: formData.room_type,
+                        original_price: parseFloat(formData.original_price),
+                        current_price: parseFloat(formData.original_price),
+                        currency: formData.currency.toUpperCase(),
+                        status: 'active',
+                        total_price: parseFloat(formData.original_price),
+                        price_per_night: parseFloat(formData.original_price) / nights,
+                        nights: nights,
+                        created_at: new Date().toISOString(),
+                        enriched_data: {
+                            overview: {
+                                screenshots: []
+                            }
+                        }
+                    };
+
+                    // Add the new booking to the beginning of the local bookings array
+                    setLocalBookings(prevBookings => [newBooking, ...prevBookings]);
 
                     setFormData({
                         hotel_name: '',
@@ -227,10 +328,37 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     const handleAddBookingClick = () => {
+        if (!auth?.user) {
+            toast.error('You must be logged in to create a booking.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+            return;
+        }
         setShowAddBooking(true);
     };
 
     const handleCloseForm = () => {
+        if (!auth?.user) {
+            toast.error('You must be logged in to use this feature.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+            return;
+        }
+
         setShowAddBooking(false);
         setFormData({
             hotel_name: '',
@@ -246,6 +374,20 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     const handleBookingClick = (booking) => {
+        if (!auth?.user) {
+            toast.error('You must be logged in to view booking details.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+            return;
+        }
+
         const bookingDetails = {
             id: booking.id,
             hotel_name: booking.hotel_name || 'Hotel Name Not Available',
@@ -272,6 +414,20 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
     };
 
     const handleCloseBookingPanel = () => {
+        if (!auth?.user) {
+            toast.error('You must be logged in to use this feature.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+            return;
+        }
+
         setSelectedBooking(null);
     };
 
@@ -280,7 +436,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden">
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => {
+                        if (!auth?.user) {
+                            toast.error('You must be logged in to use this feature.', {
+                                position: 'top-right',
+                                duration: 4000,
+                                style: {
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    border: '1px solid #dc2626',
+                                },
+                                icon: <AlertCircle className="h-4 w-4" />,
+                            });
+                            return;
+                        }
+                        setIsMobileMenuOpen(false);
+                    }} />
                     <div className="fixed inset-y-0 left-0 flex w-80 flex-col bg-white border-r border-gray-200 animate-in slide-in-from-left duration-300">
                         {/* Mobile Menu Header */}
                         <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
@@ -295,7 +466,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => setIsMobileMenuOpen(false)}
+                                onClick={() => {
+                                    if (!auth?.user) {
+                                        toast.error('You must be logged in to use this feature.', {
+                                            position: 'top-right',
+                                            duration: 4000,
+                                            style: {
+                                                background: '#ef4444',
+                                                color: 'white',
+                                                border: '1px solid #dc2626',
+                                            },
+                                            icon: <AlertCircle className="h-4 w-4" />,
+                                        });
+                                        return;
+                                    }
+                                    setIsMobileMenuOpen(false);
+                                }}
                                 className="h-8 w-8"
                             >
                                 <X className="h-5 w-5" />
@@ -309,7 +495,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                 const isActive = item.page === 'dashboard';
 
                                 return (
-                                    <Link key={item.href} href={item.href} className="block">
+                                    <Link key={item.href} href={item.href} className="block" onClick={(e) => {
+                                        if (!auth?.user) {
+                                            e.preventDefault();
+                                            toast.error('You must be logged in to use this feature.', {
+                                                position: 'top-right',
+                                                duration: 4000,
+                                                style: {
+                                                    background: '#ef4444',
+                                                    color: 'white',
+                                                    border: '1px solid #dc2626',
+                                                },
+                                                icon: <AlertCircle className="h-4 w-4" />,
+                                            });
+                                            return;
+                                        }
+                                    }}>
                                         <div className={`flex items-center space-x-3 p-4 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 ${
                                             isActive
                                                 ? 'bg-yellow-50 border border-yellow-200'
@@ -355,7 +556,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     <p className="text-sm text-gray-600">{auth?.user?.email || 'user@example.com'}</p>
                                 </div>
                             </div>
-                            <Link href="/" className="block mt-3">
+                            <Link href="/" className="block mt-3" onClick={(e) => {
+                                if (!auth?.user) {
+                                    e.preventDefault();
+                                    toast.error('You must be logged in to use this feature.', {
+                                        position: 'top-right',
+                                        duration: 4000,
+                                        style: {
+                                            background: '#ef4444',
+                                            color: 'white',
+                                            border: '1px solid #dc2626',
+                                        },
+                                        icon: <AlertCircle className="h-4 w-4" />,
+                                    });
+                                    return;
+                                }
+                            }}>
                                 <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl cursor-pointer transition-all duration-200 active:scale-95">
                                     <LogOut className="h-5 w-5 text-gray-600" />
                                     <span className="text-gray-700 font-medium">Log Out</span>
@@ -381,7 +597,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setIsMobileMenuOpen(true)}
+                            onClick={() => {
+                                if (!auth?.user) {
+                                    toast.error('You must be logged in to use this feature.', {
+                                        position: 'top-right',
+                                        duration: 4000,
+                                        style: {
+                                            background: '#ef4444',
+                                            color: 'white',
+                                            border: '1px solid #dc2626',
+                                        },
+                                        icon: <AlertCircle className="h-4 w-4" />,
+                                    });
+                                    return;
+                                }
+                                setIsMobileMenuOpen(true);
+                            }}
                             className="h-10 w-10 active:scale-95 transition-transform"
                         >
                             <Menu className="h-6 w-6" />
@@ -426,6 +657,20 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                 <Input
                                     placeholder="Find your dream hotel..."
                                     className="pl-10 bg-white/90 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md w-full h-12 text-base"
+                                    onFocus={() => {
+                                        if (!auth?.user) {
+                                            toast.error('You must be logged in to use this feature.', {
+                                                position: 'top-right',
+                                                duration: 4000,
+                                                style: {
+                                                    background: '#ef4444',
+                                                    color: 'white',
+                                                    border: '1px solid #dc2626',
+                                                },
+                                                icon: <AlertCircle className="h-4 w-4" />,
+                                            });
+                                        }
+                                    }}
                                 />
                             </div>
                         </div>
@@ -597,13 +842,53 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     : 'opacity-0 -translate-x-8'
                             }`}>
                                 <h2 className="text-xl lg:text-2xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Your Recent Adventures</h2>
-                                <Link href="/bookings">
-                                    <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-base lg:text-lg transition-all duration-300 hover:scale-105">See All My Trips →</Button>
-                                </Link>
+                                <div className="flex items-center space-x-4">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={refreshBookings}
+                                        className="text-gray-600 hover:text-gray-800 border-gray-300 hover:border-gray-400 transition-all duration-300"
+                                        disabled={isRefreshing}
+                                    >
+                                        {isRefreshing ? (
+                                            <>
+                                                <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                                Refreshing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                                Refresh
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Link href="/bookings" onClick={(e) => {
+                                        if (!auth?.user) {
+                                            e.preventDefault();
+                                            toast.error('You must be logged in to use this feature.', {
+                                                position: 'top-right',
+                                                duration: 4000,
+                                                style: {
+                                                    background: '#ef4444',
+                                                    color: 'white',
+                                                    border: '1px solid #dc2626',
+                                                },
+                                                icon: <AlertCircle className="h-4 w-4" />,
+                                            });
+                                            return;
+                                        }
+                                    }}>
+                                        <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-base lg:text-lg transition-all duration-300 hover:scale-105">See All My Trips →</Button>
+                                    </Link>
+                                </div>
                             </div>
                             <div className="flex space-x-4 lg:space-x-6 overflow-x-auto pb-4 lg:pb-6 scrollbar-hide">
-                                {hotel_bookings && hotel_bookings.length > 0 ? (
-                                    hotel_bookings.slice(0, 4).map((booking, index) => (
+                                {localBookings && localBookings.length > 0 ? (
+                                    localBookings.slice(0, 4).map((booking, index) => (
                                         <Card
                                             key={booking.id}
                                             className={`min-w-[280px] lg:min-w-[320px] cursor-pointer hover:shadow-xl transition-all duration-500 transform hover:scale-105 active:scale-95 border-0 bg-white/90 backdrop-blur-sm hover-lift touch-manipulation ${
@@ -665,7 +950,7 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-3">Your suitcase is empty!</h3>
                                             <p className="text-gray-600 mb-4 lg:mb-6 text-sm lg:text-base px-2">Add your first trip to start tracking prices and saving money on your next adventure.</p>
                                             <Button onClick={handleAddBookingClick} className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 font-semibold px-6 lg:px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 btn-hover-effect w-full touch-manipulation">
-                                                <Plus className="w-5 h-5 mr-2" />
+                                                <Plus className="w-5 h-5 mr-4" />
                                                 Plan My First Trip
                                             </Button>
                                         </div>
@@ -691,7 +976,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                 <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-8">
                                     <div className="flex flex-col lg:flex-row lg:items-center space-y-3 lg:space-y-0 lg:space-x-6">
                                         <button
-                                            onClick={() => setActiveNavTab('most-popular')}
+                                            onClick={() => {
+                                                if (!auth?.user) {
+                                                    toast.error('You must be logged in to use this feature.', {
+                                                        position: 'top-right',
+                                                        duration: 4000,
+                                                        style: {
+                                                            background: '#ef4444',
+                                                            color: 'white',
+                                                            border: '1px solid #dc2626',
+                                                        },
+                                                        icon: <AlertCircle className="h-4 w-4" />,
+                                                    });
+                                                    return;
+                                                }
+                                                setActiveNavTab('most-popular');
+                                            }}
                                             className={`font-bold pb-2 transition-all duration-300 hover:scale-105 text-center lg:text-left ${
                                                 activeNavTab === 'most-popular'
                                                     ? 'text-xl lg:text-2xl text-gray-900 border-b-2 border-yellow-500'
@@ -701,7 +1001,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             Traveler Favorites
                                         </button>
                                         <button
-                                            onClick={() => setActiveNavTab('special-offers')}
+                                            onClick={() => {
+                                                if (!auth?.user) {
+                                                    toast.error('You must be logged in to use this feature.', {
+                                                        position: 'top-right',
+                                                        duration: 4000,
+                                                        style: {
+                                                            background: '#ef4444',
+                                                            color: 'white',
+                                                            border: '1px solid #dc2626',
+                                                        },
+                                                        icon: <AlertCircle className="h-4 w-4" />,
+                                                    });
+                                                    return;
+                                                }
+                                                setActiveNavTab('special-offers');
+                                            }}
                                             className={`font-bold pb-2 transition-all duration-300 hover:scale-105 text-center lg:text-left ${
                                                 activeNavTab === 'special-offers'
                                                     ? 'text-xl lg:text-2xl text-gray-900 border-b-2 border-yellow-500'
@@ -711,7 +1026,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             Hot Deals
                                         </button>
                                         <button
-                                            onClick={() => setActiveNavTab('near-me')}
+                                            onClick={() => {
+                                                if (!auth?.user) {
+                                                    toast.error('You must be logged in to use this feature.', {
+                                                        position: 'top-right',
+                                                        duration: 4000,
+                                                        style: {
+                                                            background: '#ef4444',
+                                                            color: 'white',
+                                                            border: '1px solid #dc2626',
+                                                        },
+                                                        icon: <AlertCircle className="h-4 w-4" />,
+                                                    });
+                                                    return;
+                                                }
+                                                setActiveNavTab('near-me');
+                                            }}
                                             className={`font-bold pb-2 transition-all duration-300 hover:scale-105 text-center lg:text-left ${
                                                 activeNavTab === 'near-me'
                                                     ? 'text-xl lg:text-2xl text-gray-900 border-b-2 border-yellow-500'
@@ -722,7 +1052,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                         </button>
                                     </div>
                                 </div>
-                                <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-base lg:text-lg transition-all duration-300 hover:scale-105 text-center lg:text-left">View All →</Button>
+                                <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-base lg:text-lg transition-all duration-300 hover:scale-105 text-center lg:text-left" onClick={(e) => {
+                                    if (!auth?.user) {
+                                        e.preventDefault();
+                                        toast.error('You must be logged in to use this feature.', {
+                                            position: 'top-right',
+                                            duration: 4000,
+                                            style: {
+                                                background: '#ef4444',
+                                                color: 'white',
+                                                border: '1px solid #dc2626',
+                                            },
+                                            icon: <AlertCircle className="h-4 w-4" />,
+                                        });
+                                        return;
+                                    }
+                                }}>View All →</Button>
                             </div>
                             {/* Tab Content */}
                             {activeNavTab === 'most-popular' && (
@@ -741,6 +1086,21 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             style={{
                                                 transitionDelay: `${index * 100}ms`,
                                                 animationDelay: `${index * 100}ms`
+                                            }}
+                                            onClick={() => {
+                                                if (!auth?.user) {
+                                                    toast.error('You must be logged in to view hotel details.', {
+                                                        position: 'top-right',
+                                                        duration: 4000,
+                                                        style: {
+                                                            background: '#ef4444',
+                                                            color: 'white',
+                                                            border: '1px solid #dc2626',
+                                                        },
+                                                        icon: <AlertCircle className="h-4 w-4" />,
+                                                    });
+                                                    return;
+                                                }
                                             }}
                                         >
                                             <div className="relative">
@@ -776,6 +1136,21 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             style={{
                                                 transitionDelay: `${index * 100}ms`,
                                                 animationDelay: `${index * 100}ms`
+                                            }}
+                                            onClick={() => {
+                                                if (!auth?.user) {
+                                                    toast.error('You must be logged in to view hotel details.', {
+                                                        position: 'top-right',
+                                                        duration: 4000,
+                                                        style: {
+                                                            background: '#ef4444',
+                                                            color: 'white',
+                                                            border: '1px solid #dc2626',
+                                                        },
+                                                        icon: <AlertCircle className="h-4 w-4" />,
+                                                    });
+                                                    return;
+                                                }
                                             }}
                                         >
                                             <div className="relative image-hover">
@@ -817,6 +1192,21 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                             style={{
                                                 transitionDelay: `${index * 100}ms`,
                                                 animationDelay: `${index * 100}ms`
+                                            }}
+                                            onClick={() => {
+                                                if (!auth?.user) {
+                                                    toast.error('You must be logged in to view hotel details.', {
+                                                        position: 'top-right',
+                                                        duration: 4000,
+                                                        style: {
+                                                            background: '#ef4444',
+                                                            color: 'white',
+                                                            border: '1px solid #dc2626',
+                                                        },
+                                                        icon: <AlertCircle className="h-4 w-4" />,
+                                                    });
+                                                    return;
+                                                }
                                             }}
                                         >
                                             <div className="relative image-hover">
@@ -860,7 +1250,22 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                         const isActive = item.page === 'dashboard';
 
                         return (
-                            <Link key={item.href} href={item.href} className="flex flex-col items-center p-2 active:scale-95 transition-transform">
+                            <Link key={item.href} href={item.href} className="flex flex-col items-center p-2 active:scale-95 transition-transform" onClick={(e) => {
+                                if (!auth?.user) {
+                                    e.preventDefault();
+                                    toast.error('You must be logged in to use this feature.', {
+                                        position: 'top-right',
+                                        duration: 4000,
+                                        style: {
+                                            background: '#ef4444',
+                                            color: 'white',
+                                            border: '1px solid #dc2626',
+                                        },
+                                        icon: <AlertCircle className="h-4 w-4" />,
+                                    });
+                                    return;
+                                }
+                            }}>
                                 <div className="relative">
                                     {item.hasNotification ? (
                                         <div className="relative">

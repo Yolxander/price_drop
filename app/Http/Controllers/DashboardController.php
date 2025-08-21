@@ -14,7 +14,11 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Get actual bookings from database
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Get actual bookings from database for the authenticated user
         $hotelBookings = HotelBooking::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -37,8 +41,8 @@ class DashboardController extends Controller
         // Calculate dashboard stats
         $totalBookings = $hotelBookings->count();
         $activeBookings = $hotelBookings->where('status', 'active')->count();
-        $priceDropsDetected = 0; // Will be calculated when price drops are implemented
-        $totalSavings = 0; // Will be calculated when price drops are implemented
+        $priceDropsDetected = $hotelBookings->where('price_drop_detected', true)->count();
+        $totalSavings = $hotelBookings->sum('price_drop_amount');
 
         // Recent price checks
         $recentChecks = [
@@ -77,7 +81,9 @@ class DashboardController extends Controller
         ];
 
         return Inertia::render('Dashboard', [
-            'user' => $user,
+            'auth' => [
+                'user' => $user
+            ],
             'stats' => [
                 'total_bookings' => $totalBookings,
                 'active_bookings' => $activeBookings,
