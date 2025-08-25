@@ -48,10 +48,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/price-alerts/settings', [AlertController::class, 'updateAlertSettings'])->name('alerts.update-settings');
     Route::post('/price-alerts/check-prices', [AlertController::class, 'checkPrices'])->name('alerts.check-prices');
 
-    Route::post('/price-alerts/mark-all-read', [AlertController::class, 'markAllAsRead'])->name('alerts.mark-all-read');
-    Route::get('/price-alerts/settings', [AlertController::class, 'getSettings'])->name('alerts.settings');
-    Route::post('/price-alerts/settings', [AlertController::class, 'updateSettings'])->name('alerts.update-settings');
-    Route::post('/price-alerts/create', [AlertController::class, 'createAlert'])->name('alerts.create');
+    // Enhanced price alert routes
+    Route::post('/price-alerts/{booking}/check-single', [AlertController::class, 'checkSingleBooking'])->name('alerts.check-single');
+    Route::get('/price-alerts/{booking}/history', [AlertController::class, 'getPriceHistory'])->name('alerts.price-history');
+    Route::patch('/price-alerts/{booking}/toggle-monitoring', [AlertController::class, 'toggleMonitoring'])->name('alerts.toggle-monitoring');
+
+    // Price alert management routes
+    Route::post('/price-alerts/{booking}/set-alert', [AlertController::class, 'setPriceAlert'])->name('alerts.set-alert');
+    Route::delete('/price-alerts/{booking}/remove-alert', [AlertController::class, 'removePriceAlert'])->name('alerts.remove-alert');
 
     // Price History
     Route::get('/price-history', [HistoryController::class, 'index'])->name('history.index');

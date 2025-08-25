@@ -66,60 +66,11 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
         currency: ''
     });
     const [localBookings, setLocalBookings] = useState(hotel_bookings || []);
-    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Update localBookings when hotel_bookings prop changes
     useEffect(() => {
         setLocalBookings(hotel_bookings || []);
     }, [hotel_bookings]);
-
-    // Function to refresh bookings from server
-    const refreshBookings = async () => {
-        if (isRefreshing) return;
-
-        if (!auth?.user) {
-            toast.error('You must be logged in to refresh bookings.', {
-                position: 'top-right',
-                duration: 4000,
-                style: {
-                    background: '#ef4444',
-                    color: 'white',
-                    border: '1px solid #dc2626',
-                },
-                icon: <AlertCircle className="h-4 w-4" />,
-            });
-            return;
-        }
-
-        setIsRefreshing(true);
-        try {
-            await router.reload({ only: ['hotel_bookings'] });
-            toast.success('Bookings refreshed successfully!', {
-                position: 'top-right',
-                duration: 3000,
-                style: {
-                    background: '#10b981',
-                    color: 'white',
-                    border: '1px solid #059669',
-                },
-                icon: <CheckCircle className="h-4 w-4" />,
-            });
-        } catch (error) {
-            console.error('Failed to refresh bookings:', error);
-            toast.error('Failed to refresh bookings. Please try again.', {
-                position: 'top-right',
-                duration: 4000,
-                style: {
-                    background: '#ef4444',
-                    color: 'white',
-                    border: '1px solid #dc2626',
-                },
-                icon: <AlertCircle className="h-4 w-4" />,
-            });
-        } finally {
-            setIsRefreshing(false);
-        }
-    };
 
     // Mobile navigation items
     const mobileNavigationItems = [
@@ -836,55 +787,12 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                     : 'opacity-0 translate-y-8'
                             }`}
                         >
-                            <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 lg:mb-6 space-y-3 lg:space-y-0 transition-all duration-1000 delay-200 ${
+                            <div className={`flex items-center justify-between mb-6 transition-all duration-1000 delay-300 ${
                                 isVisible.recentBookings
                                     ? 'opacity-100 translate-x-0'
-                                    : 'opacity-0 -translate-x-8'
+                                    : 'opacity-0 translate-x-8'
                             }`}>
                                 <h2 className="text-xl lg:text-2xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Your Recent Adventures</h2>
-                                <div className="flex items-center space-x-4">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={refreshBookings}
-                                        className="text-gray-600 hover:text-gray-800 border-gray-300 hover:border-gray-400 transition-all duration-300"
-                                        disabled={isRefreshing}
-                                    >
-                                        {isRefreshing ? (
-                                            <>
-                                                <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                </svg>
-                                                Refreshing...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                </svg>
-                                                Refresh
-                                            </>
-                                        )}
-                                    </Button>
-                                    <Link href="/bookings" onClick={(e) => {
-                                        if (!auth?.user) {
-                                            e.preventDefault();
-                                            toast.error('You must be logged in to use this feature.', {
-                                                position: 'top-right',
-                                                duration: 4000,
-                                                style: {
-                                                    background: '#ef4444',
-                                                    color: 'white',
-                                                    border: '1px solid #dc2626',
-                                                },
-                                                icon: <AlertCircle className="h-4 w-4" />,
-                                            });
-                                            return;
-                                        }
-                                    }}>
-                                        <Button variant="link" className="text-yellow-600 hover:text-yellow-700 p-0 h-auto font-semibold text-base lg:text-lg transition-all duration-300 hover:scale-105">See All My Trips →</Button>
-                                    </Link>
-                                </div>
                             </div>
                             <div className="flex space-x-4 lg:space-x-6 overflow-x-auto pb-4 lg:pb-6 scrollbar-hide">
                                 {localBookings && localBookings.length > 0 ? (
@@ -912,6 +820,16 @@ export default function Dashboard({ auth, stats, hotel_bookings, recent_checks }
                                                 ) : (
                                                     <div className="w-full h-40 lg:h-48 bg-gray-200 flex items-center justify-center rounded-t-lg">
                                                         <span className="text-gray-500 text-sm">No image available</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Price Alert Indicator */}
+                                                {booking.price_alert_active && (
+                                                    <div className="absolute top-3 right-3">
+                                                        <Badge className="bg-yellow-500 text-white text-xs animate-pulse border-2 border-white shadow-lg">
+                                                            <Bell className="w-3 h-3 mr-1" />
+                                                            Price Alert
+                                                        </Badge>
                                                     </div>
                                                 )}
                                             </div>

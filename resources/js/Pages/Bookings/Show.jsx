@@ -9,6 +9,7 @@ import ImageGalleryModal from '@/components/ui/image-gallery-modal';
 import Sidebar from '@/components/ui/sidebar';
 import { toast, Toaster } from 'sonner';
 import { MapPin, Star, Calendar, Users, DollarSign, TrendingDown, Clock, Globe, Phone, Mail, CheckCircle, AlertCircle, Menu, X, Home, Grid3X3, Calendar as CalendarIcon, Heart, Bell, Settings, LogOut } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function Show({ auth, booking }) {
     const [loading, setLoading] = useState(false);
@@ -17,6 +18,7 @@ export default function Show({ auth, booking }) {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [availableImages, setAvailableImages] = useState([]);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showPriceAlertDialog, setShowPriceAlertDialog] = useState(false);
     const [isVisible, setIsVisible] = useState({
         header: false,
         overview: false,
@@ -25,6 +27,13 @@ export default function Show({ auth, booking }) {
         history: false,
         sidebar: false
     });
+
+    // Debug booking object
+    useEffect(() => {
+        console.log('Booking object:', booking);
+        console.log('price_alert_active:', booking?.price_alert_active);
+        console.log('booking.id:', booking?.id);
+    }, [booking]);
 
     // Mobile navigation items
     const mobileNavigationItems = [
@@ -239,6 +248,125 @@ export default function Show({ auth, booking }) {
             month: 'long',
             day: 'numeric'
         });
+    };
+
+    const handleSetPriceAlert = async () => {
+        if (loading) return;
+
+        setLoading(true);
+
+        try {
+            const response = await fetch(`/price-alerts/${booking.id}/set-alert`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success('Price alert activated! You\'ll be notified of any price drops.', {
+                    position: 'top-right',
+                    duration: 4000,
+                    style: {
+                        background: '#10b981',
+                        color: 'white',
+                        border: '1px solid #059669',
+                    },
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+
+                // Reload the page to show updated status
+                window.location.reload();
+            } else {
+                toast.error(data.message || 'Failed to set price alert. Please try again.', {
+                    position: 'top-right',
+                    duration: 4000,
+                    style: {
+                        background: '#ef4444',
+                        color: 'white',
+                        border: '1px solid #dc2626',
+                    },
+                    icon: <AlertCircle className="h-4 w-4" />,
+                });
+            }
+        } catch (error) {
+            console.error('Error setting price alert:', error);
+            toast.error('Something went wrong. Please try again in a moment.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+        } finally {
+            setLoading(false);
+            setShowPriceAlertDialog(false);
+        }
+    };
+
+    const handleRemovePriceAlert = async () => {
+        if (loading) return;
+
+        setLoading(true);
+
+        try {
+            const response = await fetch(`/price-alerts/${booking.id}/remove-alert`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success('Price alert removed from this booking.', {
+                    position: 'top-right',
+                    duration: 4000,
+                    style: {
+                        background: '#10b981',
+                        color: 'white',
+                        border: '1px solid #059669',
+                    },
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+
+                // Reload the page to show updated status
+                window.location.reload();
+            } else {
+                toast.error(data.message || 'Failed to remove price alert. Please try again.', {
+                    position: 'top-right',
+                    duration: 4000,
+                    style: {
+                        background: '#ef4444',
+                        color: 'white',
+                        border: '1px solid #dc2626',
+                    },
+                    icon: <AlertCircle className="h-4 w-4" />,
+                });
+            }
+        } catch (error) {
+            console.error('Error removing price alert:', error);
+            toast.error('Something went wrong. Please try again in a moment.', {
+                position: 'top-right',
+                duration: 4000,
+                style: {
+                    background: '#ef4444',
+                    color: 'white',
+                    border: '1px solid #dc2626',
+                },
+                icon: <AlertCircle className="h-4 w-4" />,
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -861,11 +989,56 @@ export default function Show({ auth, booking }) {
                                     <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation h-10" variant="outline">
                                         Edit Booking
                                     </Button>
-                                    <Button className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation h-10" variant="outline">
-                                        Set Price Alert
-                                    </Button>
+                                    {booking.price_alert_active ? (
+                                        <Button
+                                            onClick={handleRemovePriceAlert}
+                                            disabled={loading}
+                                            className="w-full bg-red-100 hover:bg-red-200 text-red-700 border-red-300 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation h-10"
+                                            variant="outline"
+                                        >
+                                            {loading ? 'Removing...' : 'Remove Price Alert'}
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            onClick={() => {
+                                                setShowPriceAlertDialog(true);
+                                            }}
+                                            disabled={loading}
+                                            className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border-yellow-300 transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation h-10"
+                                            variant="outline"
+                                        >
+                                            Set Price Alert
+                                        </Button>
+                                    )}
                                 </CardContent>
                             </Card>
+
+                            {/* Price Alert Status */}
+                            {booking.price_alert_active && (
+                                <Card className={`transition-all duration-1000 delay-300 ease-out hover:shadow-lg active:scale-95 touch-manipulation ${
+                                    isVisible.sidebar
+                                        ? 'opacity-100 translate-y-0'
+                                        : 'opacity-0 translate-y-8'
+                                }`}>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Bell className="h-5 w-5 text-yellow-600" />
+                                            Price Alert Active
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2 text-sm text-green-600">
+                                                <CheckCircle className="h-4 w-4" />
+                                                <span>Monitoring this booking for price drops</span>
+                                            </div>
+                                            <p className="text-xs text-gray-600">
+                                                You'll be notified when prices drop below your alert thresholds.
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -912,6 +1085,68 @@ export default function Show({ auth, booking }) {
                 images={availableImages}
                 initialIndex={selectedImageIndex}
             />
+
+            {/* Price Alert Confirmation Dialog */}
+            <Dialog
+                open={showPriceAlertDialog}
+                onOpenChange={setShowPriceAlertDialog}
+            >
+                <DialogContent className="sm:max-w-[425px] animate-in slide-in-from-bottom-4 duration-300 bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <Bell className="h-6 w-6 text-yellow-600" />
+                            Activate Price Alert
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-600 text-base">
+                            You're about to start monitoring this booking for price drops. You'll receive notifications when prices drop below your alert thresholds.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="flex items-start space-x-3">
+                                <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <Bell className="h-4 w-4 text-yellow-600" />
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="font-semibold text-yellow-800 mb-2">What happens next?</h4>
+                                    <ul className="text-sm text-yellow-700 space-y-1">
+                                        <li>• We'll check prices every 2 hours</li>
+                                        <li>• You'll get notified of any price drops</li>
+                                        <li>• Monitoring continues until you remove the alert</li>
+                                        <li>• You can manage alerts from the Price Alerts page</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowPriceAlertDialog(false)}
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105 w-full sm:w-auto h-12 text-base"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSetPriceAlert}
+                            disabled={loading}
+                            className={`bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto h-12 text-base ${loading ? 'btn-loading' : ''}`}
+                        >
+                            {loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                    Activating...
+                                </>
+                            ) : (
+                                <>
+                                    <Bell className="w-4 h-4 mr-2" />
+                                    Activate Price Alert
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Toaster for notifications */}
             <Toaster />

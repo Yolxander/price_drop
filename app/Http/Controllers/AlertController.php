@@ -7,17 +7,17 @@ use Inertia\Inertia;
 use App\Models\PriceAlert;
 use App\Models\HotelBooking;
 use App\Models\AlertSetting;
-use App\Services\SerpApiService;
+use App\Services\PriceAlertService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class AlertController extends Controller
 {
-    protected $serpApiService;
+    protected $priceAlertService;
 
-    public function __construct(SerpApiService $serpApiService)
+    public function __construct(PriceAlertService $priceAlertService)
     {
-        $this->serpApiService = $serpApiService;
+        $this->priceAlertService = $priceAlertService;
     }
 
     /**
@@ -51,11 +51,18 @@ class AlertController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Get active price alerts (bookings with monitoring enabled)
+        $activeBookings = HotelBooking::where('user_id', $userId)
+            ->where('status', 'active')
+            ->where('price_alert_active', true)
+            ->get();
+
         $stats = [
             'total_alerts' => $alerts->count(),
-            'unread_alerts' => $alerts->where('is_read', false)->count(),
-            'actioned_alerts' => $alerts->where('is_actioned', true)->count(),
-            'total_savings' => $alerts->sum('delta_amount')
+            'new_alerts' => $alerts->where('status', 'new')->count(),
+            'actioned_alerts' => $alerts->where('status', 'actioned')->count(),
+            'total_savings' => $alerts->sum('delta_amount'),
+            'active_monitoring' => $activeBookings->count()
         ];
 
         return Inertia::render('Alerts/Index', [
@@ -67,6 +74,7 @@ class AlertController extends Controller
                 ],
             ],
             'alerts' => $alerts,
+            'activeBookings' => $activeBookings,
             'stats' => $stats
         ]);
     }
@@ -112,18 +120,12 @@ class AlertController extends Controller
                 'user_id' => $userId,
                 'min_price_drop_amount' => 10.00,
                 'min_price_drop_percent' => 5.0,
-                'notification_email' => true,
-                'notification_push' => true,
-                'auto_rebook' => false,
-                'monitoring_frequency' => 'hourly',
-                'preferred_providers' => ['booking.com', 'expedia', 'hotels.com'],
-                'blacklisted_providers' => [],
-                'location_preferences' => [],
-                'price_thresholds' => [
-                    'budget' => 100,
-                    'mid_range' => 300,
-                    'luxury' => 1000
-                ]
+                'email_notifications' => true,
+                'push_notifications' => true,
+                'sms_notifications' => false,
+                'notification_frequency' => 'immediate',
+                'excluded_providers' => [],
+                'included_locations' => []
             ]);
         }
 
@@ -140,14 +142,14 @@ class AlertController extends Controller
         $validated = $request->validate([
             'min_price_drop_amount' => 'required|numeric|min:0',
             'min_price_drop_percent' => 'required|numeric|min:0|max:100',
-            'notification_email' => 'boolean',
-            'notification_push' => 'boolean',
-            'auto_rebook' => 'boolean',
-            'monitoring_frequency' => 'required|in:every_15_minutes,every_30_minutes,hourly,daily',
-            'preferred_providers' => 'array',
-            'blacklisted_providers' => 'array',
-            'location_preferences' => 'array',
-            'price_thresholds' => 'array'
+            'email_notifications' => 'boolean',
+            'push_notifications' => 'boolean',
+            'sms_notifications' => 'boolean',
+            'notification_frequency' => 'required|in:immediate,daily,weekly',
+            'excluded_providers' => 'array',
+            'included_locations' => 'array',
+            'quiet_hours_start' => 'nullable|date_format:H:i',
+            'quiet_hours_end' => 'nullable|date_format:H:i'
         ]);
 
         $settings = AlertSetting::updateOrCreate(
@@ -229,8 +231,7 @@ class AlertController extends Controller
     public function checkPrices(Request $request)
     {
         try {
-            $service = new \App\Services\PriceAlertService();
-            $alertsCreated = $service->checkAllPrices();
+            $alertsCreated = $this->priceAlertService->checkAllPrices();
 
             return response()->json([
                 'success' => true,
@@ -241,6 +242,137 @@ class AlertController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error checking prices: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check price for a specific booking
+     */
+    public function checkSingleBooking(Request $request, $bookingId)
+    {
+        try {
+            $alert = $this->priceAlertService->checkSingleBooking($bookingId);
+
+            if ($alert) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Price drop detected and alert created!',
+                    'alert' => $alert
+                ]);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No price drop detected for this booking.',
+                    'alert' => null
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error checking price: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get price history for a booking
+     */
+    public function getPriceHistory(Request $request, $bookingId)
+    {
+        try {
+            $history = $this->priceAlertService->getPriceHistory($bookingId);
+
+            return response()->json([
+                'success' => true,
+                'history' => $history
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error getting price history: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle monitoring for a booking
+     */
+    public function toggleMonitoring(Request $request, $bookingId)
+    {
+        try {
+            $booking = HotelBooking::findOrFail($bookingId);
+            $newStatus = $booking->status === 'active' ? 'paused' : 'active';
+
+            if ($newStatus === 'active') {
+                $this->priceAlertService->activateMonitoring($bookingId);
+            } else {
+                $this->priceAlertService->pauseMonitoring($bookingId);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Monitoring {$newStatus} for booking",
+                'status' => $newStatus
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error toggling monitoring: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Set price alert on a booking
+     */
+    public function setPriceAlert(Request $request, $bookingId)
+    {
+        try {
+            $booking = HotelBooking::findOrFail($bookingId);
+
+            // Activate price monitoring for this booking
+            $booking->update([
+                'price_alert_active' => true,
+                'status' => 'active',
+                'last_checked' => null // Reset to force immediate check
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Price alert activated for this booking!',
+                'booking' => $booking
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error setting price alert: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove price alert from a booking
+     */
+    public function removePriceAlert(Request $request, $bookingId)
+    {
+        try {
+            $booking = HotelBooking::findOrFail($bookingId);
+
+            // Deactivate price monitoring for this booking
+            $booking->update([
+                'price_alert_active' => false
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Price alert removed from this booking.',
+                'booking' => $booking
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error removing price alert: ' . $e->getMessage()
             ], 500);
         }
     }

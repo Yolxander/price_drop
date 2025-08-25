@@ -38,10 +38,11 @@ import {
     Grid3X3,
     Calendar as CalendarIcon,
     Heart,
-    LogOut
+    LogOut,
+    Plus
 } from 'lucide-react';
 
-export default function AlertsIndex({ auth, alerts, stats }) {
+export default function AlertsIndex({ auth, alerts, stats, activeBookings }) {
     const [statusFilter, setStatusFilter] = useState('all');
     const [severityFilter, setSeverityFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
@@ -66,6 +67,13 @@ export default function AlertsIndex({ auth, alerts, stats }) {
         excluded_providers: [],
         included_locations: []
     });
+
+    // Debug logging
+    useEffect(() => {
+        console.log('AlertsIndex props:', { auth, alerts, stats, activeBookings });
+        console.log('activeBookings count:', activeBookings?.length);
+        console.log('activeBookings data:', activeBookings);
+    }, [auth, alerts, stats, activeBookings]);
 
     // Mobile navigation items
     const mobileNavigationItems = [
@@ -386,6 +394,48 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                 icon: <AlertTriangle className="h-4 w-4" />,
             });
             console.error('Error checking prices:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRemovePriceAlert = async (bookingId) => {
+        setIsLoading(true);
+
+        // Show loading toast
+        const loadingToast = toast.loading('Removing price alert...', {
+            duration: Infinity,
+        });
+
+        try {
+            const response = await fetch(`/price-alerts/${bookingId}/remove-alert`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Close loading toast and show success
+                toast.dismiss(loadingToast);
+                toast.success('Price alert removed successfully!', {
+                    icon: <CheckCircle className="h-4 w-4" />,
+                });
+
+                // Refresh the page to show updated data
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                throw new Error(data.message || 'Failed to remove price alert');
+            }
+        } catch (error) {
+            // Close loading toast and show error
+            toast.dismiss(loadingToast);
+            toast.error('Failed to remove price alert. Please try again.', {
+                icon: <AlertTriangle className="h-4 w-4" />,
+            });
+            console.error('Error removing price alert:', error);
         } finally {
             setIsLoading(false);
         }
@@ -767,18 +817,120 @@ export default function AlertsIndex({ auth, alerts, stats }) {
                             </Card>
                             <Card className="transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation" style={{ transitionDelay: '300ms' }}>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
-                                    <DollarSign className="h-4 w-4 text-muted-foreground animate-pulse" />
+                                    <CardTitle className="text-sm font-medium">Active Monitoring</CardTitle>
+                                    <Bell className="h-4 w-4 text-muted-foreground animate-pulse" />
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="text-xl lg:text-2xl font-bold">
-                                        {formatCurrency(stats?.total_savings || 0)}
-                                    </div>
+                                    <div className="text-xl lg:text-2xl font-bold">{stats?.active_monitoring || 0}</div>
                                     <p className="text-xs text-muted-foreground">
-                                        Potential savings detected
+                                        Bookings being tracked
                                     </p>
                                 </CardContent>
                             </Card>
+                        </div>
+
+                        {/* Active Bookings with Price Alerts */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-semibold text-gray-900">Active Price Alerts</h2>
+                                <p className="text-sm text-gray-600">Bookings being monitored for price drops</p>
+                            </div>
+
+                            {activeBookings && activeBookings.length > 0 ? (
+                                <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                                    {activeBookings.map((booking, index) => (
+                                        <Card
+                                            key={booking.id}
+                                            className="hover:shadow-md transition-all duration-500 ease-out hover-lift active:scale-95 touch-manipulation border-yellow-200"
+                                            style={{ transitionDelay: `${index * 100}ms` }}
+                                        >
+                                            <CardContent className="p-4 lg:p-6">
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Bell className="h-5 w-5 text-yellow-600" />
+                                                        <Badge variant="default" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                                            Active Monitoring
+                                                        </Badge>
+                                                    </div>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleRemovePriceAlert(booking.id)}
+                                                        disabled={isLoading}
+                                                        className="border-red-300 text-red-700 hover:bg-red-50 transition-all duration-300 hover:scale-105 active:scale-95"
+                                                    >
+                                                        Remove Alert
+                                                    </Button>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold mb-1">{booking.hotel_name}</h3>
+                                                        <div className="flex items-center text-sm text-muted-foreground mb-2">
+                                                            <MapPin className="w-4 h-4 mr-1" />
+                                                            {booking.location}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                                        <div>
+                                                            <span className="text-muted-foreground">Check-in:</span>
+                                                            <p className="font-medium">{formatDate(booking.check_in_date)}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted-foreground">Check-out:</span>
+                                                            <p className="font-medium">{formatDate(booking.check_out_date)}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted-foreground">Current Price:</span>
+                                                            <p className="font-medium">{formatCurrency(booking.current_price, booking.currency)}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-muted-foreground">Guests:</span>
+                                                            <p className="font-medium">{booking.guests}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                                                        <div className="flex items-center space-x-2 text-sm text-yellow-800">
+                                                            <CheckCircle className="h-4 w-4" />
+                                                            <span>Monitoring for price drops below your alert thresholds</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-between items-center pt-2 border-t">
+                                                        <Link href={`/bookings/${booking.id}`}>
+                                                            <Button variant="outline" size="sm" className="border-yellow-300 text-yellow-700 hover:bg-yellow-50">
+                                                                View Booking
+                                                                <ArrowRight className="w-4 h-4 ml-2" />
+                                                            </Button>
+                                                        </Link>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Last checked: {booking.last_checked ? formatTimeAgo(booking.last_checked) : 'Never'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            ) : (
+                                <Card className="border-2 border-dashed border-gray-300 bg-gray-50">
+                                    <CardContent className="p-8 text-center">
+                                        <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                        <h3 className="text-lg font-semibold text-gray-600 mb-2">No Active Price Alerts</h3>
+                                        <p className="text-gray-500 mb-4">
+                                            You don't have any active price alerts yet. Set price alerts on your bookings to start monitoring for price drops.
+                                        </p>
+                                        <Link href="/bookings">
+                                            <Button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900">
+                                                <Plus className="h-4 w-4 mr-2" />
+                                                Set Price Alert
+                                            </Button>
+                                        </Link>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
 
                         {/* Alerts List */}

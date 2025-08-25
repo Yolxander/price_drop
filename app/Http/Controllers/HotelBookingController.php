@@ -250,6 +250,7 @@ class HotelBookingController extends Controller
             'status' => $booking->status,
             'price_drop_detected' => $booking->price_drop_detected,
             'price_drop_amount' => $booking->price_drop_amount,
+            'price_alert_active' => $booking->price_alert_active,
             'price_drop_percentage' => $booking->price_drop_amount ? round(($booking->price_drop_amount / $booking->original_price) * 100, 1) : 0,
             'booking_reference' => $booking->booking_reference,
             'nights' => $nights,

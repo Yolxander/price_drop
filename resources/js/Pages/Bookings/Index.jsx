@@ -137,7 +137,8 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                 checkOut: booking.check_out_date,
                 guests: booking.guests,
                 nights: booking.nights,
-                status: booking.status
+                status: booking.status,
+                price_alert_active: booking.price_alert_active // Add this line
             };
         }) : [];
 
@@ -181,7 +182,8 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                     checkOut: booking.check_out_date,
                     guests: booking.guests,
                     nights: booking.nights,
-                    status: booking.status
+                    status: booking.status,
+                    price_alert_active: booking.price_alert_active // Add this line
                 };
             }) : [];
 
@@ -647,6 +649,16 @@ export default function BookingsIndex({ auth, bookings, filters, stats }) {
                                                 <div className="absolute top-3 left-20">
                                                     <Badge variant={getStatusBadgeVariant(property.status)} className="text-xs">
                                                         {property.status}
+                                                    </Badge>
+                                                </div>
+                                            )}
+
+                                            {/* Price Alert Indicator */}
+                                            {property.price_alert_active && (
+                                                <div className="absolute top-3 right-3">
+                                                    <Badge className="bg-yellow-500 text-white text-xs animate-pulse border-2 border-white shadow-lg">
+                                                        <Bell className="w-3 h-3 mr-1" />
+                                                        Price Alert
                                                     </Badge>
                                                 </div>
                                             )}
