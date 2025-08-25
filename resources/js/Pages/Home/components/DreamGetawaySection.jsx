@@ -15,11 +15,11 @@ export default function DreamGetawaySection({ canRegister, isVisible }) {
       {/* Background Image with Overlay */}
       <div className="relative rounded-3xl overflow-hidden">
         <img
-          src="/hotel/background-7158357_1280.jpg"
+          src="/hotel/hotel-booking.jpg"
           alt="Office Collaboration"
           className="w-full h-[400px] object-cover"
         />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div className="absolute inset-0 bg-black/50 "></div>
 
         {/* Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10">
