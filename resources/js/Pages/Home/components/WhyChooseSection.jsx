@@ -4,7 +4,7 @@ export default function WhyChooseSection({ isVisible }) {
   return (
     <section
       data-section="why-choose"
-      className={`w-full max-w-7xl mx-auto mt-20 mb-20 px-4 transition-all duration-1000 ease-out ${
+      className={`w-full max-w-7xl mx-auto mt-24 mb-24 px-4 transition-all duration-1000 ease-out ${
         isVisible['why-choose']
           ? 'opacity-100 translate-y-0'
           : 'opacity-0 translate-y-8'
